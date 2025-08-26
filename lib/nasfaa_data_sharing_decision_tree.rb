@@ -218,10 +218,37 @@ class NasfaaDataSharingDecisionTree
         # Box 19: Otherwise permitted under 99.31?
         return true if otherwise_permitted_under_99_31?
       end
-    end
+    else
+      # Box 3 "No" → Box 10: Has FERPA consent? (skip Box 9 PII check for non-FAFSA data)
+      return true if has_ferpa_consent?
 
-    # If not FAFSA data, check if it's directory information
-    return true if is_directory_information?
+      # Box 11: Is directory information?
+      return true if is_directory_information?
+
+      # Box 12: To school officials with educational interest?
+      return true if to_school_officials_with_educational_interest?
+
+      # Box 13: Judicial order or financial aid related?
+      return true if judicial_order_or_financial_aid_related?
+
+      # Box 14: To other school for enrollment?
+      return true if to_other_school_for_enrollment?
+
+      # Box 15: To authorized federal representatives?
+      return true if to_authorized_federal_representatives?
+
+      # Box 16: To research organization?
+      return true if to_research_organization?
+
+      # Box 17: To accrediting agency?
+      return true if to_accrediting_agency?
+
+      # Box 18: To parent of dependent student?
+      return true if to_parent_of_dependent_student?
+
+      # Box 19: Otherwise permitted under 99.31?
+      return true if otherwise_permitted_under_99_31?
+    end
 
     false
   end

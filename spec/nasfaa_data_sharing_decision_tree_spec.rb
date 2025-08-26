@@ -448,9 +448,16 @@ RSpec.describe NasfaaDataSharingDecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII and is directory information' do
+      context 'and disclosure is not FAFSA data but has FERPA consent' do
         let(:disclosure_request) do
-          DisclosureData.new(includes_fti: false, data_type: :directory_information, contains_pii: true)
+          DisclosureData.new(includes_fti: false, data_type: :other_data, consent: { ferpa: true })
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but is directory information' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :directory_information)
         end
         it { expect(tree.disclose?).to be true }
       end
@@ -519,7 +526,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is not FAFSA data' do
+      context 'and disclosure is not FAFSA data and no other conditions met' do
         let(:disclosure_request) { DisclosureData.new(includes_fti: false, data_type: :other_data) }
         it { expect(tree.disclose?).to be false }
       end
