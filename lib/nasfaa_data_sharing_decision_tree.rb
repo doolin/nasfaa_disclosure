@@ -1,3 +1,5 @@
+require_relative 'disclosure_data'
+
 class NasfaaDataSharingDecisionTree
   attr_accessor :disclosure_request
 
