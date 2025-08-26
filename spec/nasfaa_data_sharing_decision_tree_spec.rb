@@ -223,17 +223,23 @@ RSpec.describe NasfaaDataSharingDecisionTree do
 
   describe '#to_research_organization?' do # Box 16
     context 'when disclosure is to research organization for predictive tests' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :research_organization, research_purpose: :predictive_tests) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :research_organization, research_purpose: :predictive_tests)
+      end
       it { expect(tree.to_research_organization?).to be true }
     end
 
     context 'when disclosure is to research organization for student aid programs' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :research_organization, research_purpose: :student_aid_programs) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :research_organization, research_purpose: :student_aid_programs)
+      end
       it { expect(tree.to_research_organization?).to be true }
     end
 
     context 'when disclosure is to research organization for improving instruction' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :research_organization, research_purpose: :improve_instruction) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :research_organization, research_purpose: :improve_instruction)
+      end
       it { expect(tree.to_research_organization?).to be true }
     end
 
@@ -312,22 +318,30 @@ RSpec.describe NasfaaDataSharingDecisionTree do
 
   describe '#fti_to_scholarship_organization_with_consent?' do # FTI Box 3
     context 'when FTI disclosure is to scholarship organization with explicit written consent' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :scholarship_organization, consent: { explicit_written: true }) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :scholarship_organization, consent: { explicit_written: true })
+      end
       it { expect(tree.fti_to_scholarship_organization_with_consent?).to be true }
     end
 
     context 'when FTI disclosure is to tribal organization with explicit written consent' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :tribal_organization, consent: { explicit_written: true }) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :tribal_organization, consent: { explicit_written: true })
+      end
       it { expect(tree.fti_to_scholarship_organization_with_consent?).to be true }
     end
 
     context 'when FTI disclosure is to scholarship organization without explicit written consent' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :scholarship_organization, consent: { explicit_written: false }) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :scholarship_organization, consent: { explicit_written: false })
+      end
       it { expect(tree.fti_to_scholarship_organization_with_consent?).to be false }
     end
 
     context 'when FTI disclosure is not to scholarship or tribal organization' do
-      let(:disclosure_request) { DisclosureData.new(recipient_type: :student, consent: { explicit_written: true }) }
+      let(:disclosure_request) do
+        DisclosureData.new(recipient_type: :student, consent: { explicit_written: true })
+      end
       it { expect(tree.fti_to_scholarship_organization_with_consent?).to be false }
     end
   end
@@ -346,6 +360,183 @@ RSpec.describe NasfaaDataSharingDecisionTree do
     context 'when FTI disclosure is not to school official' do
       let(:disclosure_request) { DisclosureData.new(recipient_type: :student, has_educational_interest: true) }
       it { expect(tree.fti_to_school_officials_with_educational_interest?).to be false }
+    end
+  end
+
+  # Main disclose? method tests
+
+  describe '#disclose?' do
+    context 'when disclosure includes FTI' do
+      context 'and disclosure is to student' do
+        let(:disclosure_request) { DisclosureData.new(includes_fti: true, recipient_type: :student) }
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is for financial aid purposes' do
+        let(:disclosure_request) { DisclosureData.new(includes_fti: true, purpose: :financial_aid) }
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is to scholarship organization with explicit consent' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: true, recipient_type: :scholarship_organization,
+                             consent: { explicit_written: true })
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is to school official with educational interest' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: true, recipient_type: :school_official, has_educational_interest: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and none of the FTI conditions are met' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: true, recipient_type: :parent, purpose: :research)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
+    end
+
+    context 'when disclosure does not include FTI' do
+      context 'and disclosure is to student' do
+        let(:disclosure_request) { DisclosureData.new(includes_fti: false, recipient_type: :student) }
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data to parent contributor' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, recipient_type: :parent_contributor)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data for financial aid purposes' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, purpose: :financial_aid)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data to scholarship organization' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, recipient_type: :scholarship_organization)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data for research promoting college attendance' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, purpose: :research_college_attendance)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with HEA consent' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, consent: { hea: true })
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII and FERPA consent' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true, consent: { ferpa: true })
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII and is directory information' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :directory_information, contains_pii: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to school official with educational interest' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :school_official, has_educational_interest: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII under judicial order' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             legal_basis: :judicial_order)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to other school for enrollment' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :other_school, purpose: :enrollment_or_transfer)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to federal representative' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :federal_representative)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to research organization' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :research_organization, research_purpose: :predictive_tests)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to accrediting agency' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :accrediting_agency)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII to parent of dependent student' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             recipient_type: :parent, student_dependency_status: :dependent)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data with PII otherwise permitted under 99.31' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true,
+                             other_99_31_exception: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data' do
+        let(:disclosure_request) { DisclosureData.new(includes_fti: false, data_type: :other_data) }
+        it { expect(tree.disclose?).to be false }
+      end
+
+      context 'and disclosure is FAFSA data but contains no PII and no other conditions met' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: false)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
+
+      context 'and disclosure is FAFSA data with PII but no other conditions met' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, data_type: :fafsa_data, contains_pii: true)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
     end
   end
 end

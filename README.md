@@ -17,15 +17,15 @@ The implementation is structured as a Ruby class with predicate functions for ea
 ## Usage
 
 ```ruby
-# Create a disclosure request hash
-disclosure_request = {
+# Create a disclosure request using DisclosureData
+disclosure_request = DisclosureData.new({
   includes_fti: false,
   recipient_type: :student,
   data_type: :fafsa_data,
   purpose: :financial_aid,
   consent: { hea: false, ferpa: false },
   contains_pii: true
-}
+})
 
 # Instantiate the decision tree
 tree = NasfaaDataSharingDecisionTree.new(disclosure_request)
@@ -35,6 +35,9 @@ tree.disclosure_to_student?                    # => true
 tree.is_fafsa_data?                           # => true
 tree.for_financial_aid_purposes?              # => true
 tree.has_hea_consent?                         # => false
+
+# Determine if disclosure is permitted
+tree.disclose?                                # => true
 ```
 
 ## Testing
@@ -45,7 +48,7 @@ Run the test suite with:
 rspec spec/nasfaa_data_sharing_decision_tree_spec.rb
 ```
 
-All 59 predicate functions are thoroughly tested with both positive and negative scenarios.
+All 83 predicate functions and the main `disclose?` method are thoroughly tested with both positive and negative scenarios.
 
 ## Legal Basis
 
@@ -55,10 +58,21 @@ The implementation references specific sections of federal law including:
 - 99.30-99.31 - FERPA regulations
 - Section 152 of the Internal Revenue Code
 
+## Decision Tree Logic
+
+The `disclose?` method implements the complete decision tree logic from the PDF:
+
+1. **FTI Branch**: If the disclosure includes Federal Tax Information, only 4 specific conditions permit disclosure
+2. **Main Branch**: For non-FTI data, the method follows the 19-box decision tree with proper branching logic
+3. **FAFSA Data Path**: Most conditions require the data to be FAFSA data, with additional checks for PII
+4. **Directory Information**: Directory information is permitted regardless of FAFSA data status
+
+The implementation is clean, readable, and follows the exact flow of the original decision tree.
+
 ## Next Steps
 
-This is the first step in implementing the complete decision tree. Future steps will include:
-- Implementing the complete decision flow logic
-- Adding outcome determination methods
+The decision tree implementation is now complete. Future enhancements could include:
+- Adding detailed reasoning for decisions
 - Creating a user-friendly interface
 - Adding validation and error handling
+- Performance optimizations for high-volume usage

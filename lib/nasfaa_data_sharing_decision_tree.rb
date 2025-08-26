@@ -7,6 +7,14 @@ class NasfaaDataSharingDecisionTree
     @disclosure_request = disclosure_request
   end
 
+  def disclose?
+    # First check if this involves FTI - if so, use FTI branch
+    return fti_disclosure_permitted? if includes_federal_tax_information?
+
+    # Otherwise, use main decision tree
+    main_disclosure_permitted?
+  end
+
   # Page 1 - Main Decision Tree Predicates
 
   def includes_federal_tax_information?
@@ -140,5 +148,81 @@ class NasfaaDataSharingDecisionTree
     # FTI Question 4: Is the disclosure to other school officials determined to have a legitimate educational interest?
     disclosure_request[:recipient_type] == :school_official &&
       disclosure_request[:has_educational_interest]
+  end
+
+  private
+
+  def fti_disclosure_permitted?
+    # FTI Branch Logic (Page 2)
+    return true if fti_disclosure_to_student?
+    return true if fti_for_financial_aid_purposes?
+    return true if fti_to_scholarship_organization_with_consent?
+    return true if fti_to_school_officials_with_educational_interest?
+
+    false
+  end
+
+  def main_disclosure_permitted?
+    # Main Decision Tree Logic (Page 1)
+    # Follow the actual decision tree flow from the PDF
+
+    # Box 2: Is disclosure to student?
+    return true if disclosure_to_student?
+
+    # Box 3: Is it FAFSA data?
+    if is_fafsa_data?
+      # Box 4: Is disclosure to parent/spouse contributor?
+      return true if disclosure_to_parent_or_spouse_contributor?
+
+      # Box 5: Is it for financial aid purposes?
+      return true if for_financial_aid_purposes?
+
+      # Box 6: Is it to scholarship/tribal organization with consent?
+      return true if to_scholarship_or_tribal_organization_with_consent?
+
+      # Box 7: Is it for research promoting college attendance?
+      return true if for_research_promoting_college_attendance?
+
+      # Box 8: Has HEA consent?
+      return true if has_hea_consent?
+
+      # Box 9: Contains PII?
+      if contains_pii?
+        # Box 10: Has FERPA consent?
+        return true if has_ferpa_consent?
+
+        # Box 11: Is directory information?
+        return true if is_directory_information?
+
+        # Box 12: To school officials with educational interest?
+        return true if to_school_officials_with_educational_interest?
+
+        # Box 13: Judicial order or financial aid related?
+        return true if judicial_order_or_financial_aid_related?
+
+        # Box 14: To other school for enrollment?
+        return true if to_other_school_for_enrollment?
+
+        # Box 15: To authorized federal representatives?
+        return true if to_authorized_federal_representatives?
+
+        # Box 16: To research organization?
+        return true if to_research_organization?
+
+        # Box 17: To accrediting agency?
+        return true if to_accrediting_agency?
+
+        # Box 18: To parent of dependent student?
+        return true if to_parent_of_dependent_student?
+
+        # Box 19: Otherwise permitted under 99.31?
+        return true if otherwise_permitted_under_99_31?
+      end
+    end
+
+    # If not FAFSA data, check if it's directory information
+    return true if is_directory_information?
+
+    false
   end
 end

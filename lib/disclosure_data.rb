@@ -1,6 +1,6 @@
 class DisclosureData
-  attr_accessor :includes_fti, :recipient_type, :data_type, :purpose, :consent, 
-                :contains_pii, :has_educational_interest, :legal_basis, 
+  attr_accessor :includes_fti, :recipient_type, :data_type, :purpose, :consent,
+                :contains_pii, :has_educational_interest, :legal_basis,
                 :research_purpose, :student_dependency_status, :other_99_31_exception
 
   def initialize(data = {})
