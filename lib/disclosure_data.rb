@@ -83,6 +83,87 @@ class DisclosureData
     end
   end
 
+  # Data Predicates - Direct queries of the data state
+  def includes_fti?
+    @includes_fti
+  end
+
+  def disclosure_to_student?
+    @disclosure_to_student
+  end
+
+  def fafsa_data?
+    @is_fafsa_data
+  end
+
+  def disclosure_to_contributor_parent_or_spouse?
+    @disclosure_to_contributor_parent_or_spouse
+  end
+
+  def used_for_aid_admin?
+    @used_for_aid_admin
+  end
+
+  def disclosure_to_scholarship_org?
+    @disclosure_to_scholarship_org
+  end
+
+  def explicit_written_consent?
+    @explicit_written_consent
+  end
+
+  def research_promote_attendance?
+    @research_promote_attendance
+  end
+
+  def hea_written_consent?
+    @hea_written_consent
+  end
+
+  def contains_pii?
+    @contains_pii
+  end
+
+  def ferpa_written_consent?
+    @ferpa_written_consent
+  end
+
+  def directory_info_and_not_opted_out?
+    @directory_info_and_not_opted_out
+  end
+
+  def to_school_official_legitimate_interest?
+    @to_school_official_legitimate_interest
+  end
+
+  def due_to_judicial_order_or_subpoena_or_financial_aid?
+    @due_to_judicial_order_or_subpoena_or_financial_aid
+  end
+
+  def to_other_school_enrollment_transfer?
+    @to_other_school_enrollment_transfer
+  end
+
+  def to_authorized_representatives?
+    @to_authorized_representatives
+  end
+
+  def to_research_org_ferpa?
+    @to_research_org_ferpa
+  end
+
+  def to_accrediting_agency?
+    @to_accrediting_agency
+  end
+
+  def parent_of_dependent_student?
+    @parent_of_dependent_student
+  end
+
+  def otherwise_permitted_under_99_31?
+    @otherwise_permitted_under_99_31
+  end
+
   private
 
   def setup_legacy_mapping(data)
