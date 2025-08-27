@@ -2,44 +2,125 @@ require 'rspec'
 require_relative '../lib/disclosure_data'
 
 RSpec.describe DisclosureData do
-  let(:data) { DisclosureData.new(includes_fti: true, recipient_type: :student) }
+  describe 'normalized boolean fields' do
+    let(:data) do
+      DisclosureData.new(
+        includes_fti: true,
+        disclosure_to_student: true,
+        disclosure_to_contributor_parent_or_spouse: false,
+        is_fafsa_data: true,
+        used_for_aid_admin: false,
+        disclosure_to_scholarship_org: true,
+        explicit_written_consent: true,
+        research_promote_attendance: false,
+        hea_written_consent: true,
+        ferpa_written_consent: false,
+        directory_info_and_not_opted_out: true,
+        to_school_official_legitimate_interest: false,
+        due_to_judicial_order_or_subpoena_or_financial_aid: true,
+        to_other_school_enrollment_transfer: false,
+        to_authorized_representatives: true,
+        to_research_org_ferpa: false,
+        to_accrediting_agency: true,
+        parent_of_dependent_student: false,
+        otherwise_permitted_under_99_31: true,
+        contains_pii: true
+      )
+    end
 
-  describe 'bracket notation' do
-    it 'allows access via bracket notation like a hash' do
+    it 'supports bracket notation for all normalized fields' do
       expect(data[:includes_fti]).to be true
-      expect(data[:recipient_type]).to eq(:student)
+      expect(data[:disclosure_to_student]).to be true
+      expect(data[:disclosure_to_contributor_parent_or_spouse]).to be false
+      expect(data[:is_fafsa_data]).to be true
+      expect(data[:used_for_aid_admin]).to be false
+      expect(data[:disclosure_to_scholarship_org]).to be true
+      expect(data[:explicit_written_consent]).to be true
+      expect(data[:research_promote_attendance]).to be false
+      expect(data[:hea_written_consent]).to be true
+      expect(data[:ferpa_written_consent]).to be false
+      expect(data[:directory_info_and_not_opted_out]).to be true
+      expect(data[:to_school_official_legitimate_interest]).to be false
+      expect(data[:due_to_judicial_order_or_subpoena_or_financial_aid]).to be true
+      expect(data[:to_other_school_enrollment_transfer]).to be false
+      expect(data[:to_authorized_representatives]).to be true
+      expect(data[:to_research_org_ferpa]).to be false
+      expect(data[:to_accrediting_agency]).to be true
+      expect(data[:parent_of_dependent_student]).to be false
+      expect(data[:otherwise_permitted_under_99_31]).to be true
+      expect(data[:contains_pii]).to be true
+    end
+
+    it 'supports dot notation for all normalized fields' do
+      expect(data.includes_fti).to be true
+      expect(data.disclosure_to_student).to be true
+      expect(data.disclosure_to_contributor_parent_or_spouse).to be false
+      expect(data.is_fafsa_data).to be true
+      expect(data.used_for_aid_admin).to be false
+      expect(data.disclosure_to_scholarship_org).to be true
+      expect(data.explicit_written_consent).to be true
+      expect(data.research_promote_attendance).to be false
+      expect(data.hea_written_consent).to be true
+      expect(data.ferpa_written_consent).to be false
+      expect(data.directory_info_and_not_opted_out).to be true
+      expect(data.to_school_official_legitimate_interest).to be false
+      expect(data.due_to_judicial_order_or_subpoena_or_financial_aid).to be true
+      expect(data.to_other_school_enrollment_transfer).to be false
+      expect(data.to_authorized_representatives).to be true
+      expect(data.to_research_org_ferpa).to be false
+      expect(data.to_accrediting_agency).to be true
+      expect(data.parent_of_dependent_student).to be false
+      expect(data.otherwise_permitted_under_99_31).to be true
+      expect(data.contains_pii).to be true
     end
 
     it 'returns false for missing keys' do
       expect(data[:missing_key]).to be false
     end
-  end
 
-  describe 'dot notation' do
-    it 'allows access via dot notation like instance variables' do
-      expect(data.includes_fti).to be true
-      expect(data.recipient_type).to eq(:student)
+    it 'handles default values correctly' do
+      empty_data = DisclosureData.new
+      expect(empty_data.includes_fti).to be false
+      expect(empty_data.disclosure_to_student).to be false
+      expect(empty_data.contains_pii).to be false
     end
   end
 
-  describe 'nested data' do
-    let(:data_with_consent) { DisclosureData.new(consent: { hea: true, ferpa: false }) }
-
-    it 'handles nested data as hashes' do
-      expect(data_with_consent[:consent]).to eq({ hea: true, ferpa: false })
-      expect(data_with_consent.consent).to eq({ hea: true, ferpa: false })
+  describe 'legacy compatibility' do
+    it 'maps legacy recipient_type to normalized fields' do
+      data = DisclosureData.new(
+        recipient_type: :student,
+        has_educational_interest: true
+      )
+      expect(data.disclosure_to_student).to be true
+      expect(data.to_school_official_legitimate_interest).to be false
     end
-  end
 
-  describe 'default values' do
-    let(:empty_data) { DisclosureData.new }
+    it 'maps legacy data_type to normalized fields' do
+      data = DisclosureData.new(data_type: :fafsa_data)
+      expect(data.is_fafsa_data).to be true
+    end
 
-    it 'provides sensible defaults' do
-      expect(empty_data[:includes_fti]).to be false
-      expect(empty_data[:contains_pii]).to be false
-      expect(empty_data[:has_educational_interest]).to be false
-      expect(empty_data[:other_99_31_exception]).to be false
-      expect(empty_data[:consent]).to eq({})
+    it 'maps legacy purpose to normalized fields' do
+      data = DisclosureData.new(purpose: :financial_aid)
+      expect(data.used_for_aid_admin).to be true
+    end
+
+    it 'maps legacy consent to normalized fields' do
+      data = DisclosureData.new(consent: { hea: true, ferpa: true, explicit_written: true })
+      expect(data.hea_written_consent).to be true
+      expect(data.ferpa_written_consent).to be true
+      expect(data.explicit_written_consent).to be true
+    end
+
+    it 'maps legacy legal_basis to normalized fields' do
+      data = DisclosureData.new(legal_basis: :judicial_order)
+      expect(data.due_to_judicial_order_or_subpoena_or_financial_aid).to be true
+    end
+
+    it 'maps legacy other_99_31_exception to normalized field' do
+      data = DisclosureData.new(other_99_31_exception: true)
+      expect(data.otherwise_permitted_under_99_31).to be true
     end
   end
 end

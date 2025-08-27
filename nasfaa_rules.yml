@@ -1,5 +1,23 @@
-# Evaluation: first match wins. All inputs are booleans unless noted.
+# NASFAA Data Sharing Decision Tree Rules
+# Evaluation: first match wins. All inputs are booleans.
 # Top-level split: FTI vs non-FTI (FAFSA / FERPA paths).
+
+metadata:
+  version: "1.0"
+  description: "NASFAA Data Sharing Decision Tree Rules"
+  evaluation_order: "first_match_wins"
+  input_type: "boolean"
+
+validation:
+  required_inputs: ["includes_fti"]
+  mutually_exclusive_groups:
+    - ["includes_fti", "!includes_fti"]
+
+result_types:
+  permit: "Disclosure is permitted"
+  deny: "Disclosure is not permitted"
+  permit_with_caution: "Disclosure permitted with caution"
+  permit_with_scope: "Disclosure permitted with scope limitations"
 
 inputs:
   includes_fti: boolean
@@ -11,6 +29,7 @@ inputs:
   explicit_written_consent: boolean                      # explicit consent for scholarship org
   research_promote_attendance: boolean                   # institutional research: attendance/persistence/completion
   hea_written_consent: boolean                           # HEA 1090(a)(3)(C) consent (general consent to disclose FAFSA data)
+  ferpa_written_consent: boolean                         # FERPA written consent
   directory_info_and_not_opted_out: boolean              # FERPA directory info
   to_school_official_legitimate_interest: boolean        # FERPA 99.31(a)(1)
   due_to_judicial_order_or_subpoena_or_financial_aid: boolean  # FERPA 99.31(a)(4)(i) or 99.31(a)(9)
@@ -114,7 +133,7 @@ rules:
     when_all: [!includes_fti, otherwise_permitted_under_99_31]
     result: permit
 
-  # If we’re here, either (a) non-FAFSA PII without a 99.31 exception, or (b) FAFSA data without an HEA/FERPA basis.
+  # If we're here, either (a) non-FAFSA PII without a 99.31 exception, or (b) FAFSA data without an HEA/FERPA basis.
   - id: NONFTI_DENY_default
     when_all: [!includes_fti]
     result: deny
