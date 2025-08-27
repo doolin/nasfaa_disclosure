@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative '../lib/disclosure_data'
+require_relative 'spec_helper'
 
 RSpec.describe DisclosureData do
   describe 'normalized boolean fields' do
@@ -121,6 +121,51 @@ RSpec.describe DisclosureData do
     it 'maps legacy other_99_31_exception to normalized field' do
       data = DisclosureData.new(other_99_31_exception: true)
       expect(data.otherwise_permitted_under_99_31).to be true
+    end
+
+    it 'handles school official without educational interest' do
+      data = DisclosureData.new(recipient_type: :school_official, has_educational_interest: false)
+      expect(data.to_school_official_legitimate_interest).to be false
+    end
+
+    it 'handles other school without enrollment purpose' do
+      data = DisclosureData.new(recipient_type: :other_school, purpose: :research)
+      expect(data.to_other_school_enrollment_transfer).to be false
+    end
+
+    it 'handles research organization with invalid purpose' do
+      data = DisclosureData.new(recipient_type: :research_organization, research_purpose: :invalid_purpose)
+      expect(data.to_research_org_ferpa).to be false
+    end
+
+    it 'handles parent of independent student' do
+      data = DisclosureData.new(recipient_type: :parent, student_dependency_status: :independent)
+      expect(data.parent_of_dependent_student).to be false
+    end
+
+    it 'handles missing contains_pii key' do
+      data = DisclosureData.new({})
+      expect(data.contains_pii).to be false
+    end
+
+    it 'handles missing other_99_31_exception key' do
+      data = DisclosureData.new({})
+      expect(data.otherwise_permitted_under_99_31).to be false
+    end
+
+    it 'handles research purpose validation for predictive_tests' do
+      data = DisclosureData.new(recipient_type: :research_organization, research_purpose: :predictive_tests)
+      expect(data.to_research_org_ferpa).to be true
+    end
+
+    it 'handles research purpose validation for student_aid_programs' do
+      data = DisclosureData.new(recipient_type: :research_organization, research_purpose: :student_aid_programs)
+      expect(data.to_research_org_ferpa).to be true
+    end
+
+    it 'handles research purpose validation for improve_instruction' do
+      data = DisclosureData.new(recipient_type: :research_organization, research_purpose: :improve_instruction)
+      expect(data.to_research_org_ferpa).to be true
     end
   end
 end

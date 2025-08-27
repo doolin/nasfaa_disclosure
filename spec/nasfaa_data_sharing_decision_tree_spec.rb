@@ -1,6 +1,5 @@
 require 'rspec'
-require_relative '../lib/nasfaa_data_sharing_decision_tree'
-require_relative '../lib/disclosure_data'
+require_relative 'spec_helper'
 
 RSpec.describe NasfaaDataSharingDecisionTree do
   let(:tree) { described_class.new(disclosure_request) }
@@ -315,6 +314,123 @@ RSpec.describe NasfaaDataSharingDecisionTree do
     end
   end
 
+  # Box 10 - Direct test of the box10? method
+  describe '#box10?' do
+    context 'when all Box 10 conditions are met' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: false,
+          is_fafsa_data: false,
+          ferpa_written_consent: true
+        )
+      end
+      
+      it 'returns true' do
+        expect(tree.box10?).to be true
+      end
+    end
+
+    context 'when disclosure is to student' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: true,
+          is_fafsa_data: false,
+          ferpa_written_consent: true
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when disclosure is FAFSA data' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: false,
+          is_fafsa_data: true,
+          ferpa_written_consent: true
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when no FERPA consent is provided' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: false,
+          is_fafsa_data: false,
+          ferpa_written_consent: false
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when only disclosure_to_student is true' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: true,
+          is_fafsa_data: false,
+          ferpa_written_consent: false
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when only is_fafsa_data is true' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: false,
+          is_fafsa_data: true,
+          ferpa_written_consent: false
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when only ferpa_written_consent is true' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: true,
+          is_fafsa_data: true,
+          ferpa_written_consent: true
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+
+    context 'when all conditions are false' do
+      let(:disclosure_request) do
+        DisclosureData.new(
+          disclosure_to_student: false,
+          is_fafsa_data: false,
+          ferpa_written_consent: false
+        )
+      end
+      
+      it 'returns false' do
+        expect(tree.box10?).to be false
+      end
+    end
+  end
+
+
+
   # FTI Branch Predicates (Page 2)
   describe '#disclosure_to_student?' do
     context 'when FTI disclosure is to student' do
@@ -566,6 +682,84 @@ RSpec.describe NasfaaDataSharingDecisionTree do
       context 'and disclosure is FAFSA data with PII but no other conditions met' do
         let(:disclosure_request) { DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true) }
         it { expect(tree.disclose?).to be false }
+      end
+
+      # Additional edge cases to improve coverage
+      context 'and disclosure is FAFSA data without PII but has FERPA consent' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false, ferpa_written_consent: true)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
+
+      context 'and disclosure is FAFSA data without PII but is directory information' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false, directory_info_and_not_opted_out: true)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
+
+      context 'and disclosure is FAFSA data without PII but to school official with legitimate interest' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false, to_school_official_legitimate_interest: true)
+        end
+        it { expect(tree.disclose?).to be false }
+      end
+
+      context 'and disclosure is not FAFSA data but to school official with legitimate interest' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, to_school_official_legitimate_interest: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but under judicial order' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, due_to_judicial_order_or_subpoena_or_financial_aid: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but to other school for enrollment' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, to_other_school_enrollment_transfer: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but to authorized representatives' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, to_authorized_representatives: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but to research organization' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, to_research_org_ferpa: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but to accrediting agency' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, to_accrediting_agency: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but to parent of dependent student' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, parent_of_dependent_student: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is not FAFSA data but otherwise permitted under 99.31' do
+        let(:disclosure_request) do
+          DisclosureData.new(includes_fti: false, is_fafsa_data: false, otherwise_permitted_under_99_31: true)
+        end
+        it { expect(tree.disclose?).to be true }
       end
     end
   end

@@ -122,6 +122,10 @@ class NasfaaDataSharingDecisionTree
     disclosure_request[:otherwise_permitted_under_99_31]
   end
 
+  def box10?
+    !disclosure_to_student? && !is_fafsa_data? && ferpa_written_consent?
+  end
+
   private
 
   def fti_disclosure_permitted?
@@ -140,6 +144,8 @@ class NasfaaDataSharingDecisionTree
 
     # Box 2: Is disclosure to student?
     return true if disclosure_to_student?
+
+    return true if box10?
 
     # Box 4: Is disclosure to parent/spouse contributor? (applies to all non-FTI data)
     return true if disclosure_to_contributor_parent_or_spouse?

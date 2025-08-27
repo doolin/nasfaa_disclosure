@@ -123,21 +123,55 @@ The implementation follows the exact flow from the PDF decision tree:
 
 The test suite includes:
 
-- **97 test examples** covering all predicate methods and decision paths
+- **117 test examples** covering all predicate methods and decision paths
 - **Box-by-box testing** with comments indicating decision tree boxes
 - **Legacy compatibility tests** ensuring backward compatibility
 - **Edge case coverage** for all decision tree branches
+- **Code coverage reporting** with SimpleCov
+
+### Running Tests
 
 Run tests with:
 ```bash
-rspec
+bundle exec rspec
 ```
+
+### Code Coverage
+
+The project uses SimpleCov for code coverage reporting:
+
+- **Line Coverage**: 95.83% (161/168 lines)
+- **Branch Coverage**: 87.5% (119/136 branches)
+- **Minimum Coverage**: 95% line coverage required
+- **Coverage Report**: Generated in `coverage/index.html` after running tests
+
+To view the coverage report:
+```bash
+open coverage/index.html
+```
+
+## Development Setup
+
+1. **Install dependencies**:
+   ```bash
+   bundle install
+   ```
+
+2. **Run tests**:
+   ```bash
+   bundle exec rspec
+   ```
+
+3. **View coverage report**:
+   ```bash
+   open coverage/index.html
+   ```
 
 ## Key Features
 
 - **Normalized Structure**: All inputs are boolean, directly mapping to YAML rules
 - **Backward Compatibility**: Legacy data structure still supported
-- **Comprehensive Testing**: Full coverage of decision tree logic
+- **Comprehensive Testing**: Full coverage of decision tree logic with 95%+ line coverage
 - **Clear Documentation**: YAML rules with metadata and validation
 - **Maintainable Code**: Clean, readable implementation following decision tree flow
 
