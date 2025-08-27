@@ -324,7 +324,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           ferpa_written_consent: true
         )
       end
-      
+
       it 'returns true' do
         expect(tree.box10?).to be true
       end
@@ -338,7 +338,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           ferpa_written_consent: true
         )
       end
-      
+
       it 'returns false' do
         expect(tree.box10?).to be false
       end
@@ -352,7 +352,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           ferpa_written_consent: true
         )
       end
-      
+
       it 'returns false' do
         expect(tree.box10?).to be false
       end
@@ -366,7 +366,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           ferpa_written_consent: false
         )
       end
-      
+
       it 'returns false' do
         expect(tree.box10?).to be false
       end
@@ -429,7 +429,38 @@ RSpec.describe NasfaaDataSharingDecisionTree do
     end
   end
 
+  # Box 11 - Direct test of the box11? method
+  describe '#box11?' do
+    context 'when directory_info_and_not_opted_out? is true' do
+      let(:disclosure_request) do
+        DisclosureData.new(directory_info_and_not_opted_out: true)
+      end
+      
+      it 'returns true' do
+        expect(tree.box11?).to be true
+      end
+    end
 
+    context 'when directory_info_and_not_opted_out? is false' do
+      let(:disclosure_request) do
+        DisclosureData.new(directory_info_and_not_opted_out: false)
+      end
+      
+      it 'returns false' do
+        expect(tree.box11?).to be false
+      end
+    end
+
+    context 'when directory_info_and_not_opted_out? is not specified' do
+      let(:disclosure_request) do
+        DisclosureData.new({})
+      end
+      
+      it 'returns false' do
+        expect(tree.box11?).to be false
+      end
+    end
+  end
 
   # FTI Branch Predicates (Page 2)
   describe '#disclosure_to_student?' do

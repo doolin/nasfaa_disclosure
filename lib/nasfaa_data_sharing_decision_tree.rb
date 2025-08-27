@@ -126,6 +126,10 @@ class NasfaaDataSharingDecisionTree
     !disclosure_to_student? && !is_fafsa_data? && ferpa_written_consent?
   end
 
+  def box11? # Box 10 is No.
+    directory_info_and_not_opted_out?
+  end
+
   private
 
   def fti_disclosure_permitted?
@@ -144,8 +148,6 @@ class NasfaaDataSharingDecisionTree
 
     # Box 2: Is disclosure to student?
     return true if disclosure_to_student?
-
-    return true if box10?
 
     # Box 4: Is disclosure to parent/spouse contributor? (applies to all non-FTI data)
     return true if disclosure_to_contributor_parent_or_spouse?
@@ -199,9 +201,12 @@ class NasfaaDataSharingDecisionTree
     else
       # Box 3 "No" → Box 10: Has FERPA consent? (skip Box 9 PII check for non-FAFSA data)
       return true if ferpa_written_consent?
+      return true if box10?
+      return true if box11?
+  
 
-      # Box 11: Is directory information?
-      return true if directory_info_and_not_opted_out?
+      # # Box 11: Is directory information?
+      # return true if directory_info_and_not_opted_out?
 
       # Box 12: To school officials with educational interest?
       return true if to_school_official_legitimate_interest?
