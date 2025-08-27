@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'disclosure_data'
 
 class NasfaaDataSharingDecisionTree
@@ -27,7 +29,7 @@ class NasfaaDataSharingDecisionTree
     disclosure_request[:disclosure_to_student]
   end
 
-  def is_fafsa_data?
+  def fafsa_data?
     # Question 3: Is the information being requested considered FAFSA data per ED's definition?
     disclosure_request[:is_fafsa_data]
   end
@@ -123,10 +125,11 @@ class NasfaaDataSharingDecisionTree
   end
 
   def box10?
-    !disclosure_to_student? && !is_fafsa_data? && ferpa_written_consent?
+    !disclosure_to_student? && !fafsa_data? && ferpa_written_consent?
   end
 
-  def box11? # Box 10 is No.
+  # Box 10 is "No".
+  def box11?
     directory_info_and_not_opted_out?
   end
 
@@ -153,7 +156,7 @@ class NasfaaDataSharingDecisionTree
     return true if disclosure_to_contributor_parent_or_spouse?
 
     # Box 3: Is it FAFSA data?
-    if is_fafsa_data?
+    if fafsa_data?
       # Box 5: Is it for financial aid purposes?
       return true if used_for_aid_admin?
 
@@ -203,7 +206,6 @@ class NasfaaDataSharingDecisionTree
       return true if ferpa_written_consent?
       return true if box10?
       return true if box11?
-  
 
       # # Box 11: Is directory information?
       # return true if directory_info_and_not_opted_out?

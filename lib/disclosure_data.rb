@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DisclosureData
   attr_accessor :includes_fti, :disclosure_to_student, :disclosure_to_contributor_parent_or_spouse,
                 :is_fafsa_data, :used_for_aid_admin, :disclosure_to_scholarship_org,
