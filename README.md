@@ -1,10 +1,138 @@
 # NASFAA Data Sharing Decision Tree
 
-This repository contains a Ruby implementation of the NASFAA Data Sharing Decision Tree, which helps determine when student data can be disclosed under FERPA and other applicable regulations.
+Disclosing student financial aid data is governed by a
+number of regulations which specify who and under what
+circumstances financial aid data can be disclosed. The
+National Association of Student Financial Aid Administrators
+(NASFAA) published a handy disclosure decision tree in
+PDF format to help administrators determine disclosure
+eligibility. As you can see, it's quite nice.
+
+In a caffeine-induced fit of programming inspiration,
+I decided to see how well the generative AI tooling
+with the Cursor IDE would perform on writing a program
+to determine disclosure eligibility based on the diagram
+displayed in the PDF (it's not technically a tree, and
+that matters).
+
+## Motivation
+
+At the time of writing, I am in a role which has no requirement
+for shipping code for any reason. However, I like programming.
+It's sort of hobby. In this case, the disclosure document
+was published to an internal Slack channel, and I wondered
+how well I could leverage generative AI to implement the
+decision graph. Any future role I might land will require
+either using generative AI directly for programming, or being
+in a position of leadership which will require understanding
+its strengths and limitations.
+
+The implementation has a first and definite definition of
+done, which is passing all correctly specified unit tests.
+A very nice little hobby project with the following goals:
+
+1. Clock the amount of time spent on the actual implementation
+as measured by commit history between between successive commits.
+2. Evaluate how well Cursor can implement given the document
+and minimal prompting.
+3. Uncover gaps in my knowledge on current agentic tools and
+prompting ability.
+4. Write is all up.
+
+With respect to #3, prompting is an art form, and from
+observation, it's a somewhat perishable skill. It requires
+practice to get good, stay good, and importantly to keep
+up with the power curve. I know that agentic styles are
+all the rage, but prompting will still have its place so
+it's smart to keep a sharp edge.
+
+## Implementation
+
+- Cursor IDE.
+- PDF read by Cursor.
+- IDE writes as much of the implementation as possible
+in agent mode.
+- Prompt to refine the implementation as necessary.
+
+## Design
+
+Cursor was given a few design instructions:
+
+- Data and processing strictly separated, with the
+decision code carrying no data. The data is wrapped
+in a class which implements predicates for querying
+boolean state. This is one (of many) sensible designs
+supported in Ruby. I would likely implement it similarly
+in C using a struct defined as an imcomplete types.
+
+- The data is assumed to have been acquired elsewhere
+and rendered into booleans. Acquiring this sort of data
+likely requires a bit of non-trivial SQL, whether it's
+queried direcly and preprocessed into a view, data store,
+whatever. Separating the data acquisition from the processing
+greatly simplifies maintenance and extension or modifation
+at the cost of one or a few layers of abstraction.
+Specifically, testing the logic is very easy when every
+predicate resolves to a boolean.
+
+
+
+## Results
+
+- It has been a number of years since I implemented a decision
+graph of this complexity, and I learned a couple of tricks from
+the implementation.
+
+- My prompting skills are rusty. There are a few commits which
+represent wasted time due to inefficient prompting.
+
+- Agentic Cursor is not too bad given good prompts and good
+guidelines. In my rush to implement, I did not provide a
+guideline file, something which would have paid off very
+quickly. (I could used guidelines from other projects.)
+
+
+
+## Manual verification
+
+I had a suspicion that parts of Cursor's implementation were
+incorrect, in particular the FTI branch, and some of the early
+decisions in the non-FTI branch. Doubts were induced by flip
+flopping specs and implementation as I directed the agent to
+write good practice code while ensuring 100% line and branch
+coverage.
+
+The first thing standing out is Cursor's use of RSpec short
+form assertions, which are inconvenient for systematic,
+mannual verification. I prefer DAMP (Descriptive And
+Meaningful Phrases) and explicit specs over terse and
+implicit. I find such specs reduce cognitive load when
+revisiting work which has been sidelined a while.
+
+## Conclusions & lessons
+
+Overall, not too bad, but not a slam dunk either. The main
+benefits came early, at the start. Cursor set up the project
+with appropriate files, some initial logic, and the associated
+specs.
+
+From my end, I wasted time redoing prompts for things such
+as spec formating which probably could have been managed
+via a configuration file.
+
+
+# Cursor below here
+
+This repository contains a Ruby implementation of the NASFAA Data Sharing
+Decision Tree, which helps determine when student data can be disclosed under
+FERPA and other applicable regulations.
 
 ## Overview
 
-The decision tree is implemented as a Ruby class that evaluates disclosure requests against a comprehensive set of rules defined in YAML format. The system supports both Federal Tax Information (FTI) and non-FTI data disclosure scenarios.
+The decision tree is implemented as a Ruby class that evaluates disclosure
+requests against a comprehensive set of rules defined in YAML format. The system
+supports both Federal Tax Information (FTI) and non-FTI data disclosure
+scenarios.
 
 ## Files
 
