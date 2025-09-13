@@ -16,14 +16,14 @@ class NasfaaDataSharingDecisionTree
       # Box 1: Is the disclosure to the student?
       return true if disclosure_request.disclosure_to_student?
 
-      # Box 2: Will the information be used for financial aid?
-      return true if disclosure_request.used_for_aid_admin?
+      # Box 2: Will the information be used for financial aid by a legitimate interest?
+      # Yes branch to Box 4
+      return true if disclosure_request.used_for_aid_admin? && disclosure_request.to_school_official_legitimate_interest?
 
-      # Box 3: Is the disclosure to scholarship org with consent?
-      return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
-
-      # Box 4: Is the disclosure to school officials with educational interest?
-      return true if disclosure_request.to_school_official_legitimate_interest?
+      # Box 2: Is the disclosure to scholarship org with written consent?
+      if disclosure_request.used_for_aid_admin? && disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
+        return true
+      end
 
       false
     else

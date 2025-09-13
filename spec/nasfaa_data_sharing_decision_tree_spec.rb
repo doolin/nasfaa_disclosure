@@ -6,36 +6,55 @@ require_relative 'spec_helper'
 RSpec.describe NasfaaDataSharingDecisionTree do
   let(:tree) { described_class.new(disclosure_request) }
 
-  # Main disclose? method tests
   describe '#disclose?' do
     context 'when disclosure includes FTI' do
       context 'and disclosure is to student' do
-        let(:disclosure_request) { DisclosureData.new(includes_fti: true, disclosure_to_student: true) }
-        it { expect(tree.disclose?).to be true }
-      end
-
-      context 'and disclosure is for financial aid purposes' do
-        let(:disclosure_request) { DisclosureData.new(includes_fti: true, used_for_aid_admin: true) }
-        it { expect(tree.disclose?).to be true }
-      end
-
-      context 'and disclosure is to scholarship organization with explicit written consent' do
-        let(:disclosure_request) do
-          DisclosureData.new(includes_fti: true, disclosure_to_scholarship_org: true, explicit_written_consent: true)
+        let(:data) do
+          {
+            includes_fti: true,
+            disclosure_to_student: true
+          }
         end
+        let(:disclosure_request) { DisclosureData.new(data) }
+
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is to school official with legitimate interest' do
-        let(:disclosure_request) do
-          DisclosureData.new(includes_fti: true, to_school_official_legitimate_interest: true)
+      context 'and disclosure is NOT to student' do
+        let(:data) do
+          {
+            includes_fti: true,
+            disclosure_to_student: false,
+            used_for_aid_admin: true
+          }
         end
-        it { expect(tree.disclose?).to be true }
-      end
+        let(:disclosure_request) { DisclosureData.new(data) }
 
-      context 'and no other conditions are met' do
-        let(:disclosure_request) { DisclosureData.new(includes_fti: true) }
-        it { expect(tree.disclose?).to be false }
+        it 'may be released to a legitimate interest' do
+          data[:to_school_official_legitimate_interest] = true
+
+          expect(tree.disclose?).to be true
+        end
+
+        it 'may be NOT released to a NON-legitimate interest' do
+          data[:to_school_official_legitimate_interest] = false
+
+          expect(tree.disclose?).to be false
+        end
+
+        it 'may be released to a scholarship organization with explicit written consent' do
+          data[:disclosure_to_scholarship_org] = true
+          data[:explicit_written_consent] = true
+
+          expect(tree.disclose?).to be true
+        end
+
+        it 'may be NOT released to a scholarship organization WITHOUT explicit written consent' do
+          data[:disclosure_to_scholarship_org] = true
+          data[:explicit_written_consent] = false
+
+          expect(tree.disclose?).to be false
+        end
       end
     end
 

@@ -91,6 +91,17 @@ guidelines. In my rush to implement, I did not provide a
 guideline file, something which would have paid off very
 quickly. (I could used guidelines from other projects.)
 
+- The agent-emitted code is minimal and terse, especially
+in the specs. This terseness required significant cognitive
+effort to review, to the extent that part of the spec
+code was rewritten to provide a more readable pattern to
+the agent. This rewriting cost more time than manually
+writing specs, as the the decision graph had to be manually
+traversed and checked against the implementation. At that
+point rewriting becomes more efficient.
+
+- The code was sufficiently novel that autocomplete got
+nearly all the conditional statements completely wrong.
 
 
 ## Manual verification
