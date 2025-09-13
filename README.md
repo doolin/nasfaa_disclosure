@@ -1,5 +1,14 @@
 # NASFAA Data Sharing Decision Tree
 
+NEXT:
+
+- Refactor 11-23.
+- Fix the logic in the non-FTI branch.
+- Extend README for publication with the timeline.
+
+
+---
+
 Disclosing student financial aid data is governed by a
 number of regulations which specify who and under what
 circumstances financial aid data can be disclosed. The
@@ -15,7 +24,11 @@ to determine disclosure eligibility based on the diagram
 displayed in the PDF (it's not technically a tree, and
 that matters).
 
+
 ## Motivation
+
+<img align="right" width="250px" src=./images/nasfaa-2025-page-1.png alt="NASFAA
+descision diagram" />
 
 At the time of writing, I am in a role which has no requirement
 for shipping code for any reason. However, I like programming.
@@ -46,14 +59,6 @@ up with the power curve. I know that agentic styles are
 all the rage, but prompting will still have its place so
 it's smart to keep a sharp edge.
 
-## Implementation
-
-- Cursor IDE.
-- PDF read by Cursor.
-- IDE writes as much of the implementation as possible
-in agent mode.
-- Prompt to refine the implementation as necessary.
-
 ## Design
 
 Cursor was given a few design instructions:
@@ -75,6 +80,17 @@ at the cost of one or a few layers of abstraction.
 Specifically, testing the logic is very easy when every
 predicate resolves to a boolean.
 
+## Implementation
+
+- Cursor IDE.
+- PDF read by Cursor.
+- IDE writes as much of the implementation as possible
+in agent mode.
+- Prompt to refine the implementation as necessary.
+
+## Timeline
+
+Partly estimated and partly extracted from the commit history.
 
 
 ## Results
