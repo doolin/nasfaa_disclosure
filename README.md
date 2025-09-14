@@ -2,7 +2,6 @@
 
 NEXT:
 
-- Refactor 11-23.
 - Fix the logic in the non-FTI branch.
 - Extend README for publication with the timeline.
 
