@@ -146,6 +146,14 @@ From my end, I wasted time redoing prompts for things such
 as spec formating which probably could have been managed
 via a configuration file.
 
+Rewriting specs in a form which could be manually verified
+was tedious, but necessary for a maintainable component.
+The way the specs were manually reconstructed will allow
+test-first modification of the decision logic: find the
+relevant testing clause(s), update or extend as necessary,
+make the specs pass.
+
+
 
 # Cursor below here
 

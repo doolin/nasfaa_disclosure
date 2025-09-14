@@ -58,10 +58,70 @@ RSpec.describe NasfaaDataSharingDecisionTree do
       end
     end
 
-    context 'when disclosure does not include FTI' do
-      context 'and disclosure is to student' do
-        let(:disclosure_request) { DisclosureData.new(includes_fti: false, disclosure_to_student: true) }
-        it { expect(tree.disclose?).to be true }
+    context 'when disclosure is NOT to student and does NOT include FTI' do
+      let(:data) do
+        {
+          includes_fti: false,
+          disclosure_to_student: false
+        }
+      end
+      let(:disclosure_request) { DisclosureData.new(data) }
+
+      # context 'and disclosure is to student' do
+      #   let(:disclosure_request) { DisclosureData.new(includes_fti: false, disclosure_to_student: true) }
+      #   it { expect(tree.disclose?).to be true }
+      # end
+
+      context 'is FAFSA data' do
+        let(:data) do
+          {
+            includes_fti: false,
+            disclosure_to_student: false,
+            is_fafsa_data: true
+          }
+        end
+
+        context 'and disclosure is to contributor parent or spouse' do
+          let(:data) do
+            {
+              includes_fti: false,
+              disclosure_to_student: false,
+              is_fafsa_data: true,
+              disclosure_to_contributor_parent_or_spouse: true
+            }
+          end
+          let(:disclosure_request) { DisclosureData.new(data) }
+
+          it 'is disclosed under FERPA with written consent (Box 10)' do
+            data[:ferpa_written_consent] = true
+            expect(tree.disclose?).to be true
+          end
+        end
+      end
+
+      context 'is NOT FAFSA data' do
+        let(:data) do
+          {
+            includes_fti: false,
+            disclosure_to_student: false,
+            is_fafsa_data: false
+          }
+        end
+
+        it 'student has provided written consent (Box 10)' do
+          data[:ferpa_written_consent] = true
+          expect(tree.disclose?).to be true
+        end
+
+        it 'student has NOT provided written consent' do
+          data[:ferpa_written_consent] = false
+          expect(tree.disclose?).to be false
+        end
+
+        it 'student has provided written consent' do
+          data[:ferpa_written_consent] = true
+          expect(tree.disclose?).to be true
+        end
       end
 
       context 'and disclosure is to contributor parent or spouse' do

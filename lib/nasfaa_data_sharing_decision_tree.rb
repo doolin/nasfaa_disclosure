@@ -10,13 +10,11 @@ class NasfaaDataSharingDecisionTree
   end
 
   def disclose?
-    # Box 1: Does the disclosure include Federal Tax Information (FTI)?
+    # Box 1&2 always disclose to the student.
     return true if disclosure_request.disclosure_to_student?
 
+    # Box 1: Does the disclosure include Federal Tax Information (FTI)?
     if disclosure_request.includes_fti?
-      # FTI Branch (Page 2)
-      # Box 1: Is the disclosure to the student?
-
       # Box 2: Will the information be used for financial aid by a legitimate interest?
       # Yes branch to Box 4
       return true if disclosure_request.used_for_aid_admin? && disclosure_request.to_school_official_legitimate_interest?
@@ -25,10 +23,9 @@ class NasfaaDataSharingDecisionTree
       if disclosure_request.used_for_aid_admin? && disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
         return true
       end
-
-    else
+    else # disclosure does not include FTI
       # Main Branch (Page 1)
-      # Box 2: Is the disclosure to the student?
+      # Box 2: Is the disclosure to the student? Handled above.
 
       # Box 3: Is it FAFSA data?
       if disclosure_request.fafsa_data?
