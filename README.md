@@ -1,9 +1,13 @@
 # NASFAA Data Sharing Decision Tree
 
-NEXT:
+<details>
+<summary>NEXT:</summary>
 
 - Fix the logic in the non-FTI branch.
+- Rewrite the specs for boxes 12 through 19 making
+the data explicit.
 - Extend README for publication with the timeline.
+</details>
 
 
 ---
@@ -29,9 +33,9 @@ that matters).
 <img align="right" width="250px" src=./images/nasfaa-2025-page-1.png alt="NASFAA
 descision diagram" />
 
-At the time of writing, I am in a role which has no requirement
+At the time of writing, I am employed in a role which has no requirement
 for shipping code for any reason. However, I like programming.
-It's sort of hobby. In this case, the disclosure document
+It's sort of a hobby. In this case, the disclosure document
 was published to an internal Slack channel, and I wondered
 how well I could leverage generative AI to implement the
 decision graph. Any future role I might land will require
@@ -49,7 +53,7 @@ as measured by commit history between between successive commits.
 and minimal prompting.
 3. Uncover gaps in my knowledge on current agentic tools and
 prompting ability.
-4. Write is all up.
+4. Write it all up here in the README.
 
 With respect to #3, prompting is an art form, and from
 observation, it's a somewhat perishable skill. It requires
@@ -74,8 +78,9 @@ and rendered into booleans. Acquiring this sort of data
 likely requires a bit of non-trivial SQL, whether it's
 queried direcly and preprocessed into a view, data store,
 whatever. Separating the data acquisition from the processing
-greatly simplifies maintenance and extension or modifation
-at the cost of one or a few layers of abstraction.
+increases human legibility and greatly simplifies maintenance
+and extension or modifation
+at the cost of one or at most a few layers of abstraction.
 Specifically, testing the logic is very easy when every
 predicate resolves to a boolean.
 
@@ -106,7 +111,7 @@ guidelines. In my rush to implement, I did not provide a
 guideline file, something which would have paid off very
 quickly. (I could used guidelines from other projects.)
 
-- The agent-emitted code is minimal and terse, especially
+- The agent-emitted decision code is minimal and terse, especially
 in the specs. This terseness required significant cognitive
 effort to review, to the extent that part of the spec
 code was rewritten to provide a more readable pattern to
@@ -114,6 +119,16 @@ the agent. This rewriting cost more time than manually
 writing specs, as the the decision graph had to be manually
 traversed and checked against the implementation. At that
 point rewriting becomes more efficient.
+
+- On the other hand, the agent-emitted data code worked
+really well and needed very little adjusting. By design,
+the data is wrapped in a class which is instantiated by
+a hash of the relevant boolean values. A predicate method
+is defined for each boolean, which is how each value is
+assessed. Using explicit predicate methods vastly increases
+legibility with a very small amount of overhead compare to
+the cost of retrieving the base data from a store such as
+a file or database.
 
 - The code was sufficiently novel that autocomplete got
 nearly all the conditional statements completely wrong.
