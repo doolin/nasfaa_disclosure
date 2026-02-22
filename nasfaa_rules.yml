@@ -47,23 +47,29 @@ results:
 
 rules:
 
-  # ---------- FTI BRANCH ----------
+  # ---------- FTI BRANCH (PDF pg. 2) ----------
+  # Box 1: To student? → Yes → Permit
   - id: FTI_R1_student
     when_all: [includes_fti, disclosure_to_student]
     result: permit
 
-  - id: FTI_R2_aid_admin
-    when_all: [includes_fti, used_for_aid_admin]
+  # Box 2 Yes → Box 4 Yes: Aid admin + school official LEI → Permit
+  - id: FTI_R2_aid_admin_school_official
+    when_all: [includes_fti, used_for_aid_admin, to_school_official_legitimate_interest]
     result: permit
 
+  # Box 2 Yes → Box 4 No: Aid admin but no school official LEI → Deny
+  # Guard: prevents fall-through to scholarship rule when aid admin is true
+  - id: FTI_R2b_aid_admin_deny
+    when_all: [includes_fti, used_for_aid_admin]
+    result: deny
+
+  # Box 2 No → Box 3 Yes: Scholarship org with consent → Permit
   - id: FTI_R3_scholarship_with_consent
     when_all: [includes_fti, disclosure_to_scholarship_org, explicit_written_consent]
     result: permit
 
-  - id: FTI_R4_school_official_LEI
-    when_all: [includes_fti, to_school_official_legitimate_interest]
-    result: permit
-
+  # Box 2 No → Box 3 No: catch-all FTI deny
   - id: FTI_DENY_default
     when_all: [includes_fti]
     result: deny
@@ -73,8 +79,9 @@ rules:
     when_all: [!includes_fti, disclosure_to_student]
     result: permit
 
+  # Box 4: Contributor check — only reachable via Box 3 Yes (FAFSA data)
   - id: FAFSA_R2_to_contributor_scope_limited
-    when_all: [!includes_fti, disclosure_to_contributor_parent_or_spouse]
+    when_all: [!includes_fti, is_fafsa_data, disclosure_to_contributor_parent_or_spouse]
     result: permit_with_scope
     scope_note: "Contributor may access only information they personally provided on the FAFSA."
 
@@ -95,7 +102,20 @@ rules:
     when_all: [!includes_fti, is_fafsa_data, hea_written_consent]
     result: permit
 
-  # FERPA 99.31 exceptions (apply to FAFSA data and other education records/PII)
+  # Box 9: FAFSA data without PII → Permit (no further checks needed)
+  - id: FAFSA_R7_no_pii
+    when_all: [!includes_fti, is_fafsa_data, !contains_pii]
+    result: permit
+
+  # Box 10: FERPA written consent → Permit
+  # Shared gate for both FAFSA+PII path (Box 9 Yes → Box 10)
+  # and non-FAFSA path (Box 3 No → Box 10)
+  - id: FERPA_R0_written_consent
+    when_all: [!includes_fti, ferpa_written_consent]
+    result: permit
+
+  # FERPA 99.31 exceptions — Boxes 11-19
+  # Reached via Box 10 No (no FERPA consent)
   - id: FERPA_R1_directory_info
     when_all: [!includes_fti, directory_info_and_not_opted_out]
     result: permit

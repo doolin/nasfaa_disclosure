@@ -45,7 +45,8 @@ class NasfaaDataSharingDecisionTree
         return true if disclosure_request.hea_written_consent?
 
         # Box 9: Contains PII?
-        return false unless disclosure_request.contains_pii?
+        # No PII → Disclosure Permitted; Yes PII → continue to Box 10
+        return true unless disclosure_request.contains_pii?
         # Box 10: Has FERPA consent?
         return true if disclosure_request.ferpa_written_consent?
 

@@ -124,11 +124,13 @@ RSpec.describe NasfaaDataSharingDecisionTree do
         end
       end
 
-      context 'and disclosure is to contributor parent or spouse' do
+      context 'and disclosure is to contributor parent or spouse without FAFSA context' do
         let(:disclosure_request) do
           DisclosureData.new(includes_fti: false, disclosure_to_contributor_parent_or_spouse: true)
         end
-        it { expect(tree.disclose?).to be true }
+        it('is not permitted — contributor check (Box 4) only applies to FAFSA data') do
+          expect(tree.disclose?).to be false
+        end
       end
 
       context 'and disclosure is FAFSA data for financial aid purposes' do
@@ -258,7 +260,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
 
       context 'and disclosure is FAFSA data but contains no PII and no other conditions met' do
         let(:disclosure_request) { DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false) }
-        it { expect(tree.disclose?).to be false }
+        it('is permitted at Box 9 (no PII)') { expect(tree.disclose?).to be true }
       end
 
       context 'and disclosure is FAFSA data with PII but no other conditions met' do
@@ -271,7 +273,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
         let(:disclosure_request) do
           DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false, ferpa_written_consent: true)
         end
-        it { expect(tree.disclose?).to be false }
+        it('is permitted at Box 9 before FERPA consent is reached') { expect(tree.disclose?).to be true }
       end
 
       context 'and disclosure is FAFSA data without PII but is directory information' do
@@ -279,7 +281,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false,
                              directory_info_and_not_opted_out: true)
         end
-        it { expect(tree.disclose?).to be false }
+        it('is permitted at Box 9 before directory info is reached') { expect(tree.disclose?).to be true }
       end
 
       context 'and disclosure is FAFSA data without PII but to school official with legitimate interest' do
@@ -287,7 +289,7 @@ RSpec.describe NasfaaDataSharingDecisionTree do
           DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false,
                              to_school_official_legitimate_interest: true)
         end
-        it { expect(tree.disclose?).to be false }
+        it('is permitted at Box 9 before school official check is reached') { expect(tree.disclose?).to be true }
       end
 
       context 'and disclosure is not FAFSA data but to school official with legitimate interest' do
