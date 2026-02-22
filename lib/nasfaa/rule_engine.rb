@@ -14,15 +14,18 @@ module Nasfaa
     end
 
     def evaluate(disclosure_data)
+      path = []
       @rules.each do |rule|
+        path << rule['id']
         next unless matches?(rule, disclosure_data)
 
-        return {
+        return Trace.new(
           rule_id: rule['id'],
           result: rule['result'].to_sym,
+          path: path,
           scope_note: rule['scope_note'],
           caution_note: rule['caution_note']
-        }
+        )
       end
       nil
     end
