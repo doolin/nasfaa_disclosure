@@ -20,39 +20,37 @@ RSpec.describe Nasfaa::DecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is NOT to student' do
-        let(:data) do
-          {
-            includes_fti: true,
-            disclosure_to_student: false,
-            used_for_aid_admin: true
-          }
-        end
+      context 'Box 2 Yes: used for aid admin' do
+        let(:data) { { includes_fti: true, used_for_aid_admin: true } }
         let(:disclosure_request) { Nasfaa::DisclosureData.new(data) }
 
-        it 'may be released to a legitimate interest' do
+        it 'Box 4 Yes: permits with school official LEI' do
           data[:to_school_official_legitimate_interest] = true
-
           expect(tree.disclose?).to be true
         end
 
-        it 'may be NOT released to a NON-legitimate interest' do
-          data[:to_school_official_legitimate_interest] = false
+        it 'Box 4 No: denies without school official LEI' do
+          expect(tree.disclose?).to be false
+        end
+      end
 
+      context 'Box 2 No: not used for aid admin' do
+        let(:data) { { includes_fti: true } }
+        let(:disclosure_request) { Nasfaa::DisclosureData.new(data) }
+
+        it 'Box 3 Yes: permits scholarship org with explicit written consent' do
+          data[:disclosure_to_scholarship_org] = true
+          data[:explicit_written_consent] = true
+          expect(tree.disclose?).to be true
+        end
+
+        it 'Box 3 No: denies scholarship org without explicit written consent' do
+          data[:disclosure_to_scholarship_org] = true
+          data[:explicit_written_consent] = false
           expect(tree.disclose?).to be false
         end
 
-        it 'may be released to a scholarship organization with explicit written consent' do
-          data[:disclosure_to_scholarship_org] = true
-          data[:explicit_written_consent] = true
-
-          expect(tree.disclose?).to be true
-        end
-
-        it 'may be NOT released to a scholarship organization WITHOUT explicit written consent' do
-          data[:disclosure_to_scholarship_org] = true
-          data[:explicit_written_consent] = false
-
+        it 'denies FTI by default' do
           expect(tree.disclose?).to be false
         end
       end

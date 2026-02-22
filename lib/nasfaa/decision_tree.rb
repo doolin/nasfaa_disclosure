@@ -14,14 +14,14 @@ module Nasfaa
 
       # Box 1: Does the disclosure include Federal Tax Information (FTI)?
       if disclosure_request.includes_fti?
-        # Box 2: Will the information be used for financial aid by a legitimate interest?
-        # Yes branch to Box 4
+        # Box 2 Yes → Box 4 Yes: Aid admin + school official LEI → Permit
         return true if disclosure_request.used_for_aid_admin? && disclosure_request.to_school_official_legitimate_interest?
 
-        # Box 2: Is the disclosure to scholarship org with written consent?
-        if disclosure_request.used_for_aid_admin? && disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
-          return true
-        end
+        # Box 2 Yes → Box 4 No: Aid admin without LEI → Deny
+        return false if disclosure_request.used_for_aid_admin?
+
+        # Box 2 No → Box 3: Scholarship org with explicit written consent → Permit
+        return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
       else # disclosure does not include FTI
         # Main Branch (Page 1)
         # Box 2: Is the disclosure to the student? Handled above.
