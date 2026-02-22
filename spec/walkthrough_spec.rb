@@ -58,11 +58,11 @@ RSpec.describe Nasfaa::Walkthrough do
       end
     end
 
-    it 'has exactly 23 question nodes and 23 result nodes' do
+    it 'has exactly 23 question nodes and 22 result nodes' do
       questions = nodes.count { |_, n| n['type'] == 'question' }
       results = nodes.count { |_, n| n['type'] == 'result' }
       expect(questions).to eq(23)
-      expect(results).to eq(23)
+      expect(results).to eq(22)
     end
 
     it 'every result node rule_id matches a rule in nasfaa_rules.yml' do
@@ -142,9 +142,10 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.result).to eq(:permit)
     end
 
-    it 'permits FAFSA for institutional research (FAFSA_R5)' do
-      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'yes')
-      expect(trace.rule_id).to eq('FAFSA_R5_institutional_research_promote_attendance')
+    it 'permits FAFSA research without PII via Box 7 Yes → Box 9 No' do
+      # Box 7 Yes (research) skips Box 8 (HEA consent) and goes to Box 9 (PII)
+      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'yes', 'no')
+      expect(trace.rule_id).to eq('FAFSA_R7_no_pii')
       expect(trace.result).to eq(:permit)
     end
 
@@ -313,7 +314,7 @@ RSpec.describe Nasfaa::Walkthrough do
   # ------------------------------------------------------------------
   describe 'cross-verification with RuleEngine' do
     # Every DAG result node should agree with the RuleEngine evaluation
-    # of the same answers. We test all 23 terminal paths.
+    # of the same answers. We test all 22 terminal paths.
     paths = {
       'FTI_R1_student' => %w[yes yes],
       'FTI_R2_aid_admin_school_official' => %w[yes no yes yes],
@@ -324,7 +325,6 @@ RSpec.describe Nasfaa::Walkthrough do
       'FAFSA_R2_to_contributor_scope_limited' => %w[no no yes yes],
       'FAFSA_R3_used_for_aid_admin' => %w[no no yes no yes],
       'FAFSA_R4_scholarship_with_consent' => %w[no no yes no no yes],
-      'FAFSA_R5_institutional_research_promote_attendance' => %w[no no yes no no no yes],
       'FAFSA_R6_HEA_written_consent' => %w[no no yes no no no no yes],
       'FAFSA_R7_no_pii' => %w[no no yes no no no no no no],
       'FERPA_R0_written_consent' => %w[no no no yes],

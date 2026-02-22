@@ -13,9 +13,9 @@
 # The DAG faithfully mirrors the PDF's two-page layout:
 #   Entry point: 1 shared question (Box 1, both pages)
 #   Page 2: FTI branch (IRC §6103) — 4 questions, 5 results
-#   Page 1: Non-FTI branch — 18 questions, 18 results
+#   Page 1: Non-FTI branch — 18 questions, 17 results
 #
-# Total: 23 question nodes, 23 result nodes (one per YAML rule)
+# Total: 23 question nodes, 22 result nodes
 
 start: fti_check
 
@@ -171,7 +171,7 @@ nodes:
     box: "7 (Page 1)"
     text: "Is the data being used for institutional research promoting college attendance, persistence, or completion?"
     field: research_promote_attendance
-    on_yes: result_FAFSA_R5_institutional_research_promote_attendance
+    on_yes: fafsa_pii
     on_no: fafsa_hea_consent
 
   fafsa_hea_consent:
@@ -307,13 +307,6 @@ nodes:
     rule_id: FAFSA_R4_scholarship_with_consent
     message: "FAFSA data may be shared with a scholarship organization when the student has provided explicit written consent."
     citation: "HEA §1098h(b)"
-
-  result_FAFSA_R5_institutional_research_promote_attendance:
-    type: result
-    result: permit
-    rule_id: FAFSA_R5_institutional_research_promote_attendance
-    message: "FAFSA data may be used for institutional research promoting college attendance, persistence, and completion."
-    citation: "HEA §1098h(a)(3)"
 
   result_FAFSA_R6_HEA_written_consent:
     type: result

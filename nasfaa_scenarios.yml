@@ -202,21 +202,22 @@ scenarios:
     tags: [fafsa, scholarship, consent, permit]
 
   - id: institutional_researcher_studies_persistence
-    name: "Institutional Researcher Studies Student Persistence"
+    name: "Institutional Researcher Studies Student Persistence (De-identified)"
     description: >
       The university's Office of Institutional Research uses FAFSA data to
       study factors affecting student persistence, retention, and degree
       completion rates. The research aims to identify at-risk populations
-      and improve institutional support programs. This qualifies under the
-      HEA allowance for institutional research promoting college attendance,
-      persistence, and completion.
+      and improve institutional support programs. Per the PDF, research
+      promoting college attendance (Box 7 Yes) still requires passing the
+      PII gate (Box 9). Since the data has been de-identified (no PII),
+      disclosure is permitted.
     inputs:
       is_fafsa_data: true
       research_promote_attendance: true
     expected:
       result: permit
-      rule_id: FAFSA_R5_institutional_research_promote_attendance
-    citation: "HEA §1098h(a)(3) — research promoting attendance, persistence, and completion"
+      rule_id: FAFSA_R7_no_pii
+    citation: "FERPA does not apply to de-identified/aggregate data"
     tags: [fafsa, research, permit]
 
   - id: state_grant_agency_with_hea_consent

@@ -141,7 +141,7 @@ RSpec.describe Nasfaa::DecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data for research promoting college attendance' do
+      context 'and disclosure is FAFSA data for research (Box 7 Yes → Box 9 No, no PII)' do
         let(:disclosure_request) do
           Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true)
         end

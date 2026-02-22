@@ -94,12 +94,9 @@ rules:
     when_all: ["!includes_fti", is_fafsa_data, disclosure_to_scholarship_org, explicit_written_consent]
     result: permit
 
-  - id: FAFSA_R5_institutional_research_promote_attendance
-    when_all: ["!includes_fti", is_fafsa_data, research_promote_attendance]
-    result: permit
-
+  # Box 8 is only reached via Box 7 No (not research)
   - id: FAFSA_R6_HEA_written_consent
-    when_all: ["!includes_fti", is_fafsa_data, hea_written_consent]
+    when_all: ["!includes_fti", is_fafsa_data, "!research_promote_attendance", hea_written_consent]
     result: permit
 
   # Box 9: FAFSA data without PII → Permit (no further checks needed)

@@ -38,10 +38,10 @@ module Nasfaa
           return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
 
           # Box 7: Is it for research promoting attendance?
-          return true if disclosure_request.research_promote_attendance?
+          # Yes → skip to Box 9 (PII check); No → Box 8 (HEA consent)
 
-          # Box 8: Has HEA consent?
-          return true if disclosure_request.hea_written_consent?
+          # Box 8: Has HEA consent? (only reached when Box 7 = No)
+          return true if !disclosure_request.research_promote_attendance? && disclosure_request.hea_written_consent?
 
           # Box 9: Contains PII?
           # No PII → Disclosure Permitted; Yes PII → continue to Box 10

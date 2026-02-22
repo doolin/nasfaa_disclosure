@@ -153,7 +153,7 @@ RSpec.describe Nasfaa::RuleEngine do
 
   describe '#rules' do
     it 'loads all rules from YAML' do
-      expect(engine.rules.length).to eq(23)
+      expect(engine.rules.length).to eq(22)
     end
 
     it 'has a catch-all for FTI' do
