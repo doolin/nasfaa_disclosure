@@ -40,3 +40,6 @@ coverage/
 
 # vi/vim
 *.swp
+
+# Claude Code
+.claude/
