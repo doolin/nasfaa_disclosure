@@ -1,0 +1,461 @@
+# NASFAA Data Sharing Decision Tree — Scenario Library
+#
+# 23 named real-world scenarios covering every rule in nasfaa_rules.yml.
+# Each scenario describes a situation a financial aid administrator might
+# encounter, with the boolean inputs that characterize it, the expected
+# decision, the rule that fires, and the governing regulatory citation.
+#
+# Triple purpose:
+#   1. Regression tests — verified against both DecisionTree and RuleEngine
+#   2. Documentation  — each scenario explains *why* the rule applies
+#   3. Quiz seed data — descriptions can be presented as training questions
+#
+# Scenario structure:
+#   id:           Machine-readable identifier (snake_case)
+#   name:         Short human-readable title
+#   description:  Narrative of the real-world situation (2-4 sentences)
+#   inputs:       Boolean flags matching DisclosureData fields
+#   expected:
+#     result:     One of: permit, deny, permit_with_scope, permit_with_caution
+#     rule_id:    The YAML rule that should fire (first-match-wins)
+#   citation:     Governing statute or regulation
+#   tags:         Categories for filtering (fti, fafsa, ferpa, permit, deny, etc.)
+
+scenarios:
+
+  # ===================================================================
+  # FTI BRANCH (Page 2 of the NASFAA Decision Tree)
+  #
+  # Federal Tax Information (FTI) is subject to IRC §6103 restrictions.
+  # FTI includes any tax return data obtained through the IRS Data
+  # Retrieval Tool or direct data exchange. These are the strictest
+  # rules in the tree — only four narrow exceptions permit disclosure.
+  # ===================================================================
+
+  - id: student_views_own_fti
+    name: "Student Views Own Tax Return Information"
+    description: >
+      A dependent student visits the financial aid office and asks to review
+      the Federal Tax Information (FTI) that was submitted as part of their
+      FAFSA application via the IRS Data Retrieval Tool. Because the student
+      is the data subject, disclosure to the student is always permitted
+      regardless of the data's FTI status.
+    inputs:
+      includes_fti: true
+      disclosure_to_student: true
+    expected:
+      result: permit
+      rule_id: FTI_R1_student
+    citation: "IRC §6103(l)(13); disclosure to the data subject is always permitted"
+    tags: [fti, student, permit, basic]
+
+  - id: aid_director_reviews_fti_for_packaging
+    name: "Aid Director Reviews FTI for Award Packaging"
+    description: >
+      The Director of Financial Aid, who has been designated as a school
+      official with legitimate educational interest (LEI) under FERPA, reviews
+      a student's tax return information to calculate their Expected Family
+      Contribution and prepare a financial aid award package. The aid
+      director's role in administering Title IV aid qualifies as LEI.
+    inputs:
+      includes_fti: true
+      used_for_aid_admin: true
+      to_school_official_legitimate_interest: true
+    expected:
+      result: permit
+      rule_id: FTI_R2_aid_admin_school_official
+    citation: "IRC §6103(l)(13)(B); FERPA 34 CFR §99.31(a)(1) — school official with LEI"
+    tags: [fti, aid_admin, school_official, permit]
+
+  - id: contractor_requests_fti_without_lei
+    name: "Third-Party Servicer Requests FTI Without LEI Designation"
+    description: >
+      A third-party loan servicer contracted by the university requests
+      access to student FTI data to verify income for repayment plan
+      purposes. Although the servicer works on financial aid administration,
+      they have not been formally designated as a school official with
+      legitimate educational interest in the institution's FERPA policy.
+      Without LEI, the FTI disclosure is denied even though the purpose
+      is aid-related.
+    inputs:
+      includes_fti: true
+      used_for_aid_admin: true
+    expected:
+      result: deny
+      rule_id: FTI_R2b_aid_admin_deny
+    citation: "IRC §6103(l)(13) — aid administration alone is insufficient without LEI"
+    tags: [fti, aid_admin, deny]
+
+  - id: tribal_scholarship_with_consent
+    name: "Tribal Scholarship Organization With Explicit Written Consent"
+    description: >
+      A tribal scholarship organization requests a student's FTI to verify
+      eligibility for a need-based tribal education grant. The student has
+      signed an explicit written consent form specifically authorizing the
+      release of their tax return information to this organization. Because
+      the disclosure is to a scholarship organization with proper consent
+      (and is NOT routed through the aid administration path), it is permitted.
+    inputs:
+      includes_fti: true
+      disclosure_to_scholarship_org: true
+      explicit_written_consent: true
+    expected:
+      result: permit
+      rule_id: FTI_R3_scholarship_with_consent
+    citation: "IRC §6103(l)(13)(D) — scholarship/grant organization with explicit consent"
+    tags: [fti, scholarship, consent, permit]
+
+  - id: external_auditor_requests_fti
+    name: "External Auditor Requests FTI for Compliance Review"
+    description: >
+      An external auditing firm conducting a financial compliance review of
+      the university's Title IV programs requests access to student FTI data.
+      The auditor is not a school official, not using the data for direct aid
+      administration, not a scholarship organization, and the students have
+      not consented to this disclosure. No FTI exception applies — the
+      catch-all deny fires.
+    inputs:
+      includes_fti: true
+    expected:
+      result: deny
+      rule_id: FTI_DENY_default
+    citation: "IRC §6103 — FTI is protected by default; no applicable exception"
+    tags: [fti, deny, default]
+
+
+  # ===================================================================
+  # NON-FTI / FAFSA-SPECIFIC BRANCH (Page 1, Boxes 3-9)
+  #
+  # When data does not include FTI but IS FAFSA data, a separate set
+  # of allowances under the Higher Education Act (HEA) §1090 and §1098h
+  # may authorize disclosure before falling through to FERPA rules.
+  # ===================================================================
+
+  - id: student_reviews_own_fafsa
+    name: "Student Reviews Own FAFSA Submission"
+    description: >
+      A first-generation college student visits the financial aid office to
+      review the FAFSA data that was submitted on their behalf. As the data
+      subject, the student has an absolute right to inspect their own
+      education records under FERPA, regardless of whether the data is
+      FAFSA-specific, contains PII, or involves any other conditions. This
+      rule fires before any FAFSA-specific checks.
+    inputs:
+      disclosure_to_student: true
+    expected:
+      result: permit
+      rule_id: FAFSA_R1_to_student
+    citation: "FERPA 34 CFR §99.10 — student's right to inspect own education records"
+    tags: [fafsa, student, permit, basic]
+
+  - id: parent_contributor_requests_fafsa_data
+    name: "Parent Contributor Requests Their Own FAFSA Data"
+    description: >
+      A parent who contributed financial information to their child's FAFSA
+      (as a FAFSA "contributor" under the FAFSA Simplification Act) contacts
+      the financial aid office to review the data they provided. Under HEA
+      §1090(a), a contributor may access the information they personally
+      provided on the FAFSA — but only that information, not the student's
+      complete record. The disclosure is permitted with a scope limitation.
+    inputs:
+      is_fafsa_data: true
+      disclosure_to_contributor_parent_or_spouse: true
+    expected:
+      result: permit_with_scope
+      rule_id: FAFSA_R2_to_contributor_scope_limited
+    citation: "HEA §1090(a) — contributor access limited to personally provided data"
+    tags: [fafsa, contributor, permit_with_scope, scope_limited]
+
+  - id: aid_office_processes_awards
+    name: "Aid Office Uses FAFSA Data to Calculate Awards"
+    description: >
+      The financial aid office uses a student's FAFSA data — including
+      Student Aid Index (SAI), dependency status, and household size — to
+      calculate the student's financial need and prepare a Title IV aid
+      package. This is the core use case for FAFSA data: the application,
+      award, and administration of financial aid under Title IV.
+    inputs:
+      is_fafsa_data: true
+      used_for_aid_admin: true
+    expected:
+      result: permit
+      rule_id: FAFSA_R3_used_for_aid_admin
+    citation: "HEA §1090(a); §1098h — use for aid administration"
+    tags: [fafsa, aid_admin, permit]
+
+  - id: scholarship_foundation_with_student_consent
+    name: "Scholarship Foundation Requests FAFSA Data With Student Consent"
+    description: >
+      A private scholarship foundation that awards need-based grants requests
+      FAFSA data to evaluate a student's eligibility. The student has signed
+      an explicit written consent form authorizing the aid office to share
+      their FAFSA information with this specific foundation. The combination
+      of the scholarship purpose and explicit consent authorizes disclosure.
+    inputs:
+      is_fafsa_data: true
+      disclosure_to_scholarship_org: true
+      explicit_written_consent: true
+    expected:
+      result: permit
+      rule_id: FAFSA_R4_scholarship_with_consent
+    citation: "HEA §1098h(b) — scholarship organization with explicit written consent"
+    tags: [fafsa, scholarship, consent, permit]
+
+  - id: institutional_researcher_studies_persistence
+    name: "Institutional Researcher Studies Student Persistence"
+    description: >
+      The university's Office of Institutional Research uses FAFSA data to
+      study factors affecting student persistence, retention, and degree
+      completion rates. The research aims to identify at-risk populations
+      and improve institutional support programs. This qualifies under the
+      HEA allowance for institutional research promoting college attendance,
+      persistence, and completion.
+    inputs:
+      is_fafsa_data: true
+      research_promote_attendance: true
+    expected:
+      result: permit
+      rule_id: FAFSA_R5_institutional_research_promote_attendance
+    citation: "HEA §1098h(a)(3) — research promoting attendance, persistence, and completion"
+    tags: [fafsa, research, permit]
+
+  - id: state_grant_agency_with_hea_consent
+    name: "State Grant Agency Receives FAFSA Data Under HEA Consent"
+    description: >
+      A state higher education agency that administers state financial aid
+      programs receives FAFSA data for students who have provided the general
+      HEA written consent under §1090(a)(3)(C). This consent, which is
+      broader than FERPA consent, authorizes sharing FAFSA data with state
+      agencies and other authorized entities for financial aid purposes.
+    inputs:
+      is_fafsa_data: true
+      hea_written_consent: true
+    expected:
+      result: permit
+      rule_id: FAFSA_R6_HEA_written_consent
+    citation: "HEA §1090(a)(3)(C) — general HEA consent for FAFSA data disclosure"
+    tags: [fafsa, consent, state_agency, permit]
+
+  - id: deidentified_fafsa_aggregate_report
+    name: "De-Identified FAFSA Aggregate Statistics Report"
+    description: >
+      The financial aid office prepares an aggregate statistical report using
+      FAFSA-derived data for a board of trustees presentation. All personally
+      identifiable information (PII) has been removed — the report contains
+      only summary statistics like average SAI by income bracket. Because the
+      data contains no PII, FERPA's privacy protections do not apply and the
+      disclosure is permitted without further conditions.
+    inputs:
+      is_fafsa_data: true
+      contains_pii: false
+    expected:
+      result: permit
+      rule_id: FAFSA_R7_no_pii
+    citation: "FERPA does not apply to de-identified/aggregate data without PII"
+    tags: [fafsa, no_pii, permit]
+
+
+  # ===================================================================
+  # FERPA CONSENT GATE (Box 10) AND 99.31 EXCEPTIONS (Boxes 11-19)
+  #
+  # If the data is not FTI and either (a) is FAFSA data with PII that
+  # didn't match an HEA exception, or (b) is non-FAFSA education records,
+  # then the FERPA consent gate and 99.31 exceptions determine the result.
+  # ===================================================================
+
+  - id: student_signs_ferpa_release_for_employer
+    name: "Student Signs FERPA Release for Potential Employer"
+    description: >
+      A graduating senior signs a FERPA consent form authorizing the
+      financial aid office to release their education records (including GPA,
+      enrollment status, and financial aid history) to a potential employer
+      conducting a background check. With valid FERPA written consent, the
+      disclosure is permitted regardless of the data type or recipient.
+    inputs:
+      ferpa_written_consent: true
+    expected:
+      result: permit
+      rule_id: FERPA_R0_written_consent
+    citation: "FERPA 34 CFR §99.30 — disclosure with prior written consent of the student"
+    tags: [ferpa, consent, permit]
+
+  - id: alumni_association_receives_directory_info
+    name: "Alumni Association Receives Directory Information"
+    description: >
+      The university's alumni association requests names, graduation dates,
+      and degree programs for the graduating class to send congratulatory
+      materials and membership invitations. This information has been
+      designated as "directory information" under the institution's FERPA
+      policy, and none of the affected students have opted out of directory
+      information disclosure.
+    inputs:
+      directory_info_and_not_opted_out: true
+    expected:
+      result: permit
+      rule_id: FERPA_R1_directory_info
+    citation: "FERPA 34 CFR §99.31(a)(11); §99.37 — directory information disclosure"
+    tags: [ferpa, directory_info, permit]
+
+  - id: academic_advisor_reviews_student_record
+    name: "Academic Advisor Reviews Student Education Record"
+    description: >
+      An academic advisor accesses a student's education records — including
+      financial aid status, enrollment history, and academic standing — to
+      provide informed advising during course registration. The advisor has
+      been designated as a school official with a legitimate educational
+      interest (LEI) in the institution's annual FERPA notification, and
+      needs the information to perform their professional responsibilities.
+    inputs:
+      to_school_official_legitimate_interest: true
+    expected:
+      result: permit
+      rule_id: FERPA_R2_school_official_LEI
+    citation: "FERPA 34 CFR §99.31(a)(1) — school official with legitimate educational interest"
+    tags: [ferpa, school_official, permit]
+
+  - id: court_subpoena_for_student_records
+    name: "Court Issues Subpoena for Student Financial Aid Records"
+    description: >
+      A court issues a lawfully issued subpoena requiring the university
+      to produce a student's financial aid records as part of a civil
+      proceeding. While the subpoena compels disclosure under FERPA
+      §99.31(a)(9), the institution should consult legal counsel before
+      responding to ensure compliance with the specific notification and
+      procedural requirements of §99.31(a)(9)(ii), which may require
+      reasonable effort to notify the student before disclosure.
+    inputs:
+      due_to_judicial_order_or_subpoena_or_financial_aid: true
+    expected:
+      result: permit_with_caution
+      rule_id: FERPA_R3_judicial_or_finaid_related
+    citation: "FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i) — judicial order or subpoena"
+    tags: [ferpa, judicial, subpoena, permit_with_caution, caution]
+
+  - id: transfer_records_to_new_institution
+    name: "Transfer Student Records to Receiving Institution"
+    description: >
+      A student has been accepted for transfer to another university. The
+      current institution's registrar and financial aid office send the
+      student's education records — including transcripts, enrollment
+      history, and financial aid data — to the receiving institution to
+      facilitate the transfer. FERPA permits this disclosure for purposes
+      related to the student's enrollment or transfer.
+    inputs:
+      to_other_school_enrollment_transfer: true
+    expected:
+      result: permit
+      rule_id: FERPA_R4_other_school_enrollment
+    citation: "FERPA 34 CFR §99.31(a)(2) — disclosure to officials at another school for enrollment/transfer"
+    tags: [ferpa, transfer, enrollment, permit]
+
+  - id: state_auditor_reviews_aid_compliance
+    name: "State Auditor Reviews Financial Aid Compliance"
+    description: >
+      A state auditor, acting as an authorized representative of the state
+      educational authority, conducts a compliance review of the university's
+      administration of state financial aid programs. The auditor requires
+      access to individual student records to verify that aid was correctly
+      calculated and disbursed according to state regulations. This falls
+      under the FERPA exception for authorized representatives.
+    inputs:
+      to_authorized_representatives: true
+    expected:
+      result: permit
+      rule_id: FERPA_R5_authorized_representatives
+    citation: "FERPA 34 CFR §99.31(a)(3); §99.35 — authorized representatives for audit/evaluation"
+    tags: [ferpa, authorized_rep, audit, permit]
+
+  - id: research_org_studies_aid_effectiveness
+    name: "Research Organization Studies Financial Aid Effectiveness"
+    description: >
+      An external education research organization has entered into a written
+      agreement with the university to study the effectiveness of different
+      financial aid packaging strategies on student outcomes. The study uses
+      individual-level data to build predictive models for student success.
+      Under FERPA's research exception, organizations may access education
+      records for studies to develop predictive tests, administer student
+      aid programs, or improve instruction.
+    inputs:
+      to_research_org_ferpa: true
+    expected:
+      result: permit
+      rule_id: FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction
+    citation: "FERPA 34 CFR §99.31(a)(6) — research to develop predictive tests, administer aid, improve instruction"
+    tags: [ferpa, research, permit]
+
+  - id: accreditor_reviews_enrollment_data
+    name: "Accrediting Agency Reviews Enrollment and Outcomes Data"
+    description: >
+      The institution's regional accrediting body (e.g., HLC, SACSCOC)
+      requests enrollment counts, graduation rates, and student outcome data
+      as part of a scheduled accreditation review. The data includes
+      individual student records needed to verify the institution's reported
+      metrics. FERPA permits disclosure to accrediting organizations to carry
+      out their accrediting functions.
+    inputs:
+      to_accrediting_agency: true
+    expected:
+      result: permit
+      rule_id: FERPA_R7_accrediting_agency
+    citation: "FERPA 34 CFR §99.31(a)(7) — accrediting organizations"
+    tags: [ferpa, accrediting, permit]
+
+  - id: parent_of_dependent_requests_grades
+    name: "Parent of IRS-Dependent Student Requests Grades"
+    description: >
+      A parent contacts the university to request their child's grades and
+      financial aid information. The student has been claimed as a dependent
+      on the parent's most recent federal income tax return, satisfying
+      FERPA's dependency test under §99.31(a)(8). Note: this is the IRS
+      dependency definition, not the FAFSA dependency definition — a student
+      can be FAFSA-independent but IRS-dependent, and vice versa.
+    inputs:
+      parent_of_dependent_student: true
+    expected:
+      result: permit
+      rule_id: FERPA_R8_parent_of_dependent_student
+    citation: "FERPA 34 CFR §99.31(a)(8) — parents of dependent students (IRS definition)"
+    tags: [ferpa, parent, dependent, permit]
+
+  - id: health_safety_emergency_disclosure
+    name: "Health and Safety Emergency Disclosure"
+    description: >
+      A student collapses during a campus event and is transported to the
+      emergency room. The Dean of Students office discloses the student's
+      emergency contact information and relevant health records to the
+      hospital under the health/safety emergency exception. This is one of
+      several circumstances covered by the FERPA §99.31 catch-all provision,
+      which encompasses emergencies, sex offender registries, and other
+      specific situations enumerated in the regulation.
+    inputs:
+      otherwise_permitted_under_99_31: true
+    expected:
+      result: permit
+      rule_id: FERPA_R9_otherwise_permitted_99_31
+    citation: "FERPA 34 CFR §99.31(a)(10) — health/safety emergency; §99.36"
+    tags: [ferpa, emergency, otherwise_permitted, permit]
+
+
+  # ===================================================================
+  # DENIAL SCENARIOS
+  #
+  # When no exception applies, disclosure is denied. These scenarios
+  # illustrate common situations where administrators might be tempted
+  # to disclose but lack legal authority to do so.
+  # ===================================================================
+
+  - id: employer_calls_about_student_aid
+    name: "Employer Inquires About Student's Financial Aid Status"
+    description: >
+      An employer calls the financial aid office asking whether a student
+      employee received financial aid and how much. The employer has no
+      written consent from the student, no subpoena, and no other legal
+      basis for the request. The student's financial aid records are
+      protected education records under FERPA, and none of the §99.31
+      exceptions apply. The disclosure must be denied.
+    inputs: {}
+    expected:
+      result: deny
+      rule_id: NONFTI_DENY_default
+    citation: "FERPA 34 CFR Part 99 — no applicable exception; disclosure prohibited"
+    tags: [ferpa, deny, default, no_basis]
