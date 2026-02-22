@@ -186,6 +186,7 @@ evaluation engines that have been proven equivalent across all possible inputs:
 | `Nasfaa::Scenarios` | 23 named real-world scenarios with citations | `lib/nasfaa/scenario.rb` |
 | `Nasfaa::Walkthrough` | Interactive DAG-based question walkthrough | `lib/nasfaa/walkthrough.rb` |
 | `Nasfaa::Quiz` | Scenario and random quiz modes | `lib/nasfaa/quiz.rb` |
+| `Nasfaa::Evaluate` | Non-interactive compact-string evaluator | `lib/nasfaa/evaluate.rb` |
 | `nasfaa_rules.yml` | 22 rules — the language-neutral specification | `nasfaa_rules.yml` |
 | `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
 | `nasfaa_questions.yml` | Decision tree DAG (23 questions, 22 results) | `nasfaa_questions.yml` |
@@ -348,6 +349,39 @@ Accepts abbreviated input (`p`/`d`) and mixed case. Displays a running score
 after each question, plus a final score with percentage at the end. For
 `permit_with_scope` and `permit_with_caution` scenarios, answering "permit"
 is counted as correct.
+
+## Evaluate Mode (CLI)
+
+**TL;DR:** `bin/nasfaa evaluate ynnyp` — navigate the decision tree with a
+compact string and assert the result.
+
+Evaluate mode accepts a compact string where each `y`/`n` character answers one
+question in the decision tree DAG, and an optional trailing `p` (permit) or `d`
+(deny) asserts the expected result:
+
+```bash
+bin/nasfaa evaluate ynnyp
+```
+
+```
+Result:   permit
+Rule:     FTI_R3_scholarship_with_consent
+Path:     fti_check -> fti_to_student -> fti_aid_admin -> fti_scholarship
+Assertion: PASS (expected permit)
+```
+
+The string `ynnyp` means: FTI? **yes**, student? **no**, aid admin? **no**,
+scholarship with consent? **yes** → permit. The trailing `p` asserts the result
+should be permit.
+
+Without an assertion, the tool just returns the result:
+
+```bash
+bin/nasfaa evaluate yy    # FTI student → permit, no assertion
+```
+
+Each evaluation cross-verifies the DAG result against the `RuleEngine` and warns
+if they disagree.
 
 ## YAML Rules
 
@@ -563,7 +597,7 @@ The scenario library serves three purposes:
 
 ## Testing
 
-The test suite comprises 287 examples across 8 spec files:
+The test suite comprises 322 examples across 9 spec files:
 
 | Spec file | Examples | Tests |
 |---|---|---|
@@ -574,11 +608,12 @@ The test suite comprises 287 examples across 8 spec files:
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
 | `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
 | `walkthrough_spec.rb` | 66 | DAG structure, all 22 paths, cross-verification, I/O |
-| `quiz_spec.rb` | 18 | Scenario mode, random mode, input handling, score tracking |
+| `quiz_spec.rb` | 20 | Scenario mode, random mode, input handling, score tracking |
+| `evaluate_spec.rb` | 33 | All 22 paths, assertions, cross-verification, errors |
 
 ```bash
 bundle install
-bundle exec rspec          # 287 examples, 0 failures (<1 second)
+bundle exec rspec          # 322 examples, 0 failures (<1 second)
 bundle exec rubocop        # 0 offenses
 bundle exec rake           # runs both spec and rubocop
 ```

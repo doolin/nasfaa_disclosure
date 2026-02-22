@@ -26,14 +26,23 @@ when 'quiz'
   quiz = Nasfaa::Quiz.new(random: random)
   quiz.run
 when 'evaluate'
-  puts '(Evaluate mode will be implemented next)'
+  compact = ARGV[1]
+  unless compact
+    puts 'Usage: nasfaa evaluate <string>'
+    puts
+    puts 'Compact string of y/n answers followed by optional p/d assertion.'
+    puts 'Example: nasfaa evaluate ynnyp'
+    exit 1
+  end
+  evaluator = Nasfaa::Evaluate.new(compact)
+  evaluator.run
 else
   puts "nasfaa v#{Nasfaa::VERSION}"
   puts
   puts 'Usage: nasfaa <command>'
   puts
   puts 'Commands:'
-  puts '  walkthrough   Step through the decision tree interactively'
-  puts '  quiz          Test your knowledge with scenario-based questions'
-  puts '  evaluate      Evaluate a disclosure from flags or JSON input'
+  puts '  walkthrough        Step through the decision tree interactively'
+  puts '  quiz               Test your knowledge with scenario-based questions'
+  puts '  evaluate <string>  Evaluate a path through the decision tree'
 end

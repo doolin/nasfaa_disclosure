@@ -2,7 +2,7 @@
 
 ## Context
 
-The project is a Ruby gem implementing the NASFAA FERPA/FAFSA disclosure decision tree with two independent evaluation engines (imperative `DecisionTree` and declarative YAML `RuleEngine`) proven equivalent across all 36,864 input combinations, plus an interactive walkthrough and quiz mode powered by a question DAG and scenario library. 287 specs, 96%+ line coverage, rubocop clean.
+The project is a Ruby gem implementing the NASFAA FERPA/FAFSA disclosure decision tree with two independent evaluation engines (imperative `DecisionTree` and declarative YAML `RuleEngine`) proven equivalent across all 36,864 input combinations, plus an interactive walkthrough, quiz, and evaluate mode powered by a question DAG and scenario library. 322 specs, 96%+ line coverage, rubocop clean.
 
 Key insight from this session: the YAML rules are a language-neutral specification that, once verified exhaustively, becomes the portable target for other platforms. This reframes the work — rather than hand-translating Ruby `if/elsif` logic to JavaScript, we build a YAML evaluator in each language and share the same rule file.
 
@@ -70,10 +70,26 @@ Draws from the scenario library. Presents a scenario description and inputs, ask
 
 Implemented as `Nasfaa::Quiz` class with two modes: scenario mode (shuffles all 23 named scenarios) and random mode (generates arbitrary boolean `DisclosureData` combinations evaluated by the `RuleEngine`). Follows the same injectable I/O pattern as Walkthrough. Accepts abbreviated input (`p`/`d`) and mixed case. For `permit_with_scope` and `permit_with_caution` results, answering "permit" counts as correct. 18 specs cover both modes, input handling, and score tracking.
 
-### Evaluate Mode (`bin/nasfaa evaluate`)
-Non-interactive. Accepts flags (`--includes-fti=false --is-fafsa-data=true`) or JSON on stdin. Returns result, rule ID, and citation. Useful for scripting and integration.
+### Evaluate Mode (`bin/nasfaa evaluate`) ✅
+Non-interactive. Accepts a compact string of y/n answers to navigate the walkthrough DAG, with an optional trailing p/d assertion. Returns result, rule ID, path, and pass/fail. Useful for scripting and quick verification.
 
-**Verification:** CLI specs using StringIO for stdin/stdout simulation. Manual walkthrough of a known scenario.
+Implemented as `Nasfaa::Evaluate` class that feeds the compact string to a `Walkthrough` instance via StringIO, cross-verifies with the `RuleEngine`, and optionally checks the result against an assertion. 33 specs cover all 22 terminal paths, assertion pass/fail, cross-verification, and error handling.
+
+---
+
+## Phase 2.5: CLI Polish
+
+UX improvements to all CLI modes (walkthrough, quiz, evaluate). No new features — refines the existing interactive experience.
+
+- **Box-draw formatting**: Wrap each quiz/walkthrough section (question, inputs, result reveal, score) in Unicode box-drawing characters for visual separation in the terminal.
+
+- **PDF-exact text mode** (`--pdf-text`): Display the original verbatim text from each PDF box alongside or instead of the paraphrased question text. Switchable via flag; off by default.
+
+- **Single-keystroke advance**: Allow `y`/`n`/`q` (and `p`/`d`/`q` in quiz) to register immediately on keypress without requiring Enter. Requires raw terminal mode (`io/console`).
+
+- **Colorized output**: Add color to CLI output (correct/incorrect, rule citations, box headers). Default palette uses colorblind-safe constraints (deuteranopia/protanopia friendly). Additional named color modes: `--color=light` (light terminal), `--color=dark` (dark terminal), `--color=none` (no color). Implemented as a thin wrapper so all output goes through a single colorizer.
+
+- **Rich evaluate output**: Enhance `evaluate` results with a box-drawn result card showing the rule description, full regulatory citation, the scenario narrative (if the path matches a named scenario), and the governing statute section. Color the result box green (permit) or red (deny) using the colorizer above.
 
 ---
 
