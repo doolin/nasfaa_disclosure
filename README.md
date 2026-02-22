@@ -185,9 +185,10 @@ evaluation engines that have been proven equivalent across all possible inputs:
 | `Nasfaa::Trace` | Audit trail (rule ID, result, path, notes) | `lib/nasfaa/trace.rb` |
 | `Nasfaa::Scenarios` | 23 named real-world scenarios with citations | `lib/nasfaa/scenario.rb` |
 | `Nasfaa::Walkthrough` | Interactive DAG-based question walkthrough | `lib/nasfaa/walkthrough.rb` |
-| `nasfaa_rules.yml` | 23 rules — the language-neutral specification | `nasfaa_rules.yml` |
+| `Nasfaa::Quiz` | Scenario and random quiz modes | `lib/nasfaa/quiz.rb` |
+| `nasfaa_rules.yml` | 22 rules — the language-neutral specification | `nasfaa_rules.yml` |
 | `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
-| `nasfaa_questions.yml` | Decision tree DAG (23 questions, 23 results) | `nasfaa_questions.yml` |
+| `nasfaa_questions.yml` | Decision tree DAG (23 questions, 22 results) | `nasfaa_questions.yml` |
 
 Key architectural insight: the YAML rules are a language-neutral specification.
 Once verified exhaustively, they become the portable target for other platforms.
@@ -275,7 +276,7 @@ mirrors the PDF's two-page layout:
 
 - **23 question nodes** — each with box number, question text, help text, the
   `DisclosureData` field(s) it sets, and `on_yes`/`on_no` edges to the next node
-- **23 result nodes** — each with the decision, rule ID, message, and citation
+- **22 result nodes** — each with the decision, rule ID, message, and citation
 - **Compound questions** — some PDF boxes ask about two fields simultaneously
   (e.g., "scholarship organization *with* explicit written consent"); these use
   a `fields` array instead of a single `field`
@@ -291,12 +292,66 @@ data = walkthrough.to_disclosure_data  # answers as DisclosureData
 # Cross-verify DAG result against RuleEngine
 engine = Nasfaa::RuleEngine.new
 engine_trace = engine.evaluate(data)
-trace.rule_id == engine_trace.rule_id  # => true (verified for all 23 paths)
+trace.rule_id == engine_trace.rule_id  # => true (verified for all 22 paths)
 ```
+
+## Quiz Mode (CLI)
+
+**TL;DR:** `bin/nasfaa quiz` — 23 scenario-based permit/deny questions.
+`bin/nasfaa quiz --random` — randomly generated inputs, unlimited practice.
+
+Quiz mode tests your knowledge of FERPA/FAFSA/FTI disclosure rules by
+presenting scenarios and asking for a permit/deny decision. Two modes are
+available:
+
+**Scenario mode** (default) — draws from the 23 named scenarios in
+`nasfaa_scenarios.yml`, shuffled each run:
+
+```bash
+bin/nasfaa quiz
+```
+
+**Random mode** — generates arbitrary boolean input combinations and evaluates
+them with the `RuleEngine`:
+
+```bash
+bin/nasfaa quiz --random
+```
+
+```
+NASFAA Data Sharing Decision Tree — Quiz Mode
+v0.1.0
+
+Answer 'permit' or 'deny' for each disclosure scenario.
+
+============================================================
+Question 1 of 23
+============================================================
+
+A student's parent, who claims the student as a tax dependent,
+contacts the financial aid office requesting details about the
+student's financial aid package ...
+
+Inputs:
+  parent_of_dependent_student: true
+
+Should this disclosure be permitted or denied? [permit/deny] > permit
+
+CORRECT!
+Answer: permit
+Rule:     FERPA_R8_parent_of_dependent
+Citation: FERPA 34 CFR §99.31(a)(8) — ...
+Score:    1/1
+```
+
+Accepts abbreviated input (`p`/`d`) and mixed case. Displays a running score
+after each question, plus a final score with percentage at the end. For
+`permit_with_scope` and `permit_with_caution` scenarios, answering "permit"
+is counted as correct.
 
 ## YAML Rules
 
-The `nasfaa_rules.yml` file encodes the decision tree as 23 rules evaluated
+The `nasfaa_rules.yml` file encodes the decision tree as 22 rules evaluated
 in first-match-wins order. Each rule specifies a `when_all` array of boolean
 conditions (negated conditions are prefixed with `!`) and a result:
 
@@ -508,7 +563,7 @@ The scenario library serves three purposes:
 
 ## Testing
 
-The test suite comprises 270 examples across 7 spec files:
+The test suite comprises 287 examples across 8 spec files:
 
 | Spec file | Examples | Tests |
 |---|---|---|
@@ -518,11 +573,12 @@ The test suite comprises 270 examples across 7 spec files:
 | `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
 | `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
-| `walkthrough_spec.rb` | 67 | DAG structure, all 23 paths, cross-verification, I/O |
+| `walkthrough_spec.rb` | 66 | DAG structure, all 22 paths, cross-verification, I/O |
+| `quiz_spec.rb` | 18 | Scenario mode, random mode, input handling, score tracking |
 
 ```bash
 bundle install
-bundle exec rspec          # 270 examples, 0 failures (<1 second)
+bundle exec rspec          # 287 examples, 0 failures (<1 second)
 bundle exec rubocop        # 0 offenses
 bundle exec rake           # runs both spec and rubocop
 ```

@@ -2,7 +2,7 @@
 
 ## Context
 
-The project is a Ruby gem implementing the NASFAA FERPA/FAFSA disclosure decision tree with two independent evaluation engines (imperative `DecisionTree` and declarative YAML `RuleEngine`) proven equivalent across all 36,864 input combinations, plus an interactive walkthrough powered by a question DAG. 270 specs, 94%+ line coverage, rubocop clean.
+The project is a Ruby gem implementing the NASFAA FERPA/FAFSA disclosure decision tree with two independent evaluation engines (imperative `DecisionTree` and declarative YAML `RuleEngine`) proven equivalent across all 36,864 input combinations, plus an interactive walkthrough and quiz mode powered by a question DAG and scenario library. 287 specs, 96%+ line coverage, rubocop clean.
 
 Key insight from this session: the YAML rules are a language-neutral specification that, once verified exhaustively, becomes the portable target for other platforms. This reframes the work — rather than hand-translating Ruby `if/elsif` logic to JavaScript, we build a YAML evaluator in each language and share the same rule file.
 
@@ -63,10 +63,12 @@ Two modes using Ruby stdlib (`OptionParser`) — no new runtime dependencies.
 ### Walkthrough Mode (`bin/nasfaa walkthrough`) ✅
 Steps through each decision box interactively. Presents the box number, question text (from the PDF), collects yes/no. Follows the DAG to the next question or result. Shows result with regulatory citation and full path trace.
 
-Implemented as `Nasfaa::Walkthrough` class powered by `nasfaa_questions.yml` — a structured DAG with 23 question nodes and 23 result nodes mirroring the PDF's two-page layout. Compound questions (e.g., scholarship org + consent) use a `fields` array. The engine collects answers into a `DisclosureData` for cross-verification against the `RuleEngine`. 67 specs verify all 23 terminal paths, DAG structure, cross-verification, output formatting, and input handling.
+Implemented as `Nasfaa::Walkthrough` class powered by `nasfaa_questions.yml` — a structured DAG with 23 question nodes and 22 result nodes mirroring the PDF's two-page layout. Compound questions (e.g., scholarship org + consent) use a `fields` array. The engine collects answers into a `DisclosureData` for cross-verification against the `RuleEngine`. 66 specs verify all 22 terminal paths, DAG structure, cross-verification, output formatting, and input handling.
 
-### Quiz Mode (`bin/nasfaa quiz`)
+### Quiz Mode (`bin/nasfaa quiz`) ✅
 Draws from the scenario library. Presents a scenario description and inputs, asks the operator for permit/deny. Reveals the correct answer with citation. Tracks score. Optional `--random` flag generates arbitrary boolean combinations for advanced practice.
+
+Implemented as `Nasfaa::Quiz` class with two modes: scenario mode (shuffles all 23 named scenarios) and random mode (generates arbitrary boolean `DisclosureData` combinations evaluated by the `RuleEngine`). Follows the same injectable I/O pattern as Walkthrough. Accepts abbreviated input (`p`/`d`) and mixed case. For `permit_with_scope` and `permit_with_caution` results, answering "permit" counts as correct. 18 specs cover both modes, input handling, and score tracking.
 
 ### Evaluate Mode (`bin/nasfaa evaluate`)
 Non-interactive. Accepts flags (`--includes-fti=false --is-fafsa-data=true`) or JSON on stdin. Returns result, rule ID, and citation. Useful for scripting and integration.

@@ -17,7 +17,14 @@ when 'walkthrough'
   walkthrough = Nasfaa::Walkthrough.new
   walkthrough.run
 when 'quiz'
-  puts '(Quiz mode will be implemented next)'
+  random = ARGV.include?('--random')
+  puts "NASFAA Data Sharing Decision Tree — Quiz Mode#{random ? ' (Random)' : ''}"
+  puts "v#{Nasfaa::VERSION}"
+  puts
+  puts "Answer 'permit' or 'deny' for each disclosure scenario."
+
+  quiz = Nasfaa::Quiz.new(random: random)
+  quiz.run
 when 'evaluate'
   puts '(Evaluate mode will be implemented next)'
 else
