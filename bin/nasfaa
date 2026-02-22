@@ -4,6 +4,29 @@
 require 'bundler/setup'
 require 'nasfaa'
 
-puts "nasfaa v#{Nasfaa::VERSION}"
-puts 'Usage: nasfaa [walkthrough|quiz|evaluate]'
-puts '(CLI modes will be implemented in Phase 2)'
+command = ARGV[0]
+
+case command
+when 'walkthrough'
+  puts "NASFAA Data Sharing Decision Tree — Interactive Walkthrough"
+  puts "v#{Nasfaa::VERSION}"
+  puts
+  puts "Answer each question with 'yes' or 'no' to navigate the decision tree."
+  puts "The walkthrough follows the NASFAA PDF's two-page flowchart."
+
+  walkthrough = Nasfaa::Walkthrough.new
+  walkthrough.run
+when 'quiz'
+  puts '(Quiz mode will be implemented next)'
+when 'evaluate'
+  puts '(Evaluate mode will be implemented next)'
+else
+  puts "nasfaa v#{Nasfaa::VERSION}"
+  puts
+  puts 'Usage: nasfaa <command>'
+  puts
+  puts 'Commands:'
+  puts '  walkthrough   Step through the decision tree interactively'
+  puts '  quiz          Test your knowledge with scenario-based questions'
+  puts '  evaluate      Evaluate a disclosure from flags or JSON input'
+end

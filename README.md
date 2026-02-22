@@ -3,7 +3,7 @@
 <details>
 <summary>NEXT:</summary>
 
-- Phase 2: Interactive CLI (walkthrough, quiz, evaluate modes)
+- Phase 2: Quiz and Evaluate CLI modes
 - Phase 3: Visualization (Mermaid/Graphviz diagram generation)
 - Phase 4: Node.js + Browser port
 - See [docs/ROADMAP.md](docs/ROADMAP.md) for full plan.
@@ -184,8 +184,10 @@ evaluation engines that have been proven equivalent across all possible inputs:
 | `Nasfaa::DisclosureData` | Boolean input model (20 fields) | `lib/nasfaa/disclosure_data.rb` |
 | `Nasfaa::Trace` | Audit trail (rule ID, result, path, notes) | `lib/nasfaa/trace.rb` |
 | `Nasfaa::Scenarios` | 23 named real-world scenarios with citations | `lib/nasfaa/scenario.rb` |
+| `Nasfaa::Walkthrough` | Interactive DAG-based question walkthrough | `lib/nasfaa/walkthrough.rb` |
 | `nasfaa_rules.yml` | 23 rules — the language-neutral specification | `nasfaa_rules.yml` |
 | `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
+| `nasfaa_questions.yml` | Decision tree DAG (23 questions, 23 results) | `nasfaa_questions.yml` |
 
 Key architectural insight: the YAML rules are a language-neutral specification.
 Once verified exhaustively, they become the portable target for other platforms.
@@ -225,6 +227,71 @@ scenario.expected_result  # => :permit_with_caution
 Nasfaa::Scenarios.by_tag('fti')      # => 5 FTI-related scenarios
 Nasfaa::Scenarios.permits            # => 19 permit scenarios
 Nasfaa::Scenarios.denials            # => 4 deny scenarios
+```
+
+## Interactive Walkthrough (CLI)
+
+The walkthrough mode steps through the NASFAA decision tree one question at a
+time, presenting each PDF box number, question text, and optional help text.
+It collects yes/no answers, navigates the DAG, and displays the result with
+the governing rule, regulatory citation, and the full path of boxes traversed.
+
+```bash
+bin/nasfaa walkthrough
+```
+
+```
+NASFAA Data Sharing Decision Tree — Interactive Walkthrough
+v0.1.0
+
+Answer each question with 'yes' or 'no' to navigate the decision tree.
+The walkthrough follows the NASFAA PDF's two-page flowchart.
+
+--- Box 1 (both pages) ---
+Does the disclosure include Federal Tax Information (FTI)?
+  (FTI includes any tax return data obtained through the IRS Data Retrieval Tool
+   or direct data exchange with the IRS.)
+[yes/no] > no
+
+--- Box 2 (Page 1) ---
+Is the disclosure to the student (the data subject)?
+[yes/no] > yes
+
+============================================================
+RESULT: PERMIT
+
+The student has the right to inspect their own education records.
+
+Rule:     FAFSA_R1_to_student
+Citation: FERPA 34 CFR §99.10
+Path:     fti_check -> nonfti_to_student
+============================================================
+```
+
+### Walkthrough architecture
+
+The walkthrough is powered by `nasfaa_questions.yml`, a structured DAG that
+mirrors the PDF's two-page layout:
+
+- **23 question nodes** — each with box number, question text, help text, the
+  `DisclosureData` field(s) it sets, and `on_yes`/`on_no` edges to the next node
+- **23 result nodes** — each with the decision, rule ID, message, and citation
+- **Compound questions** — some PDF boxes ask about two fields simultaneously
+  (e.g., "scholarship organization *with* explicit written consent"); these use
+  a `fields` array instead of a single `field`
+
+The `Walkthrough` engine navigates this DAG, collecting answers into a
+`DisclosureData` that can be cross-verified against the `RuleEngine`:
+
+```ruby
+walkthrough = Nasfaa::Walkthrough.new
+trace = walkthrough.run           # interactive session
+data = walkthrough.to_disclosure_data  # answers as DisclosureData
+
+# Cross-verify DAG result against RuleEngine
+engine = Nasfaa::RuleEngine.new
+engine_trace = engine.evaluate(data)
+trace.rule_id == engine_trace.rule_id  # => true (verified for all 23 paths)
 ```
 
 ## YAML Rules
@@ -441,7 +508,7 @@ The scenario library serves three purposes:
 
 ## Testing
 
-The test suite comprises 203 examples across 6 spec files:
+The test suite comprises 270 examples across 7 spec files:
 
 | Spec file | Examples | Tests |
 |---|---|---|
@@ -451,10 +518,11 @@ The test suite comprises 203 examples across 6 spec files:
 | `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
 | `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
+| `walkthrough_spec.rb` | 67 | DAG structure, all 23 paths, cross-verification, I/O |
 
 ```bash
 bundle install
-bundle exec rspec          # 203 examples, 0 failures (<1 second)
+bundle exec rspec          # 270 examples, 0 failures (<1 second)
 bundle exec rubocop        # 0 offenses
 bundle exec rake           # runs both spec and rubocop
 ```
