@@ -76,85 +76,85 @@ rules:
 
   # ---------- NON-FTI (FAFSA/FERPA) ----------
   - id: FAFSA_R1_to_student
-    when_all: [!includes_fti, disclosure_to_student]
+    when_all: ["!includes_fti", disclosure_to_student]
     result: permit
 
   # Box 4: Contributor check — only reachable via Box 3 Yes (FAFSA data)
   - id: FAFSA_R2_to_contributor_scope_limited
-    when_all: [!includes_fti, is_fafsa_data, disclosure_to_contributor_parent_or_spouse]
+    when_all: ["!includes_fti", is_fafsa_data, disclosure_to_contributor_parent_or_spouse]
     result: permit_with_scope
     scope_note: "Contributor may access only information they personally provided on the FAFSA."
 
   # FAFSA data specific allowances (HEA 1090/1098h)
   - id: FAFSA_R3_used_for_aid_admin
-    when_all: [!includes_fti, is_fafsa_data, used_for_aid_admin]
+    when_all: ["!includes_fti", is_fafsa_data, used_for_aid_admin]
     result: permit
 
   - id: FAFSA_R4_scholarship_with_consent
-    when_all: [!includes_fti, is_fafsa_data, disclosure_to_scholarship_org, explicit_written_consent]
+    when_all: ["!includes_fti", is_fafsa_data, disclosure_to_scholarship_org, explicit_written_consent]
     result: permit
 
   - id: FAFSA_R5_institutional_research_promote_attendance
-    when_all: [!includes_fti, is_fafsa_data, research_promote_attendance]
+    when_all: ["!includes_fti", is_fafsa_data, research_promote_attendance]
     result: permit
 
   - id: FAFSA_R6_HEA_written_consent
-    when_all: [!includes_fti, is_fafsa_data, hea_written_consent]
+    when_all: ["!includes_fti", is_fafsa_data, hea_written_consent]
     result: permit
 
   # Box 9: FAFSA data without PII → Permit (no further checks needed)
   - id: FAFSA_R7_no_pii
-    when_all: [!includes_fti, is_fafsa_data, !contains_pii]
+    when_all: ["!includes_fti", is_fafsa_data, "!contains_pii"]
     result: permit
 
   # Box 10: FERPA written consent → Permit
   # Shared gate for both FAFSA+PII path (Box 9 Yes → Box 10)
   # and non-FAFSA path (Box 3 No → Box 10)
   - id: FERPA_R0_written_consent
-    when_all: [!includes_fti, ferpa_written_consent]
+    when_all: ["!includes_fti", ferpa_written_consent]
     result: permit
 
   # FERPA 99.31 exceptions — Boxes 11-19
   # Reached via Box 10 No (no FERPA consent)
   - id: FERPA_R1_directory_info
-    when_all: [!includes_fti, directory_info_and_not_opted_out]
+    when_all: ["!includes_fti", directory_info_and_not_opted_out]
     result: permit
 
   - id: FERPA_R2_school_official_LEI
-    when_all: [!includes_fti, to_school_official_legitimate_interest]
+    when_all: ["!includes_fti", to_school_official_legitimate_interest]
     result: permit
 
   - id: FERPA_R3_judicial_or_finaid_related
-    when_all: [!includes_fti, due_to_judicial_order_or_subpoena_or_financial_aid]
+    when_all: ["!includes_fti", due_to_judicial_order_or_subpoena_or_financial_aid]
     result: permit_with_caution
     caution_note: "If subpoena/court order/law enforcement, review 99.31(a)(9)(ii) and consult counsel."
 
   - id: FERPA_R4_other_school_enrollment
-    when_all: [!includes_fti, to_other_school_enrollment_transfer]
+    when_all: ["!includes_fti", to_other_school_enrollment_transfer]
     result: permit
 
   - id: FERPA_R5_authorized_representatives
-    when_all: [!includes_fti, to_authorized_representatives]
+    when_all: ["!includes_fti", to_authorized_representatives]
     result: permit
 
   - id: FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction
-    when_all: [!includes_fti, to_research_org_ferpa]
+    when_all: ["!includes_fti", to_research_org_ferpa]
     result: permit
 
   - id: FERPA_R7_accrediting_agency
-    when_all: [!includes_fti, to_accrediting_agency]
+    when_all: ["!includes_fti", to_accrediting_agency]
     result: permit
 
   - id: FERPA_R8_parent_of_dependent_student
-    when_all: [!includes_fti, parent_of_dependent_student]
+    when_all: ["!includes_fti", parent_of_dependent_student]
     result: permit
 
   - id: FERPA_R9_otherwise_permitted_99_31
-    when_all: [!includes_fti, otherwise_permitted_under_99_31]
+    when_all: ["!includes_fti", otherwise_permitted_under_99_31]
     result: permit
 
   # If we're here, either (a) non-FAFSA PII without a 99.31 exception, or (b) FAFSA data without an HEA/FERPA basis.
   - id: NONFTI_DENY_default
-    when_all: [!includes_fti]
+    when_all: ["!includes_fti"]
     result: deny
 
