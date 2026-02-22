@@ -4,6 +4,7 @@ AllCops:
     - 'coverage/**/*'
     - 'vendor/**/*'
     - '.git/**/*'
+    - 'bin/**/*'
 
 Metrics/ClassLength:
   Max: 200

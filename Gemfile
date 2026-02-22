@@ -2,6 +2,9 @@
 
 source 'https://rubygems.org'
 
-gem 'rspec'
-gem 'rubocop', require: false
-gem 'simplecov', require: false
+gemspec
+
+gem 'rake', '~> 13.0'
+gem 'rspec', '~> 3.0'
+gem 'rubocop', '~> 1.0', require: false
+gem 'simplecov', '~> 0.22', require: false

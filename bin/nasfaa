@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'nasfaa'
+
+puts "nasfaa v#{Nasfaa::VERSION}"
+puts 'Usage: nasfaa [walkthrough|quiz|evaluate]'
+puts '(CLI modes will be implemented in Phase 2)'

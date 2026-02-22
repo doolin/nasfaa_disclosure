@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  minimum_coverage line: 90
+  minimum_coverage_by_file 0
+end
 
-require_relative '../lib/nasfaa_data_sharing_decision_tree'
-require_relative '../lib/disclosure_data'
+require 'nasfaa'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
