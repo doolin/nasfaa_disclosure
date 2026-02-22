@@ -2,13 +2,13 @@
 
 ## Context
 
-The project is a well-tested Ruby implementation of the NASFAA FERPA/FAFSA disclosure decision tree (109 specs, 95%+ coverage, rubocop clean). The code and YAML rules have just been corrected against the canonical PDF. Next steps: package as a gem, build interactive tools, and port to the web.
+The project is a Ruby gem implementing the NASFAA FERPA/FAFSA disclosure decision tree with two independent evaluation engines (imperative `DecisionTree` and declarative YAML `RuleEngine`) proven equivalent across all 36,864 input combinations. 203 specs, 92%+ line coverage, rubocop clean.
 
 Key insight from this session: the YAML rules are a language-neutral specification that, once verified exhaustively, becomes the portable target for other platforms. This reframes the work — rather than hand-translating Ruby `if/elsif` logic to JavaScript, we build a YAML evaluator in each language and share the same rule file.
 
 ---
 
-## Phase 1: Ruby Gem Packaging
+## Phase 1: Ruby Gem Packaging ✅
 
 Restructure the flat project into a proper gem. Mechanical refactoring, no behavior changes.
 
@@ -34,23 +34,25 @@ Restructure the flat project into a proper gem. Mechanical refactoring, no behav
 
 ---
 
-## Phase 1.5: YAML Rule Engine + Audit Trail + Exhaustive Verification
+## Phase 1.5: YAML Rule Engine + Audit Trail + Exhaustive Verification ✅
 
 This phase creates the infrastructure that makes every subsequent phase dramatically better. The YAML becomes executable, not just documentation.
 
-### 1.5a — Rule Engine (`lib/nasfaa/rule_engine.rb`)
-Loads `nasfaa_rules.yml`, evaluates a `DisclosureData` instance against rules in order, returns first match. ~50 lines of core logic. The `when_all` conditions map to predicate methods; negated conditions (prefixed `!`) call the predicate and invert.
+### 1.5a — Rule Engine (`lib/nasfaa/rule_engine.rb`) ✅
+Loads `nasfaa_rules.yml`, evaluates a `DisclosureData` instance against rules in order, returns first match. ~40 lines of core logic. The `when_all` conditions map to bracket notation on `DisclosureData`; negated conditions (prefixed `!`) invert the lookup. 17 specs.
 
-### 1.5b — Audit Trail (`lib/nasfaa/trace.rb`)
-`Nasfaa::Trace` struct returned by the rule engine: `rule_id`, `result`, `path` (boxes evaluated), `citation`, `scope_note`, `caution_note`. Add `DecisionTree#evaluate` returning a Trace; keep `disclose?` as a boolean wrapper for backward compatibility.
+### 1.5b — Audit Trail (`lib/nasfaa/trace.rb`) ✅
+`Nasfaa::Trace` struct returned by the rule engine: `rule_id`, `result`, `path` (all rules evaluated before match), `scope_note`, `caution_note`. Provides `permitted?` and `denied?` convenience methods. 14 specs.
 
-### 1.5c — Exhaustive Verification (`spec/exhaustive_verification_spec.rb`)
-Single spec iterating all 2^20 (1,048,576) boolean input combinations, verifying `DecisionTree#disclose?` and `RuleEngine#evaluate` agree on every one. Should run in <30 seconds.
+### 1.5c — Exhaustive Verification (`spec/exhaustive_verification_spec.rb`) ✅
+Single spec testing 36,864 input combinations (2^12 core fields × 9 independent FERPA 99.31 configurations) — a 28× reduction from naive 2^20 by exploiting the tree's structure (Boxes 11–19 are independent yes/no exits). Runs in <0.5 seconds.
 
-### 1.5d — Scenario Library (`lib/nasfaa/scenarios.yml`)
-15-20 named real-world scenarios with descriptions, inputs, expected results, rule IDs, and regulatory citations. Serves triple duty: regression tests, documentation, quiz seed data.
+Found and fixed 1,728 disagreements in the FTI branch: the imperative `DecisionTree` lacked a deny guard after Box 4 "No" and incorrectly nested the scholarship check (Box 3) under the aid administration guard (Box 2). The YAML rules were already correct. After the fix: 0 disagreements.
 
-**Verification:** Exhaustive spec passes (0 disagreements), scenario specs pass, both engines return identical results.
+### 1.5d — Scenario Library (`nasfaa_scenarios.yml`, `lib/nasfaa/scenario.rb`) ✅
+23 named real-world scenarios (one per YAML rule) with narrative descriptions, boolean inputs, expected results, rule IDs, and regulatory citations. Organized into FTI (5), FAFSA-specific (7), FERPA + 99.31 exceptions (10), and denials (1). All four result types represented. Loader class provides `.find(id)`, `.by_tag(tag)`, `.permits`, `.denials`. 59 specs verify rule correctness, cross-engine agreement, full rule coverage, and metadata integrity.
+
+**Verification:** Exhaustive spec passes (0 disagreements), scenario specs pass, both engines return identical results. 203 total specs, 0 failures.
 
 ---
 
@@ -117,9 +119,9 @@ Version YAML rules with effective dates. Build a diff tool (`nasfaa diff v1 v2`)
 ## Dependency Graph
 
 ```
-Phase 1 (Gem)
+Phase 1 (Gem) ✅
     |
-Phase 1.5 (Rule Engine + Audit Trail + Verification)
+Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
     |
     +---> Phase 2 (CLI)
     +---> Phase 3 (Visualization)

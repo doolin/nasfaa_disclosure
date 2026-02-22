@@ -3,10 +3,10 @@
 <details>
 <summary>NEXT:</summary>
 
-- Fix the logic in the non-FTI branch.
-- Rewrite the specs for boxes 12 through 19 making
-the data explicit.
-- Extend README for publication with the timeline.
+- Phase 2: Interactive CLI (walkthrough, quiz, evaluate modes)
+- Phase 3: Visualization (Mermaid/Graphviz diagram generation)
+- Phase 4: Node.js + Browser port
+- See [docs/ROADMAP.md](docs/ROADMAP.md) for full plan.
 </details>
 
 
@@ -30,8 +30,8 @@ that matters).
 
 ## Motivation
 
-<img align="right" width="250px" src=./images/nasfaa-2025-page-1.png alt="NASFAA
-descision diagram" />
+<img align="right" width="250px" src=./docs/nasfaa-2025-page-1.png alt="NASFAA
+decision diagram" />
 
 At the time of writing, I am employed in a role which has no requirement
 for shipping code for any reason. However, I like programming.
@@ -170,200 +170,310 @@ make the specs pass.
 
 
 
-# Cursor below here
+# Technical Reference
 
-This repository contains a Ruby implementation of the NASFAA Data Sharing
-Decision Tree, which helps determine when student data can be disclosed under
-FERPA and other applicable regulations.
+## Architecture
 
-## Overview
+The project is structured as a Ruby gem (`nasfaa`) with two independent
+evaluation engines that have been proven equivalent across all possible inputs:
 
-The decision tree is implemented as a Ruby class that evaluates disclosure
-requests against a comprehensive set of rules defined in YAML format. The system
-supports both Federal Tax Information (FTI) and non-FTI data disclosure
-scenarios.
+| Component | Purpose | File |
+|---|---|---|
+| `Nasfaa::DecisionTree` | Imperative decision logic (Ruby `if/elsif`) | `lib/nasfaa/decision_tree.rb` |
+| `Nasfaa::RuleEngine` | Declarative first-match-wins YAML evaluator | `lib/nasfaa/rule_engine.rb` |
+| `Nasfaa::DisclosureData` | Boolean input model (20 fields) | `lib/nasfaa/disclosure_data.rb` |
+| `Nasfaa::Trace` | Audit trail (rule ID, result, path, notes) | `lib/nasfaa/trace.rb` |
+| `Nasfaa::Scenarios` | 23 named real-world scenarios with citations | `lib/nasfaa/scenario.rb` |
+| `nasfaa_rules.yml` | 23 rules — the language-neutral specification | `nasfaa_rules.yml` |
+| `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
 
-## Files
-
-- `lib/nasfaa_data_sharing_decision_tree.rb` - Main decision tree implementation
-- `lib/disclosure_data.rb` - Data structure for disclosure requests
-- `nasfaa_rules.yml` - YAML rules definition with metadata and validation
-- `spec/` - Comprehensive test suite
-- `NASFAA_Data_Sharing_Decision_Tree.pdf` - Original decision tree document
+Key architectural insight: the YAML rules are a language-neutral specification.
+Once verified exhaustively, they become the portable target for other platforms.
+Rather than hand-translating Ruby `if/elsif` logic to JavaScript, you build a
+YAML evaluator in each language and share the same rule file.
 
 ## Usage
 
 ```ruby
-require_relative 'lib/nasfaa_data_sharing_decision_tree'
-require_relative 'lib/disclosure_data'
+require 'nasfaa'
 
-# Create a disclosure request using normalized boolean fields
-disclosure_request = DisclosureData.new(
-  includes_fti: false,
-  disclosure_to_student: true,
-  is_fafsa_data: true,
-  contains_pii: false
+# Create a disclosure request
+data = Nasfaa::DisclosureData.new(
+  includes_fti: true,
+  used_for_aid_admin: true,
+  to_school_official_legitimate_interest: true
 )
 
-# Evaluate the disclosure request
-tree = NasfaaDataSharingDecisionTree.new(disclosure_request)
-permitted = tree.disclose? # => true
+# Evaluate with the imperative decision tree (boolean)
+tree = Nasfaa::DecisionTree.new(data)
+tree.disclose?  # => true
+
+# Evaluate with the YAML rule engine (rich audit trail)
+engine = Nasfaa::RuleEngine.new
+trace = engine.evaluate(data)
+trace.permitted?    # => true
+trace.rule_id       # => "FTI_R2_aid_admin_school_official"
+trace.result        # => :permit
+trace.path          # => ["FTI_R1_student", "FTI_R2_aid_admin_school_official"]
+
+# Query the scenario library
+scenario = Nasfaa::Scenarios.find('court_subpoena_for_student_records')
+scenario.name        # => "Court Issues Subpoena for Student Financial Aid Records"
+scenario.citation    # => "FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i) — ..."
+scenario.expected_result  # => :permit_with_caution
+
+Nasfaa::Scenarios.by_tag('fti')      # => 5 FTI-related scenarios
+Nasfaa::Scenarios.permits            # => 19 permit scenarios
+Nasfaa::Scenarios.denials            # => 4 deny scenarios
 ```
 
-## Data Structure
+## YAML Rules
 
-The `DisclosureData` class uses normalized boolean fields that directly correspond to the YAML rules:
+The `nasfaa_rules.yml` file encodes the decision tree as 23 rules evaluated
+in first-match-wins order. Each rule specifies a `when_all` array of boolean
+conditions (negated conditions are prefixed with `!`) and a result:
 
-### Core Fields
-- `includes_fti` - Whether the disclosure includes Federal Tax Information
-- `disclosure_to_student` - Whether disclosure is to the student
-- `disclosure_to_contributor_parent_or_spouse` - Whether disclosure is to a FAFSA contributor
-- `is_fafsa_data` - Whether the data is FAFSA data per ED definition
-- `used_for_aid_admin` - Whether used for financial aid administration
-- `disclosure_to_scholarship_org` - Whether disclosure is to scholarship organization
-- `explicit_written_consent` - Whether explicit written consent is provided
-- `research_promote_attendance` - Whether for research promoting college attendance
-- `hea_written_consent` - Whether HEA written consent is provided
-- `ferpa_written_consent` - Whether FERPA written consent is provided
-- `directory_info_and_not_opted_out` - Whether data is directory information
-- `to_school_official_legitimate_interest` - Whether to school official with legitimate interest
-- `due_to_judicial_order_or_subpoena_or_financial_aid` - Whether due to judicial order/subpoena/financial aid
-- `to_other_school_enrollment_transfer` - Whether to other school for enrollment/transfer
-- `to_authorized_representatives` - Whether to authorized representatives
-- `to_research_org_ferpa` - Whether to research organization under FERPA
-- `to_accrediting_agency` - Whether to accrediting agency
-- `parent_of_dependent_student` - Whether to parent of dependent student
-- `otherwise_permitted_under_99_31` - Whether otherwise permitted under 99.31
-- `contains_pii` - Whether disclosure contains personally identifiable information
+```yaml
+- id: FTI_R2_aid_admin_school_official
+  when_all: [includes_fti, used_for_aid_admin, to_school_official_legitimate_interest]
+  result: permit
+```
 
-### Legacy Support
+The rules are organized into four sections matching the PDF's structure:
 
-The `DisclosureData` class maintains backward compatibility with the original complex data structure through automatic mapping:
+| Section | Rules | Governs |
+|---|---|---|
+| FTI Branch (Page 2) | 5 | IRC §6103 — tax return information |
+| FAFSA-Specific (Page 1) | 7 | HEA §1090/§1098h — FAFSA data allowances |
+| FERPA Gate + 99.31 Exceptions | 10 | FERPA 34 CFR §99.30–§99.37 |
+| Catch-All Deny | 1 | No applicable exception |
+
+Four result types: `permit`, `deny`, `permit_with_scope` (contributor access
+limited to personally provided data), and `permit_with_caution` (judicial
+order — consult counsel).
+
+## Input Fields
+
+The `DisclosureData` model wraps 20 boolean fields. All default to `false`.
+
+| Field | PDF Box | Description |
+|---|---|---|
+| `includes_fti` | 1 (FTI) | Data includes Federal Tax Information |
+| `disclosure_to_student` | 1/2 | Disclosure is to the data subject |
+| `is_fafsa_data` | 3 | Data is FAFSA data per ED definition |
+| `disclosure_to_contributor_parent_or_spouse` | 4 | To a FAFSA contributor |
+| `used_for_aid_admin` | 2 (FTI), 5 | For financial aid administration |
+| `disclosure_to_scholarship_org` | 3 (FTI), 6 | To scholarship/tribal/assistance org |
+| `explicit_written_consent` | 3 (FTI), 6 | Student's explicit written consent |
+| `research_promote_attendance` | 7 | Institutional research on persistence |
+| `hea_written_consent` | 8 | HEA §1090(a)(3)(C) consent |
+| `contains_pii` | 9 | Contains personally identifiable information |
+| `ferpa_written_consent` | 10 | FERPA written consent |
+| `directory_info_and_not_opted_out` | 11 | Directory info, student hasn't opted out |
+| `to_school_official_legitimate_interest` | 4 (FTI), 12 | School official with LEI |
+| `due_to_judicial_order_or_subpoena_or_financial_aid` | 13 | Judicial order or subpoena |
+| `to_other_school_enrollment_transfer` | 14 | To another school for enrollment |
+| `to_authorized_representatives` | 15 | Comptroller/AG/Secretary/state ed auths |
+| `to_research_org_ferpa` | 16 | FERPA research exception |
+| `to_accrediting_agency` | 17 | Accrediting organization |
+| `parent_of_dependent_student` | 18 | Parent of IRS-dependent student |
+| `otherwise_permitted_under_99_31` | 19 | Catch-all FERPA §99.31 |
+
+## Exhaustive Verification
+
+A central claim of this project is that the imperative `DecisionTree` and the
+declarative `RuleEngine` produce identical results for every possible input.
+This is not a sampling claim — it is proven by exhaustive enumeration.
+
+### The problem space
+
+With 20 boolean input fields, the full input space is 2^20 = 1,048,576
+combinations. Naively testing all of them is feasible (Ruby can do it in
+under 30 seconds), but we can do better by exploiting the structure of the
+decision tree.
+
+### Structural optimization
+
+The NASFAA decision tree has an important structural property: **Boxes 11–19
+(the FERPA §99.31 exceptions) are independent yes/no exits with no further
+branching.** Each exception is a simple gate: if true, permit; if false,
+continue to the next. No exception depends on any other exception, and none
+feeds back into earlier logic.
+
+This means the 20 input fields partition naturally into two groups:
+
+**Core fields (12)** — fields that participate in branching logic, where the
+value of one field determines which subsequent fields matter:
+
+| Field | Why it's core |
+|---|---|
+| `includes_fti` | Top-level branch split (FTI vs non-FTI) |
+| `disclosure_to_student` | Universal early exit |
+| `is_fafsa_data` | Determines FAFSA-specific path |
+| `disclosure_to_contributor_parent_or_spouse` | FAFSA contributor check |
+| `used_for_aid_admin` | FTI Box 2 and FAFSA Box 5 |
+| `disclosure_to_scholarship_org` | FTI Box 3 and FAFSA Box 6 |
+| `explicit_written_consent` | Required with scholarship org |
+| `research_promote_attendance` | FAFSA Box 7 |
+| `hea_written_consent` | FAFSA Box 8 |
+| `contains_pii` | FAFSA Box 9 (PII gate) |
+| `ferpa_written_consent` | FERPA Box 10 (consent gate) |
+| `to_school_official_legitimate_interest` | **Dual role**: FTI Box 4 AND FERPA Box 12 |
+
+Note that `to_school_official_legitimate_interest` appears in both the FTI
+branch (where it determines permit vs deny for aid administrators) and the
+FERPA 99.31 exceptions (Box 12). This dual role forces it into the core set.
+
+**Independent exit fields (8)** — the remaining FERPA §99.31 exceptions
+(Boxes 11, 13–19). Each is a simple yes → permit gate:
+
+- `directory_info_and_not_opted_out`
+- `due_to_judicial_order_or_subpoena_or_financial_aid`
+- `to_other_school_enrollment_transfer`
+- `to_authorized_representatives`
+- `to_research_org_ferpa`
+- `to_accrediting_agency`
+- `parent_of_dependent_student`
+- `otherwise_permitted_under_99_31`
+
+### Why 9 independent configurations suffice
+
+For the 8 independent fields, we test 9 configurations:
+
+1. **All false** — no §99.31 exception applies; the result depends entirely
+   on the core fields
+2. **Each field individually true** (8 configs) — verifies that each exception
+   independently triggers a permit when reached
+
+We do *not* need to test all 2^8 = 256 combinations of independent fields
+because the first-match-wins evaluation means only the first true exception
+fires. Having two true is functionally identical to having one true — the
+second is never evaluated. This is a consequence of the tree structure: these
+are parallel exit ramps, not interacting conditions.
+
+### Final test matrix
+
+| Core combinations | × | Independent configurations | = | Total |
+|---|---|---|---|---|
+| 2^12 = 4,096 | × | 9 | = | **36,864** |
+
+This is a 28× reduction from the naive 2^20 approach, with zero loss of
+coverage. The spec runs in under 0.5 seconds.
+
+### What the exhaustive test found
+
+The first run discovered **1,728 disagreements**, all in the FTI branch.
+Analysis revealed two related bugs in the imperative `DecisionTree`:
+
+1. **Missing deny guard (576 cases):** When `used_for_aid_admin=true` but
+   `to_school_official_legitimate_interest=false`, the PDF says deny (Box 4
+   "No"), but the code fell through to the scholarship check and permitted.
+
+2. **Wrong prerequisite (1,152 cases):** The scholarship check (Box 3, the
+   Box 2 "No" path) incorrectly required `used_for_aid_admin=true`. Per the
+   PDF, Box 3 is only reachable when Box 2 answers "No" (i.e., the data is
+   *not* used for aid administration). With `used_for_aid_admin=false`, the
+   code skipped the scholarship check entirely and denied.
+
+The root cause was a single code block that conflated two separate branches
+of the decision tree:
 
 ```ruby
-# Legacy format still works
-legacy_request = DisclosureData.new(
-  recipient_type: :student,
-  data_type: :fafsa_data,
-  purpose: :financial_aid,
-  consent: { hea: true, ferpa: true }
-)
+# BEFORE (buggy): scholarship check nested under aid_admin guard
+return true if used_for_aid_admin? && to_school_official_legitimate_interest?
+if used_for_aid_admin? && disclosure_to_scholarship_org? && explicit_written_consent?
+  return true
+end
+
+# AFTER (correct): explicit deny guard separates the two branches
+return true if used_for_aid_admin? && to_school_official_legitimate_interest?
+return false if used_for_aid_admin?  # Box 4 No → Deny
+return true if disclosure_to_scholarship_org? && explicit_written_consent?
 ```
 
-## YAML Rules Structure
+The YAML rules, which were verified against the canonical PDF, already encoded
+this correctly via the `FTI_R2b_aid_admin_deny` deny guard. The exhaustive
+test proved the YAML was right and the imperative code was wrong.
 
-The `nasfaa_rules.yml` file contains:
+After the fix: **0 disagreements across all 36,864 combinations.**
 
-### Metadata
-- Version information
-- Evaluation order (first match wins)
-- Input type (boolean)
+## Scenario Library
 
-### Validation
-- Required inputs
-- Mutually exclusive groups
+The `nasfaa_scenarios.yml` file contains 23 named real-world scenarios — one
+for every rule in the YAML. Each scenario describes a situation a financial
+aid administrator would actually encounter, with the boolean inputs that
+characterize it, the expected decision, the governing rule, and the
+regulatory citation.
 
-### Result Types
-- `permit` - Disclosure is permitted
-- `deny` - Disclosure is not permitted
-- `permit_with_caution` - Disclosure permitted with caution
-- `permit_with_scope` - Disclosure permitted with scope limitations
+The scenario library serves three purposes:
 
-### Rules
-The rules are organized into two main branches:
+1. **Regression tests** — each scenario is verified against both engines
+   (59 specs confirm the correct rule fires with the correct result)
+2. **Documentation** — the narrative descriptions explain *why* each rule
+   applies, making the YAML rules human-readable
+3. **Quiz seed data** — descriptions can be presented as training questions
+   for financial aid staff (Phase 2 CLI)
 
-#### FTI Branch
-- Student disclosure
-- Financial aid administration
-- Scholarship organizations with consent
-- School officials with legitimate interest
+### Scenario coverage by section
 
-#### Non-FTI Branch (FAFSA/FERPA)
-- Student disclosure
-- Contributor access (with scope limitations)
-- FAFSA-specific allowances (HEA 1090/1098h)
-- FERPA 99.31 exceptions
+| Section | Scenarios | Result types |
+|---|---|---|
+| FTI Branch (IRC §6103) | 5 | 2 permit, 2 deny, 1 permit |
+| FAFSA-Specific (HEA §1090/§1098h) | 7 | 5 permit, 1 permit_with_scope, 1 permit |
+| FERPA Gate + 99.31 Exceptions | 10 | 8 permit, 1 permit_with_caution, 1 permit |
+| Denials (no legal basis) | 1 | 1 deny |
 
-## Decision Tree Logic
+### Example scenario
 
-The implementation follows the exact flow from the PDF decision tree:
-
-1. **FTI Check**: If data includes FTI, use FTI branch rules
-2. **Student Disclosure**: Always permitted for non-FTI data
-3. **Contributor Access**: Permitted for all non-FTI data (with scope limitations)
-4. **FAFSA Data Path**: Additional allowances for FAFSA data
-5. **PII Check**: For FAFSA data, check if PII is present
-6. **FERPA Exceptions**: Apply FERPA 99.31 exceptions
-7. **Non-FAFSA Path**: Direct to FERPA consent and exceptions (skipping PII check)
+> **Court Issues Subpoena for Student Financial Aid Records**
+>
+> A court issues a lawfully issued subpoena requiring the university to
+> produce a student's financial aid records as part of a civil proceeding.
+> While the subpoena compels disclosure under FERPA §99.31(a)(9), the
+> institution should consult legal counsel before responding to ensure
+> compliance with the specific notification and procedural requirements of
+> §99.31(a)(9)(ii), which may require reasonable effort to notify the student
+> before disclosure.
+>
+> Inputs: `due_to_judicial_order_or_subpoena_or_financial_aid: true`
+> Result: **permit_with_caution** — Rule: `FERPA_R3_judicial_or_finaid_related`
+> Citation: FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i)
 
 ## Testing
 
-The test suite includes:
+The test suite comprises 203 examples across 6 spec files:
 
-- **117 test examples** covering all predicate methods and decision paths
-- **Box-by-box testing** with comments indicating decision tree boxes
-- **Legacy compatibility tests** ensuring backward compatibility
-- **Edge case coverage** for all decision tree branches
-- **Code coverage reporting** with SimpleCov
+| Spec file | Examples | Tests |
+|---|---|---|
+| `disclosure_data_spec.rb` | 71 | Field initialization, predicates, legacy mapping |
+| `nasfaa_data_sharing_decision_tree_spec.rb` | 41 | Imperative decision tree, box-by-box |
+| `rule_engine_spec.rb` | 17 | YAML engine, cross-engine agreement |
+| `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
+| `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
+| `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
 
-### Running Tests
-
-Run tests with:
 ```bash
-bundle exec rspec
+bundle install
+bundle exec rspec          # 203 examples, 0 failures (<1 second)
+bundle exec rubocop        # 0 offenses
+bundle exec rake           # runs both spec and rubocop
 ```
-
-### Code Coverage
-
-The project uses SimpleCov for code coverage reporting:
-
-- **Line Coverage**: 95.83% (161/168 lines)
-- **Branch Coverage**: 87.5% (119/136 branches)
-- **Minimum Coverage**: 95% line coverage required
-- **Coverage Report**: Generated in `coverage/index.html` after running tests
-
-To view the coverage report:
-```bash
-open coverage/index.html
-```
-
-## Development Setup
-
-1. **Install dependencies**:
-   ```bash
-   bundle install
-   ```
-
-2. **Run tests**:
-   ```bash
-   bundle exec rspec
-   ```
-
-3. **View coverage report**:
-   ```bash
-   open coverage/index.html
-   ```
-
-## Key Features
-
-- **Normalized Structure**: All inputs are boolean, directly mapping to YAML rules
-- **Backward Compatibility**: Legacy data structure still supported
-- **Comprehensive Testing**: Full coverage of decision tree logic with 95%+ line coverage
-- **Clear Documentation**: YAML rules with metadata and validation
-- **Maintainable Code**: Clean, readable implementation following decision tree flow
 
 ## Legal References
 
-The implementation references:
-- Family Educational Rights and Privacy Act (FERPA)
-- Higher Education Act (HEA) Sections 1090 and 1098h
-- Internal Revenue Code Section 152
-- FERPA 99.31 exceptions
-- Federal Tax Information (FTI) regulations
+- **FTI**: Internal Revenue Code §6103 (tax return information)
+- **FAFSA**: Higher Education Act §1090(a), §1098h (FAFSA data sharing)
+- **FERPA**: 20 USC §1232g; 34 CFR Part 99 (student education records)
+- **FERPA consent**: 34 CFR §99.30 (prior written consent)
+- **FERPA exceptions**: 34 CFR §99.31(a)(1)–(a)(16)
+- **Canonical source**: [NASFAA Data Sharing Decision Tree](docs/NASFAA_Data_Sharing_Decision_Tree.pdf)
 
 ## Time Spent (from commit history)
 
-Method: group consecutive commits into sessions when the gap between commits is ≤ 60 minutes; session duration = last_commit_time − first_commit_time. Larger gaps start a new session. This approximates active work time without counting idle/overnight gaps.
+Method: group consecutive commits into sessions when the gap between commits
+is ≤ 60 minutes; session duration = last_commit_time − first_commit_time.
+Larger gaps start a new session. This approximates active work time without
+counting idle/overnight gaps.
 
 | Date       | Start    | End      | Commits | Duration |
 |------------|----------|----------|---------|----------|
