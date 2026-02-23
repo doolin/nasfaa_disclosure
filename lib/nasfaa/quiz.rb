@@ -100,20 +100,42 @@ module Nasfaa
 
     def ask_permit_or_deny
       @output.puts
-      @output.print 'Should this disclosure be permitted or denied? [permit/deny/quit] > '
 
-      loop do
-        answer = @input.gets&.strip&.downcase
-        case answer
-        when 'permit', 'p' then return :permit
-        when 'deny', 'd' then return :deny
-        when 'quit', 'q' then return :quit
-        when nil
-          raise 'Unexpected end of input'
-        else
-          @output.print 'Please answer permit, deny, or quit > '
+      if single_key?
+        @output.print '[p/d/q] > '
+        loop do
+          case read_char
+          when 'p' then return :permit
+          when 'd' then return :deny
+          when 'q' then return :quit
+          end
+        end
+      else
+        @output.print 'Should this disclosure be permitted or denied? [permit/deny/quit] > '
+        loop do
+          answer = @input.gets&.strip&.downcase
+          case answer
+          when 'permit', 'p' then return :permit
+          when 'deny', 'd' then return :deny
+          when 'quit', 'q' then return :quit
+          when nil
+            raise 'Unexpected end of input'
+          else
+            @output.print 'Please answer permit, deny, or quit > '
+          end
         end
       end
+    end
+
+    def single_key?
+      @input.respond_to?(:getch)
+    end
+
+    def read_char
+      char = @input.getch.downcase
+      @output.print char
+      @output.puts
+      char
     end
 
     def check_answer(answer, question)

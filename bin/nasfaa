@@ -8,6 +8,7 @@ command = ARGV[0]
 
 case command
 when 'walkthrough'
+  require 'io/console'
   puts "NASFAA Data Sharing Decision Tree — Interactive Walkthrough"
   puts "v#{Nasfaa::VERSION}"
   puts
@@ -17,6 +18,7 @@ when 'walkthrough'
   walkthrough = Nasfaa::Walkthrough.new
   walkthrough.run
 when 'quiz'
+  require 'io/console'
   random = ARGV.include?('--random')
   puts "NASFAA Data Sharing Decision Tree — Quiz Mode#{random ? ' (Random)' : ''}"
   puts "v#{Nasfaa::VERSION}"

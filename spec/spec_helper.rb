@@ -8,6 +8,21 @@ end
 
 require 'nasfaa'
 
+# A minimal IO mock that responds to getch, simulating single-key terminal mode.
+# Used in walkthrough and quiz specs to test the getch-based input path.
+class SingleKeyInput
+  def initialize(chars)
+    @chars = chars.chars
+  end
+
+  def getch
+    char = @chars.shift
+    raise 'Unexpected end of input' unless char
+
+    char
+  end
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

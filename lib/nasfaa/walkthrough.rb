@@ -72,19 +72,40 @@ module Nasfaa
       @output.puts "--- Box #{node['box']} ---"
       @output.puts node['text']
       @output.puts "  (#{node['help']})" if node['help']
-      @output.print '[yes/no] > '
 
-      loop do
-        answer = @input.gets&.strip&.downcase
-        case answer
-        when 'yes', 'y' then return true
-        when 'no', 'n' then return false
-        when nil
-          raise 'Unexpected end of input'
-        else
-          @output.print 'Please answer yes or no > '
+      if single_key?
+        @output.print '[y/n] > '
+        loop do
+          case read_char
+          when 'y' then return true
+          when 'n' then return false
+          end
+        end
+      else
+        @output.print '[yes/no] > '
+        loop do
+          answer = @input.gets&.strip&.downcase
+          case answer
+          when 'yes', 'y' then return true
+          when 'no', 'n' then return false
+          when nil
+            raise 'Unexpected end of input'
+          else
+            @output.print 'Please answer yes or no > '
+          end
         end
       end
+    end
+
+    def single_key?
+      @input.respond_to?(:getch)
+    end
+
+    def read_char
+      char = @input.getch.downcase
+      @output.print char
+      @output.puts
+      char
     end
 
     def record_answer(node, response)

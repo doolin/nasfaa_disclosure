@@ -195,4 +195,61 @@ RSpec.describe Nasfaa::Quiz do
       expect(output).to match(/\d+% correct/)
     end
   end
+
+  # ------------------------------------------------------------------
+  # Single-key mode (getch)
+  # ------------------------------------------------------------------
+  describe 'single-key mode' do
+    def run_quiz_single_key(chars, random: false)
+      input = SingleKeyInput.new(chars.join)
+      output = StringIO.new
+      quiz = described_class.new(input: input, output: output, random: random)
+      srand(42)
+      correct, total = quiz.run
+      [correct, total, output.string, quiz]
+    end
+
+    it 'accepts single-character p/d input for all 23 scenarios' do
+      answers = Array.new(23, 'p')
+      _, total, output, = run_quiz_single_key(answers)
+      expect(total).to eq(23)
+      expect(output).to include('FINAL SCORE')
+    end
+
+    it 'shows [p/d/q] prompt in single-key mode' do
+      answers = Array.new(23, 'p')
+      _, _, output, = run_quiz_single_key(answers)
+      expect(output).to include('[p/d/q]')
+      expect(output).not_to include('[permit/deny/quit]')
+    end
+
+    it 'quits on q keypress and shows final score' do
+      _, total, output, = run_quiz_single_key(%w[p q])
+      expect(total).to eq(1)
+      expect(output).to include('FINAL SCORE')
+    end
+
+    it 'echoes the pressed key in the output' do
+      _, _, output, = run_quiz_single_key(%w[p q])
+      expect(output).to include('p')
+    end
+
+    it 'accepts d for deny in single-key mode' do
+      deny_scenario = Nasfaa::Scenarios.all.find { |s| s.expected_result == :deny }
+      input = SingleKeyInput.new('d')
+      output = StringIO.new
+      quiz = described_class.new(input: input, output: output)
+      allow(Nasfaa::Scenarios).to receive(:all).and_return([deny_scenario])
+      correct, total = quiz.run
+      expect(total).to eq(1)
+      expect(correct).to eq(1)
+    end
+
+    it 'silently ignores invalid keys and loops until a valid key is pressed' do
+      # 'x' is invalid — echoed but ignored; 'q' then quits
+      _, total, output, = run_quiz_single_key(%w[x q])
+      expect(total).to eq(0)
+      expect(output).to include('x')
+    end
+  end
 end

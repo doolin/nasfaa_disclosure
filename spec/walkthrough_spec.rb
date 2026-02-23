@@ -406,4 +406,47 @@ RSpec.describe Nasfaa::Walkthrough do
       expect { walkthrough.run }.to raise_error(RuntimeError, 'Unexpected end of input')
     end
   end
+
+  # ------------------------------------------------------------------
+  # Single-key mode (getch)
+  # ------------------------------------------------------------------
+  describe 'single-key mode' do
+    def run_walkthrough_single_key(*chars)
+      input = SingleKeyInput.new(chars.join)
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      trace = walkthrough.run
+      [trace, output.string, walkthrough]
+    end
+
+    it 'navigates using single-character getch input (yy → FTI_R1_student)' do
+      trace, = run_walkthrough_single_key('y', 'y')
+      expect(trace.rule_id).to eq('FTI_R1_student')
+      expect(trace.result).to eq(:permit)
+    end
+
+    it 'navigates a deny path (ynnnd → FTI_DENY_default)' do
+      trace, = run_walkthrough_single_key('y', 'n', 'n', 'n')
+      expect(trace.rule_id).to eq('FTI_DENY_default')
+      expect(trace.result).to eq(:deny)
+    end
+
+    it 'shows [y/n] prompt instead of [yes/no]' do
+      _, output, = run_walkthrough_single_key('y', 'y')
+      expect(output).to include('[y/n]')
+      expect(output).not_to include('[yes/no]')
+    end
+
+    it 'echoes the pressed key in the output' do
+      _, output, = run_walkthrough_single_key('y', 'y')
+      expect(output).to include('y')
+    end
+
+    it 'silently ignores invalid keys and loops until a valid key is pressed' do
+      # 'x' is invalid — echoed but ignored; 'y', 'y' complete the path
+      trace, output, = run_walkthrough_single_key('x', 'y', 'y')
+      expect(trace.rule_id).to eq('FTI_R1_student')
+      expect(output).to include('x')
+    end
+  end
 end
