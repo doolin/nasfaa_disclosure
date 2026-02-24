@@ -1,12 +1,36 @@
 # NASFAA Data Sharing Decision Tree
 
+## TL;DR
+
+```bash
+bundle install
+bin/nasfaa walkthrough           # step through the decision tree (single-keystroke y/n)
+bin/nasfaa quiz                  # permit/deny quiz from 23 real scenarios
+bin/nasfaa quiz --random         # practice with randomly generated inputs
+bin/nasfaa evaluate ynnyp        # non-interactive: navigate the tree + assert result
+bin/nasfaa walkthrough --color=none  # disable color (default: dark)
+```
+
+A Ruby CLI gem implementing the NASFAA FERPA/FAFSA student financial-aid data disclosure decision tree. Two independent evaluation engines (imperative Ruby and declarative YAML) proven equivalent across all 36,864 valid input combinations. Full audit trail with regulatory citations on every decision.
+
+---
+
 <details>
 <summary>NEXT:</summary>
 
-- Phase 2: Quiz and Evaluate CLI modes
-- Phase 3: Visualization (Mermaid/Graphviz diagram generation)
-- Phase 4: Node.js + Browser port
-- See [docs/ROADMAP.md](docs/ROADMAP.md) for full plan.
+Phase 2.5 CLI Polish (in progress):
+- [x] Single-keystroke input (`y`/`n` and `p`/`d`/`q` register without Enter)
+- [x] Colorized output — colorblind-safe palette; `--color=dark|light|none`
+- [ ] Box-draw formatting
+- [ ] PDF-exact text mode (`--pdf-text`)
+- [ ] Rich evaluate output with scenario narrative
+
+Upcoming:
+- Phase 3: Visualization — Mermaid diagram generated from `nasfaa_questions.yml`
+- Phase 4: Node.js + Browser port (shared YAML rules, no re-translation)
+- Phase 5: Lambda API
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for full plan.
 </details>
 
 
@@ -86,8 +110,8 @@ predicate resolves to a boolean.
 
 ## Implementation
 
-- Cursor IDE.
-- PDF read by Cursor.
+- Cursor IDE (initial implementation); Claude Code (Phase 1.5 onward).
+- PDF read by the AI agent.
 - IDE writes as much of the implementation as possible
 in agent mode.
 - Prompt to refine the implementation as necessary.
@@ -187,6 +211,7 @@ evaluation engines that have been proven equivalent across all possible inputs:
 | `Nasfaa::Walkthrough` | Interactive DAG-based question walkthrough | `lib/nasfaa/walkthrough.rb` |
 | `Nasfaa::Quiz` | Scenario and random quiz modes | `lib/nasfaa/quiz.rb` |
 | `Nasfaa::Evaluate` | Non-interactive compact-string evaluator | `lib/nasfaa/evaluate.rb` |
+| `Nasfaa::Colorizer` | ANSI color wrapper; colorblind-safe palette | `lib/nasfaa/colorizer.rb` |
 | `nasfaa_rules.yml` | 22 rules — the language-neutral specification | `nasfaa_rules.yml` |
 | `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
 | `nasfaa_questions.yml` | Decision tree DAG (23 questions, 22 results) | `nasfaa_questions.yml` |
@@ -240,7 +265,11 @@ the governing rule, regulatory citation, and the full path of boxes traversed.
 
 ```bash
 bin/nasfaa walkthrough
+bin/nasfaa walkthrough --color=none   # disable color
+bin/nasfaa walkthrough --color=light  # palette for light terminals
 ```
+
+Input registers on a single keypress (`y`/`n`) — no Enter required.
 
 ```
 NASFAA Data Sharing Decision Tree — Interactive Walkthrough
@@ -253,11 +282,11 @@ The walkthrough follows the NASFAA PDF's two-page flowchart.
 Does the disclosure include Federal Tax Information (FTI)?
   (FTI includes any tax return data obtained through the IRS Data Retrieval Tool
    or direct data exchange with the IRS.)
-[yes/no] > no
+[y/n] > n
 
 --- Box 2 (Page 1) ---
 Is the disclosure to the student (the data subject)?
-[yes/no] > yes
+[y/n] > y
 
 ============================================================
 RESULT: PERMIT
@@ -336,7 +365,7 @@ student's financial aid package ...
 Inputs:
   parent_of_dependent_student: true
 
-Should this disclosure be permitted or denied? [permit/deny] > permit
+[p/d/q] > p
 
 CORRECT!
 Answer: permit
@@ -345,10 +374,9 @@ Citation: FERPA 34 CFR §99.31(a)(8) — ...
 Score:    1/1
 ```
 
-Accepts abbreviated input (`p`/`d`) and mixed case. Displays a running score
-after each question, plus a final score with percentage at the end. For
-`permit_with_scope` and `permit_with_caution` scenarios, answering "permit"
-is counted as correct.
+Input registers on a single keypress (`p`/`d`/`q`) — no Enter required.
+Accepts `--color=dark|light|none`. For `permit_with_scope` and
+`permit_with_caution` scenarios, answering "permit" is counted as correct.
 
 ## Evaluate Mode (CLI)
 
@@ -567,8 +595,8 @@ The scenario library serves three purposes:
    (59 specs confirm the correct rule fires with the correct result)
 2. **Documentation** — the narrative descriptions explain *why* each rule
    applies, making the YAML rules human-readable
-3. **Quiz seed data** — descriptions can be presented as training questions
-   for financial aid staff (Phase 2 CLI)
+3. **Quiz seed data** — descriptions are presented as training questions
+   for financial aid staff via `bin/nasfaa quiz`
 
 ### Scenario coverage by section
 
@@ -597,7 +625,7 @@ The scenario library serves three purposes:
 
 ## Testing
 
-The test suite comprises 322 examples across 9 spec files:
+The test suite comprises 821 examples across 11 spec files:
 
 | Spec file | Examples | Tests |
 |---|---|---|
@@ -607,16 +635,36 @@ The test suite comprises 322 examples across 9 spec files:
 | `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
 | `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
-| `walkthrough_spec.rb` | 66 | DAG structure, all 22 paths, cross-verification, I/O |
-| `quiz_spec.rb` | 20 | Scenario mode, random mode, input handling, score tracking |
-| `evaluate_spec.rb` | 33 | All 22 paths, assertions, cross-verification, errors |
+| `walkthrough_spec.rb` | 72 | DAG structure, all 22 paths, cross-verification, I/O, single-key, nil-getch guard |
+| `quiz_spec.rb` | 26 | Scenario mode, random mode, input handling, score tracking, single-key |
+| `evaluate_spec.rb` | 48 | All 22 paths, assertions, cross-verification, input validation, errors |
+| `colorizer_spec.rb` | 21 | All three modes, all methods, invalid mode error |
+| `evaluate_mutation_spec.rb` | 451 | Input mutation testing — see below |
 
 ```bash
 bundle install
-bundle exec rspec          # 322 examples, 0 failures (<1 second)
+bundle exec rspec          # 821 examples, 0 failures (~2 seconds)
 bundle exec rubocop        # 0 offenses
 bundle exec rake           # runs both spec and rubocop
 ```
+
+### Input mutation testing
+
+`evaluate_mutation_spec.rb` specifically calls out the evaluator's input handling
+with 451 systematically generated examples across five mutation categories:
+
+| Category | Examples | What it tests |
+|---|---|---|
+| **1. Prefix exhaustion** | ~129 | Every proper prefix of every known path raises `ArgumentError` naming the prefix and answer count |
+| **2. Suffix extension** | 44 | Appending one extra answer to any complete path emits the correct `WARNING` with exact counts and still reaches the right terminal |
+| **3. Single-character flip** | ~151 | Flipping each `y`↔`n` in every path routes to the precomputed expected terminal or raises `ArgumentError` — never `RuntimeError` |
+| **4. Invalid character injection** | ~87 | Every character outside `{y,n,p,d}` — full ASCII printable set, all whitespace, digits, punctuation, and 🐙 — raises `ArgumentError /Invalid characters/` |
+| **5. Assertion polarity** | 44 | Correct assertion → `passed == true`; wrong assertion → `passed == false` with `Assertion: FAIL` output |
+
+Category 3 expectations are **precomputed at spec load time**: the evaluator runs
+each flipped string once during collection and the `it` block simply verifies the
+result matches. This snapshot-style approach means any future change to the routing
+logic that alters which terminal a flip reaches will immediately fail the test.
 
 ## Legal References
 
@@ -643,8 +691,11 @@ counting idle/overnight gaps.
 | 2025-09-13 | 16:42:26 | 17:04:20 | 2       | 0:21:54  |
 | 2025-09-14 | 04:26:52 | 04:26:52 | 1       | 0:00:00  |
 | 2025-09-15 | 05:25:37 | 05:25:37 | 1       | 0:00:00  |
+| 2026-02-21 | 17:08:32 | 17:38:37 | 3       | 0:30:05  |
+| 2026-02-22 | 03:47:51 | 05:44:24 | 9       | 1:56:33  |
+| 2026-02-23 | 07:26:34 | ongoing  | 3+      | —        |
 
-Totals:
-- Active time: 4:05:38
-- Commits: 17
-- Note: 0-duration commits represent time that cannot be extracted solely from the commit log.
+Totals (through 2026-02-22):
+- Active time: 6:32:16
+- Commits: 29
+- Note: 0-duration commits represent time that cannot be extracted solely from the commit log. The 2026-02-23 session is ongoing.

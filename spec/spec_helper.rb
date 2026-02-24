@@ -7,6 +7,7 @@ SimpleCov.start do
 end
 
 require 'nasfaa'
+require_relative 'support/paths'
 
 # A minimal IO mock that responds to getch, simulating single-key terminal mode.
 # Used in walkthrough and quiz specs to test the getch-based input path.
@@ -20,6 +21,18 @@ class SingleKeyInput
     raise 'Unexpected end of input' unless char
 
     char
+  end
+end
+
+# A getch-capable input that returns nil when exhausted (mimics StringIO#getch
+# after io/console is loaded).  Used to test the nil-guard in Walkthrough#read_char.
+class NilGetchInput
+  def initialize(chars)
+    @chars = chars.chars
+  end
+
+  def getch
+    @chars.shift # returns nil when empty
   end
 end
 

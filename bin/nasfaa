@@ -5,6 +5,8 @@ require 'bundler/setup'
 require 'nasfaa'
 
 command = ARGV[0]
+color_mode = ARGV.grep(/\A--color=/).first&.split('=', 2)&.last&.to_sym || :dark
+colorizer = Nasfaa::Colorizer.new(mode: color_mode)
 
 case command
 when 'walkthrough'
@@ -15,7 +17,7 @@ when 'walkthrough'
   puts "Answer each question with 'yes' or 'no' to navigate the decision tree."
   puts "The walkthrough follows the NASFAA PDF's two-page flowchart."
 
-  walkthrough = Nasfaa::Walkthrough.new
+  walkthrough = Nasfaa::Walkthrough.new(colorizer: colorizer)
   walkthrough.run
 when 'quiz'
   require 'io/console'
@@ -25,7 +27,7 @@ when 'quiz'
   puts
   puts "Answer 'permit' or 'deny' for each disclosure scenario."
 
-  quiz = Nasfaa::Quiz.new(random: random)
+  quiz = Nasfaa::Quiz.new(random: random, colorizer: colorizer)
   quiz.run
 when 'evaluate'
   compact = ARGV[1]
@@ -36,8 +38,14 @@ when 'evaluate'
     puts 'Example: nasfaa evaluate ynnyp'
     exit 1
   end
-  evaluator = Nasfaa::Evaluate.new(compact)
-  evaluator.run
+  begin
+    evaluator = Nasfaa::Evaluate.new(compact)
+    evaluator.run
+  rescue ArgumentError => e
+    warn "Error: #{e.message}"
+    exit 1
+  end
+  exit 1 if evaluator.passed == false
 else
   puts "nasfaa v#{Nasfaa::VERSION}"
   puts

@@ -24,10 +24,11 @@ module Nasfaa
 
     attr_reader :correct, :total
 
-    def initialize(input: $stdin, output: $stdout, random: false)
+    def initialize(input: $stdin, output: $stdout, random: false, colorizer: Colorizer.new)
       @input = input
       @output = output
       @random = random
+      @colorizer = colorizer
       @engine = RuleEngine.new
       @correct = 0
       @total = 0
@@ -152,12 +153,14 @@ module Nasfaa
 
       @output.puts
       if is_correct
-        @output.puts 'CORRECT!'
+        @output.puts @colorizer.correct('CORRECT!')
       else
-        @output.puts 'INCORRECT.'
+        @output.puts @colorizer.incorrect('INCORRECT.')
       end
 
-      @output.puts "Answer: #{expected}"
+      answer_text = expected.to_s
+      colored_answer = answer_text.start_with?('permit') ? @colorizer.permit(answer_text) : @colorizer.deny(answer_text)
+      @output.puts "Answer: #{colored_answer}"
 
       rule_id = question.is_a?(Scenario) ? question.expected_rule_id : question[:rule_id]
       citation = question.is_a?(Scenario) ? question.citation : question[:citation]
@@ -170,7 +173,7 @@ module Nasfaa
     def display_final_score
       @output.puts
       @output.puts '=' * 60
-      @output.puts "FINAL SCORE: #{@correct}/#{@total}"
+      @output.puts @colorizer.bold("FINAL SCORE: #{@correct}/#{@total}")
       pct = @total.positive? ? (@correct * 100.0 / @total).round(0) : 0
       @output.puts "#{pct}% correct"
       @output.puts '=' * 60

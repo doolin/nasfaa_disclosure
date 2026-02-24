@@ -448,5 +448,14 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.rule_id).to eq('FTI_R1_student')
       expect(output).to include('x')
     end
+
+    it 'raises Unexpected end of input when getch returns nil (exhausted input)' do
+      # NilGetchInput returns nil instead of raising when empty, matching the
+      # behaviour of StringIO#getch (added by io/console) at EOF.
+      input = NilGetchInput.new('y') # only 1 answer for a 2-question path
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect { walkthrough.run }.to raise_error(RuntimeError, 'Unexpected end of input')
+    end
   end
 end

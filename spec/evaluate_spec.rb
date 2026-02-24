@@ -16,36 +16,10 @@ RSpec.describe Nasfaa::Evaluate do
   # All 22 terminal paths
   # ------------------------------------------------------------------
   describe 'all 22 terminal paths' do
-    # Compact strings derived from walkthrough_spec cross-verification paths.
-    # Each maps y=yes, n=no, with trailing assertion p=permit or d=deny.
-    paths = {
-      'FTI_R1_student' => { compact: 'yyp', result: :permit },
-      'FTI_R2_aid_admin_school_official' => { compact: 'ynyyp', result: :permit },
-      'FTI_R2b_aid_admin_deny' => { compact: 'ynynd', result: :deny },
-      'FTI_R3_scholarship_with_consent' => { compact: 'ynnyp', result: :permit },
-      'FTI_DENY_default' => { compact: 'ynnnd', result: :deny },
-      'FAFSA_R1_to_student' => { compact: 'nyp', result: :permit },
-      'FAFSA_R2_to_contributor_scope_limited' => { compact: 'nnyyp', result: :permit_with_scope },
-      'FAFSA_R3_used_for_aid_admin' => { compact: 'nnynyp', result: :permit },
-      'FAFSA_R4_scholarship_with_consent' => { compact: 'nnynnyyp', result: :permit },
-      'FAFSA_R6_HEA_written_consent' => { compact: 'nnynnnnyp', result: :permit },
-      'FAFSA_R7_no_pii' => { compact: 'nnynnnnnnp', result: :permit },
-      'FERPA_R0_written_consent' => { compact: 'nnnyp', result: :permit },
-      'FERPA_R1_directory_info' => { compact: 'nnnnyp', result: :permit },
-      'FERPA_R2_school_official_LEI' => { compact: 'nnnnnyp', result: :permit },
-      'FERPA_R3_judicial_or_finaid_related' => { compact: 'nnnnnnyp', result: :permit_with_caution },
-      'FERPA_R4_other_school_enrollment' => { compact: 'nnnnnnnyp', result: :permit },
-      'FERPA_R5_authorized_representatives' => { compact: 'nnnnnnnnyp', result: :permit },
-      'FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction' => { compact: 'nnnnnnnnnyp', result: :permit },
-      'FERPA_R7_accrediting_agency' => { compact: 'nnnnnnnnnnyp', result: :permit },
-      'FERPA_R8_parent_of_dependent_student' => { compact: 'nnnnnnnnnnnyp', result: :permit },
-      'FERPA_R9_otherwise_permitted_99_31' => { compact: 'nnnnnnnnnnnnyp', result: :permit },
-      'NONFTI_DENY_default' => { compact: 'nnnnnnnnnnnnnd', result: :deny }
-    }
-
-    paths.each do |rule_id, info|
+    TERMINAL_PATHS.each do |rule_id, info|
       it "evaluates #{rule_id}" do
-        trace, output, = run_evaluate(info[:compact])
+        compact = info[:compact] + assertion_char(info[:result])
+        trace, output, = run_evaluate(compact)
         expect(trace.rule_id).to eq(rule_id)
         expect(trace.result).to eq(info[:result])
         expect(output).to include("Rule:     #{rule_id}")
@@ -108,7 +82,77 @@ RSpec.describe Nasfaa::Evaluate do
   end
 
   # ------------------------------------------------------------------
-  # Error handling
+  # Too short — assertion without any y/n answers
+  # ------------------------------------------------------------------
+  describe 'too short (assertion-only string)' do
+    it 'raises ArgumentError for assertion-only permit string' do
+      expect { described_class.new('p') }.to raise_error(ArgumentError, %r{No y/n answers provided})
+    end
+
+    it 'raises ArgumentError for assertion-only deny string' do
+      expect { described_class.new('d') }.to raise_error(ArgumentError, %r{No y/n answers provided})
+    end
+
+    it 'raises at construction, not at run time' do
+      expect { described_class.new('p') }.to raise_error(ArgumentError)
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Too long — more answers than the path consumes
+  # ------------------------------------------------------------------
+  describe 'too long (excess answers)' do
+    it 'emits a warning when excess answers are provided' do
+      # yy navigates to FTI_R1_student after 2 answers; the 3rd 'n' is excess
+      _, output, = run_evaluate('yyn')
+      expect(output).to include('WARNING')
+      expect(output).to include('excess answer')
+    end
+
+    it 'warning reports the correct counts' do
+      # 3 answers provided, 2 consumed (path length for FTI_R1_student)
+      _, output, = run_evaluate('yyn')
+      expect(output).to match(/1 excess.*3 provided.*2 consumed/)
+    end
+
+    it 'still returns the correct result despite excess answers' do
+      trace, = run_evaluate('yyn')
+      expect(trace.rule_id).to eq('FTI_R1_student')
+    end
+
+    it 'does not warn when the answer count exactly matches the path length' do
+      _, output, = run_evaluate('yy')
+      expect(output).not_to include('WARNING')
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Wrong characters
+  # ------------------------------------------------------------------
+  describe 'wrong characters' do
+    it 'raises on a letter that is not y, n, p, or d' do
+      expect { described_class.new('ynxn') }.to raise_error(ArgumentError, /Invalid characters/)
+    end
+
+    it 'raises on a digit in the string' do
+      expect { described_class.new('y1n') }.to raise_error(ArgumentError, /Invalid characters/)
+    end
+
+    it 'raises on a space embedded in the string' do
+      expect { described_class.new('y n') }.to raise_error(ArgumentError, /Invalid characters/)
+    end
+
+    it 'reports all invalid characters in the error message' do
+      expect { described_class.new('axb') }.to raise_error(ArgumentError, /a.*x.*b|x.*a.*b|a, x, b/)
+    end
+
+    it 'raises on characters after assertion' do
+      expect { described_class.new('ynpn') }.to raise_error(ArgumentError, /after assertion/)
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Error handling (original)
   # ------------------------------------------------------------------
   describe 'error handling' do
     it 'raises on empty string' do
@@ -118,19 +162,59 @@ RSpec.describe Nasfaa::Evaluate do
     it 'raises on nil' do
       expect { described_class.new(nil) }.to raise_error(ArgumentError, /empty/)
     end
+  end
 
-    it 'raises on invalid characters' do
-      expect { described_class.new('ynxn') }.to raise_error(ArgumentError, /Invalid characters/)
-    end
-
-    it 'raises on characters after assertion' do
-      expect { described_class.new('ynpn') }.to raise_error(ArgumentError, /after assertion/)
-    end
-
-    it 'propagates unexpected end of input for too few answers' do
+  # ------------------------------------------------------------------
+  # Mid-path exhaustion — answers run out before a result node is reached
+  # ------------------------------------------------------------------
+  describe 'mid-path exhaustion' do
+    it 'raises ArgumentError with helpful message when a single answer runs out' do
+      # 'y' answers FTI? yes, but still needs student? answer
       output = StringIO.new
       evaluator = described_class.new('y', output: output)
-      expect { evaluator.run }.to raise_error(RuntimeError, 'Unexpected end of input')
+      expect { evaluator.run }.to raise_error(ArgumentError, /Too few answers.*'y'.*1 question/)
+    end
+
+    it 'raises ArgumentError with helpful message for string "yn"' do
+      # 'yn': FTI? yes, student? no — then needs aid_admin? answer
+      output = StringIO.new
+      evaluator = described_class.new('yn', output: output)
+      expect { evaluator.run }.to raise_error(ArgumentError, /Too few answers.*'yn'.*2 question/)
+    end
+
+    it 'tells the user to add more y/n characters' do
+      output = StringIO.new
+      evaluator = described_class.new('yn', output: output)
+      expect { evaluator.run }.to raise_error(ArgumentError, %r{add more y/n characters})
+    end
+
+    it 'is an ArgumentError, not a RuntimeError' do
+      output = StringIO.new
+      evaluator = described_class.new('yn', output: output)
+      expect { evaluator.run }.to raise_error(ArgumentError)
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Cross-verification warning
+  # ------------------------------------------------------------------
+  describe 'cross-verification warning' do
+    it 'emits a WARNING when DAG and RuleEngine disagree on the rule' do
+      output = StringIO.new
+      evaluator = described_class.new('yy', output: output)
+      fake_trace = instance_double(Nasfaa::Trace, rule_id: 'DIFFERENT_RULE')
+      fake_engine = instance_double(Nasfaa::RuleEngine, evaluate: fake_trace)
+      allow(Nasfaa::RuleEngine).to receive(:new).and_return(fake_engine)
+      evaluator.run
+      expect(output.string).to include('WARNING')
+      expect(output.string).to include('DAG returned')
+      expect(output.string).to include('FTI_R1_student')
+      expect(output.string).to include('DIFFERENT_RULE')
+    end
+
+    it 'does not emit a warning when DAG and RuleEngine agree' do
+      _, output, = run_evaluate('yy')
+      expect(output).not_to include('WARNING: DAG returned')
     end
   end
 end

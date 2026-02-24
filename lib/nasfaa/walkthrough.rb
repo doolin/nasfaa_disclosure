@@ -28,9 +28,10 @@ module Nasfaa
 
     attr_reader :answers, :path
 
-    def initialize(input: $stdin, output: $stdout, questions_path: QUESTIONS_PATH)
+    def initialize(input: $stdin, output: $stdout, questions_path: QUESTIONS_PATH, colorizer: Colorizer.new)
       @input = input
       @output = output
+      @colorizer = colorizer
       data = YAML.safe_load_file(questions_path)
       @start = data['start']
       @nodes = data['nodes']
@@ -69,7 +70,7 @@ module Nasfaa
 
     def ask_question(node)
       @output.puts
-      @output.puts "--- Box #{node['box']} ---"
+      @output.puts @colorizer.bold("--- Box #{node['box']} ---")
       @output.puts node['text']
       @output.puts "  (#{node['help']})" if node['help']
 
@@ -102,7 +103,10 @@ module Nasfaa
     end
 
     def read_char
-      char = @input.getch.downcase
+      raw = @input.getch
+      raise 'Unexpected end of input' if raw.nil?
+
+      char = raw.downcase
       @output.print char
       @output.puts
       char
@@ -114,14 +118,16 @@ module Nasfaa
     end
 
     def display_result(node)
+      result_text = node['result'].upcase
+      colored_result = node['result'].start_with?('permit') ? @colorizer.permit(result_text) : @colorizer.deny(result_text)
       @output.puts
       @output.puts '=' * 60
-      @output.puts "RESULT: #{node['result'].upcase}"
+      @output.puts "RESULT: #{colored_result}"
       @output.puts
       @output.puts node['message']
       @output.puts
-      @output.puts "Rule:     #{node['rule_id']}"
-      @output.puts "Citation: #{node['citation']}"
+      @output.puts @colorizer.dim("Rule:     #{node['rule_id']}")
+      @output.puts @colorizer.dim("Citation: #{node['citation']}")
       @output.puts "Path:     #{@path.join(' -> ')}"
       @output.puts '=' * 60
     end

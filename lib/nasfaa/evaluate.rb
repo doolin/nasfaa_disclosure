@@ -31,8 +31,17 @@ module Nasfaa
       input = StringIO.new(@answers.map { |c| "#{c}\n" }.join)
       silent = StringIO.new
       walkthrough = Walkthrough.new(input: input, output: silent)
-      @trace = walkthrough.run
+      begin
+        @trace = walkthrough.run
+      rescue RuntimeError => e
+        raise unless e.message == 'Unexpected end of input'
 
+        raise ArgumentError,
+              "Too few answers: '#{@answers.join}' answered #{@answers.length} question(s) " \
+              'but did not reach a result — add more y/n characters'
+      end
+
+      warn_excess_answers(walkthrough)
       cross_verify(walkthrough)
       check_assertion
       display_result
@@ -61,9 +70,16 @@ module Nasfaa
         end
       end
 
-      raise ArgumentError, 'No y/n answers provided' if answers.empty? && assertion.nil?
+      raise ArgumentError, 'No y/n answers provided' if answers.empty?
 
       [answers, assertion]
+    end
+
+    def warn_excess_answers(walkthrough)
+      excess = @answers.length - walkthrough.path.length
+      return unless excess.positive?
+
+      @output.puts "WARNING: #{excess} excess answer(s) ignored (#{@answers.length} provided, #{walkthrough.path.length} consumed)"
     end
 
     def cross_verify(walkthrough)
