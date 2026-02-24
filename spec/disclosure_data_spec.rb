@@ -169,6 +169,93 @@ RSpec.describe Nasfaa::DisclosureData do
       data = described_class.new(recipient_type: :research_organization, research_purpose: :improve_instruction)
       expect(data.to_research_org_ferpa).to be true
     end
+
+    it 'maps spouse_contributor to disclosure_to_contributor_parent_or_spouse' do
+      data = described_class.new(recipient_type: :spouse_contributor)
+      expect(data.disclosure_to_contributor_parent_or_spouse).to be true
+    end
+
+    it 'maps scholarship_organization to disclosure_to_scholarship_org' do
+      data = described_class.new(recipient_type: :scholarship_organization)
+      expect(data.disclosure_to_scholarship_org).to be true
+    end
+
+    it 'maps tribal_organization to disclosure_to_scholarship_org' do
+      data = described_class.new(recipient_type: :tribal_organization)
+      expect(data.disclosure_to_scholarship_org).to be true
+    end
+
+    it 'maps school_official with educational interest to to_school_official_legitimate_interest' do
+      data = described_class.new(recipient_type: :school_official, has_educational_interest: true)
+      expect(data.to_school_official_legitimate_interest).to be true
+    end
+
+    it 'maps other_school with enrollment_or_transfer purpose to to_other_school_enrollment_transfer' do
+      data = described_class.new(recipient_type: :other_school, purpose: :enrollment_or_transfer)
+      expect(data.to_other_school_enrollment_transfer).to be true
+    end
+
+    it 'maps federal_representative to to_authorized_representatives' do
+      data = described_class.new(recipient_type: :federal_representative)
+      expect(data.to_authorized_representatives).to be true
+    end
+
+    it 'maps state_local_authority to to_authorized_representatives' do
+      data = described_class.new(recipient_type: :state_local_authority)
+      expect(data.to_authorized_representatives).to be true
+    end
+
+    it 'maps accrediting_agency to to_accrediting_agency' do
+      data = described_class.new(recipient_type: :accrediting_agency)
+      expect(data.to_accrediting_agency).to be true
+    end
+
+    it 'maps parent of dependent student to parent_of_dependent_student' do
+      data = described_class.new(recipient_type: :parent, student_dependency_status: :dependent)
+      expect(data.parent_of_dependent_student).to be true
+    end
+
+    it 'leaves all fields false for unknown recipient_type' do
+      data = described_class.new(recipient_type: :unknown_type)
+      expect(data.disclosure_to_student).to be false
+      expect(data.disclosure_to_contributor_parent_or_spouse).to be false
+      expect(data.disclosure_to_scholarship_org).to be false
+      expect(data.to_authorized_representatives).to be false
+    end
+
+    it 'maps directory_information data_type to directory_info_and_not_opted_out' do
+      data = described_class.new(data_type: :directory_information)
+      expect(data.directory_info_and_not_opted_out).to be true
+    end
+
+    it 'maps research_college_attendance purpose to research_promote_attendance' do
+      data = described_class.new(purpose: :research_college_attendance)
+      expect(data.research_promote_attendance).to be true
+    end
+
+    it 'maps financial_aid_related purpose to due_to_judicial_order_or_subpoena_or_financial_aid' do
+      data = described_class.new(purpose: :financial_aid_related)
+      expect(data.due_to_judicial_order_or_subpoena_or_financial_aid).to be true
+    end
+
+    it 'maps subpoena legal_basis to due_to_judicial_order_or_subpoena_or_financial_aid' do
+      data = described_class.new(legal_basis: :subpoena)
+      expect(data.due_to_judicial_order_or_subpoena_or_financial_aid).to be true
+    end
+
+    it 'skips all consent fields when consent key is absent' do
+      data = described_class.new({})
+      expect(data.hea_written_consent).to be false
+      expect(data.ferpa_written_consent).to be false
+      expect(data.explicit_written_consent).to be false
+    end
+
+    it 'leaves consent fields false when consent values are false' do
+      data = described_class.new(consent: { hea: false, ferpa: false, explicit_written: false })
+      expect(data.hea_written_consent).to be false
+      expect(data.ferpa_written_consent).to be false
+      expect(data.explicit_written_consent).to be false
+    end
   end
 
   # Data Predicates - Direct queries of the data state
