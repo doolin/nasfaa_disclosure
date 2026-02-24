@@ -20,8 +20,9 @@ module Nasfaa
 
     attr_reader :trace, :assertion, :passed
 
-    def initialize(compact_string, output: $stdout)
+    def initialize(compact_string, output: $stdout, colorizer: Colorizer.new)
       @output = output
+      @colorizer = colorizer
       @answers, @assertion = parse(compact_string)
       @trace = nil
       @passed = nil
@@ -98,18 +99,20 @@ module Nasfaa
     end
 
     def display_result
-      @output.puts "Result:   #{@trace.result}"
-      @output.puts "Rule:     #{@trace.rule_id}"
-      @output.puts "Path:     #{@trace.path.join(' -> ')}"
+      result_text = @trace.result.to_s
+      colored_result = result_text.start_with?('permit') ? @colorizer.permit(result_text) : @colorizer.deny(result_text)
+      @output.puts "Result:   #{colored_result}"
+      @output.puts @colorizer.dim("Rule:     #{@trace.rule_id}")
+      @output.puts @colorizer.dim("Path:     #{@trace.path.join(' -> ')}")
       display_assertion if @assertion
     end
 
     def display_assertion
       expected = @assertion
       if @passed
-        @output.puts "Assertion: PASS (expected #{expected})"
+        @output.puts "Assertion: #{@colorizer.correct('PASS')} (expected #{expected})"
       else
-        @output.puts "Assertion: FAIL (expected #{expected}, got #{@trace.result})"
+        @output.puts "Assertion: #{@colorizer.incorrect('FAIL')} (expected #{expected}, got #{@trace.result})"
       end
     end
   end

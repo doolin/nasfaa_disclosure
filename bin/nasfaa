@@ -5,13 +5,14 @@ require 'bundler/setup'
 require 'nasfaa'
 
 command = ARGV[0]
-color_mode = ARGV.grep(/\A--color=/).first&.split('=', 2)&.last&.to_sym || :dark
+color_arg  = ARGV.grep(/\A--color=/).first
+color_mode = color_arg ? color_arg.split('=', 2).last.to_sym : :dark
 colorizer = Nasfaa::Colorizer.new(mode: color_mode)
 
 case command
 when 'walkthrough'
   require 'io/console'
-  puts "NASFAA Data Sharing Decision Tree — Interactive Walkthrough"
+  puts 'NASFAA Data Sharing Decision Tree — Interactive Walkthrough'
   puts "v#{Nasfaa::VERSION}"
   puts
   puts "Answer each question with 'yes' or 'no' to navigate the decision tree."
@@ -22,7 +23,7 @@ when 'walkthrough'
 when 'quiz'
   require 'io/console'
   random = ARGV.include?('--random')
-  puts "NASFAA Data Sharing Decision Tree — Quiz Mode#{random ? ' (Random)' : ''}"
+  puts "NASFAA Data Sharing Decision Tree — Quiz Mode#{' (Random)' if random}"
   puts "v#{Nasfaa::VERSION}"
   puts
   puts "Answer 'permit' or 'deny' for each disclosure scenario."
@@ -30,7 +31,7 @@ when 'quiz'
   quiz = Nasfaa::Quiz.new(random: random, colorizer: colorizer)
   quiz.run
 when 'evaluate'
-  compact = ARGV[1]
+  compact = ARGV[1..].reject { |a| a.start_with?('--') }.first
   unless compact
     puts 'Usage: nasfaa evaluate <string>'
     puts
@@ -39,7 +40,7 @@ when 'evaluate'
     exit 1
   end
   begin
-    evaluator = Nasfaa::Evaluate.new(compact)
+    evaluator = Nasfaa::Evaluate.new(compact, colorizer: colorizer)
     evaluator.run
   rescue ArgumentError => e
     warn "Error: #{e.message}"
