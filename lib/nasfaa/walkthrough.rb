@@ -24,6 +24,8 @@ module Nasfaa
   #   walkthrough = Nasfaa::Walkthrough.new(input: input, output: output)
   #   trace = walkthrough.run
   class Walkthrough
+    include BoxDraw
+
     QUESTIONS_PATH = File.expand_path('../../nasfaa_questions.yml', __dir__)
 
     attr_reader :answers, :path
@@ -70,9 +72,10 @@ module Nasfaa
 
     def ask_question(node)
       @output.puts
-      @output.puts @colorizer.bold("--- Box #{node['box']} ---")
-      @output.puts node['text']
-      @output.puts "  (#{node['help']})" if node['help']
+      @output.puts box_top("Box #{node['box']}")
+      @output.puts box_line(node['text'])
+      @output.puts box_line("(#{node['help']})") if node['help']
+      @output.puts box_bottom
 
       if single_key?
         @output.print '[y/n] > '
@@ -121,15 +124,15 @@ module Nasfaa
       result_text = node['result'].upcase
       colored_result = node['result'].start_with?('permit') ? @colorizer.permit(result_text) : @colorizer.deny(result_text)
       @output.puts
-      @output.puts '=' * 60
-      @output.puts "RESULT: #{colored_result}"
-      @output.puts
-      @output.puts node['message']
-      @output.puts
-      @output.puts @colorizer.dim("Rule:     #{node['rule_id']}")
-      @output.puts @colorizer.dim("Citation: #{node['citation']}")
-      @output.puts "Path:     #{@path.join(' -> ')}"
-      @output.puts '=' * 60
+      @output.puts box_heavy_top
+      @output.puts box_heavy_line("RESULT: #{colored_result}")
+      @output.puts box_heavy_divider
+      @output.puts box_heavy_line(node['message'])
+      @output.puts box_heavy_line
+      @output.puts box_heavy_line(@colorizer.dim("Rule:     #{node['rule_id']}"))
+      @output.puts box_heavy_line(@colorizer.dim("Citation: #{node['citation']}"))
+      @output.puts box_heavy_line("Path:     #{@path.join(' -> ')}")
+      @output.puts box_heavy_bottom
     end
 
     def build_trace(node)

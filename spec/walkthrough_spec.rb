@@ -365,7 +365,7 @@ RSpec.describe Nasfaa::Walkthrough do
 
     it 'displays help text when available' do
       _, output, = run_walkthrough('yes', 'yes')
-      expect(output).to include('IRS Data Retrieval Tool')
+      expect(output).to include('Data Retrieval Tool')
     end
 
     it 'displays result block with rule_id, citation, and path' do

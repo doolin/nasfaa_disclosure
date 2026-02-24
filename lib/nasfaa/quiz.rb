@@ -20,6 +20,8 @@ module Nasfaa
   #   quiz = Nasfaa::Quiz.new(random: true)
   #   correct, total = quiz.run
   class Quiz
+    include BoxDraw
+
     RANDOM_QUESTION_COUNT = 10
 
     attr_reader :correct, :total
@@ -76,27 +78,27 @@ module Nasfaa
 
     def present_question(question, number, total_count)
       @output.puts
-      @output.puts '=' * 60
-      @output.puts "Question #{number} of #{total_count}"
-      @output.puts '=' * 60
-
-      @output.puts
+      @output.puts box_top
+      @output.puts box_line("Question #{number} of #{total_count}")
+      @output.puts box_divider
+      @output.puts box_line
       if question.is_a?(Scenario)
-        @output.puts question.description
-        @output.puts
-        @output.puts 'Inputs:'
+        @output.puts box_line(question.description)
+        @output.puts box_line
+        @output.puts box_line('Inputs:')
         question.inputs.each do |field, value|
-          @output.puts "  #{field}: #{value}"
+          @output.puts box_line("  #{field}: #{value}")
         end
       else
-        @output.puts 'Given the following disclosure parameters:'
-        @output.puts
+        @output.puts box_line('Given the following disclosure parameters:')
+        @output.puts box_line
         question[:inputs].each do |field, value|
-          @output.puts "  #{field}: #{value}"
+          @output.puts box_line("  #{field}: #{value}")
         end
-        @output.puts
-        @output.puts '(All other fields are false.)'
+        @output.puts box_line
+        @output.puts box_line('(All other fields are false.)')
       end
+      @output.puts box_bottom
     end
 
     def ask_permit_or_deny
@@ -151,32 +153,32 @@ module Nasfaa
       is_correct = answer == expected_simple
       @correct += 1 if is_correct
 
-      @output.puts
-      if is_correct
-        @output.puts @colorizer.correct('CORRECT!')
-      else
-        @output.puts @colorizer.incorrect('INCORRECT.')
-      end
-
       answer_text = expected.to_s
       colored_answer = answer_text.start_with?('permit') ? @colorizer.permit(answer_text) : @colorizer.deny(answer_text)
-      @output.puts "Answer: #{colored_answer}"
-
       rule_id = question.is_a?(Scenario) ? question.expected_rule_id : question[:rule_id]
       citation = question.is_a?(Scenario) ? question.citation : question[:citation]
 
-      @output.puts "Rule:     #{rule_id}"
-      @output.puts "Citation: #{citation}" if citation
-      @output.puts "Score:    #{@correct}/#{@total}"
+      @output.puts
+      @output.puts box_top
+      if is_correct
+        @output.puts box_line(@colorizer.correct('CORRECT!'))
+      else
+        @output.puts box_line(@colorizer.incorrect('INCORRECT.'))
+      end
+      @output.puts box_line("Answer:   #{colored_answer}")
+      @output.puts box_line("Rule:     #{rule_id}")
+      @output.puts box_line("Citation: #{citation}") if citation
+      @output.puts box_line("Score:    #{@correct}/#{@total}")
+      @output.puts box_bottom
     end
 
     def display_final_score
-      @output.puts
-      @output.puts '=' * 60
-      @output.puts @colorizer.bold("FINAL SCORE: #{@correct}/#{@total}")
       pct = @total.positive? ? (@correct * 100.0 / @total).round(0) : 0
-      @output.puts "#{pct}% correct"
-      @output.puts '=' * 60
+      @output.puts
+      @output.puts box_heavy_top
+      @output.puts box_heavy_line(@colorizer.bold("FINAL SCORE: #{@correct}/#{@total}"))
+      @output.puts box_heavy_line("#{pct}% correct")
+      @output.puts box_heavy_bottom
     end
   end
 end
