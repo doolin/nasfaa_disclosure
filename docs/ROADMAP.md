@@ -155,6 +155,8 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 
 ## Additional Ideas Worth Considering
 
+- **Citation fields on question nodes**: Add a `citation:` field to question nodes in `nasfaa_questions.yml` (currently only result nodes carry citations). Enables the walkthrough and evaluate modes to surface the regulatory authority for each question, not just the final result. Regulatory text is publicly available — e.g., the FERPA exceptions gating Box 10 are at https://www.ecfr.gov/current/title-34/subtitle-A/part-99/subpart-D/section-99.31 — so citations can link directly to eCFR rather than paywalled summary documents.
+
 - **Crossing-line annotator**: Given the structured box graph from `questions.yml`, automatically detect which edges would cross in a standard top-to-bottom layout. Output a crossing list that can be fed back to an LLM alongside the diagram. Automates the exact workflow we discovered in this session.
 
 - **REPL mode**: `bin/nasfaa repl` drops into an interactive session where you can construct `DisclosureData` objects and evaluate them, inspect traces, compare engines. Useful for ad-hoc exploration beyond the walkthrough's fixed question sequence.
@@ -162,3 +164,5 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 - **Compliance report generator**: Given a set of disclosure scenarios (e.g., all disclosures a school made in a quarter), produce a formatted PDF/HTML report showing the decision path and citation for each. Useful for audit preparation.
 
 - **Property-based testing**: Use `rantly` or `propcheck` to generate arbitrary `DisclosureData` inputs and verify invariants that must hold regardless of input — e.g., the DAG and RuleEngine always agree, every path terminates in a result node, every result node carries a non-empty `rule_id`. Complements the existing exhaustive 2^12 spec with randomly-structured edge cases and shrinking on failure.
+
+- **LLM natural-language evaluation**: Accept a free-text scenario description and use an LLM to extract the relevant boolean inputs, then evaluate against the rule engine. Example: `nasfaa evaluate --llm "A financial aid officer wants to share a student's tax return with their parent to help complete the FAFSA"` → extracts `{is_fti: true, disclosure_to_student: false, ...}`, runs the rule engine, returns the result with citation and audit trail. The structured YAML rules and the public regulatory text together give a frontier model enough grounding to reason correctly about most cases — the deterministic engine acts as a verifiable check on the extraction step.

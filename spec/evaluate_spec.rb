@@ -73,11 +73,18 @@ RSpec.describe Nasfaa::Evaluate do
       expect(output).to include('╚')
     end
 
-    it 'displays result, rule, and path' do
+    it 'displays result, rule, and path in box-label format by default' do
       _, output, = run_evaluate('ynnyp')
       expect(output).to include('RESULT: permit')
       expect(output).to include('Rule: FTI_R3_scholarship_with_consent')
-      expect(output).to include('fti_scholarship')
+      expect(output).to include('Path: Box')
+    end
+
+    it 'displays node IDs in path when path_keys: true' do
+      output = StringIO.new
+      evaluator = described_class.new('ynnyp', output: output, path_keys: true)
+      evaluator.run
+      expect(output.string).to include('fti_scholarship')
     end
 
     it 'displays scenario name and citation for named scenarios' do

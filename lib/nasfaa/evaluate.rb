@@ -23,10 +23,11 @@ module Nasfaa
 
     attr_reader :trace, :assertion, :passed
 
-    def initialize(compact_string, output: $stdout, colorizer: Colorizer.new, pdf_text: true)
+    def initialize(compact_string, output: $stdout, colorizer: Colorizer.new, pdf_text: true, path_keys: false)
       @output = output
       @colorizer = colorizer
       @pdf_text = pdf_text
+      @path_keys = path_keys
       @answers, @assertion = parse(compact_string)
       @trace = nil
       @passed = nil
@@ -120,7 +121,7 @@ module Nasfaa
         @output.puts box_heavy_line(scenario.description)
         @output.puts box_heavy_line
       end
-      @output.puts box_heavy_line("Path: #{@trace.path.join(' -> ')}")
+      @output.puts box_heavy_line("Path: #{path_display}")
       if @assertion
         @output.puts box_heavy_divider
         display_assertion
@@ -128,8 +129,19 @@ module Nasfaa
       @output.puts box_heavy_bottom
     end
 
+    def nodes
+      @nodes ||= YAML.safe_load_file(Walkthrough::QUESTIONS_PATH)['nodes']
+    end
+
+    def path_display
+      if @path_keys
+        @trace.path.join(' -> ')
+      else
+        @trace.path.map { |id| "Box #{nodes[id]['box'].split.first}" }.join(' -> ')
+      end
+    end
+
     def display_pdf_questions(path)
-      nodes = YAML.safe_load_file(Walkthrough::QUESTIONS_PATH)['nodes']
       path.each do |node_id|
         node = nodes[node_id]
         @output.puts
