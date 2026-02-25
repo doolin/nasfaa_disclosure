@@ -29,6 +29,7 @@ nodes:
     type: question
     box: "1 (both pages)"
     text: "Does the disclosure include Federal Tax Information (FTI)?"
+    pdf_text: "Does the disclosure include Federal Tax Information (FTI): Federal tax return information received from the IRS by ED under the FUTURE Act Information Sharing Program? (See pg. 2 for list of FTI data elements)"
     help: "FTI includes any tax return data obtained through the IRS Data Retrieval Tool or direct data exchange with the IRS."
     field: includes_fti
     on_yes: fti_to_student
@@ -45,6 +46,7 @@ nodes:
     type: question
     box: "1 (Page 2)"
     text: "Is the disclosure to the student (the data subject)?"
+    pdf_text: "Is the disclosure to the student? 1098h(c)(1)(A)(ii)"
     field: disclosure_to_student
     on_yes: result_FTI_R1_student
     on_no: fti_aid_admin
@@ -53,6 +55,7 @@ nodes:
     type: question
     box: "2 (Page 2)"
     text: "Will the information be used for financial aid administration (application, award, or administration of Title IV aid)?"
+    pdf_text: "Will the information be used for the application, award, or administration of financial aid, per ED's definition? 1090(a)(3)(C)(i)"
     field: used_for_aid_admin
     on_yes: fti_school_official
     on_no: fti_scholarship
@@ -61,6 +64,7 @@ nodes:
     type: question
     box: "4 (Page 2)"
     text: "Is the recipient a school official with legitimate educational interest (LEI)?"
+    pdf_text: "Is the disclosure to other school officials determined to have a legitimate educational interest in the disclosed information? 99.31(a)(1)"
     help: "A school official has LEI if they need the information to fulfill their professional responsibilities as designated in the institution's annual FERPA notification."
     field: to_school_official_legitimate_interest
     on_yes: result_FTI_R2_aid_admin_school_official
@@ -70,6 +74,7 @@ nodes:
     type: question
     box: "3 (Page 2)"
     text: "Is the disclosure to a scholarship, tribal, or other assistance organization with the student's explicit written consent?"
+    pdf_text: "Is the disclosure to a scholarship granting organization, tribal organization, or other organization assisting the applicant in applying for and receiving federal, state, local, or tribal financial assistance for any component of the applicant's cost of attendance, and has the student provided explicit written consent? 1098h(b)(1)(B)"
     fields:
       - disclosure_to_scholarship_org
       - explicit_written_consent
@@ -124,6 +129,7 @@ nodes:
     type: question
     box: "2 (Page 1)"
     text: "Is the disclosure to the student (the data subject)?"
+    pdf_text: "Is the disclosure to the student?"
     field: disclosure_to_student
     on_yes: result_FAFSA_R1_to_student
     on_no: nonfti_fafsa_check
@@ -132,6 +138,7 @@ nodes:
     type: question
     box: "3 (Page 1)"
     text: "Is the data FAFSA data (as defined by the Department of Education)?"
+    pdf_text: "Is the information being requested considered FAFSA data per ED's definitions? (See pg. 2 for list of what is considered FAFSA data)"
     help: "FAFSA data includes information collected on or derived from the Free Application for Federal Student Aid."
     field: is_fafsa_data
     on_yes: fafsa_contributor
@@ -143,6 +150,7 @@ nodes:
     type: question
     box: "4 (Page 1)"
     text: "Is the disclosure to a parent or spouse who is a FAFSA contributor?"
+    pdf_text: "Is the disclosure to the parent or spouse who contributed to the FAFSA?*"
     help: "Under the FAFSA Simplification Act, a 'contributor' is someone who provided financial information on the student's FAFSA."
     field: disclosure_to_contributor_parent_or_spouse
     on_yes: result_FAFSA_R2_to_contributor_scope_limited
@@ -152,6 +160,7 @@ nodes:
     type: question
     box: "5 (Page 1)"
     text: "Will the data be used for financial aid administration?"
+    pdf_text: "Will the information be used for the application, award, and/or administration of financial aid, per ED's definition?"
     field: used_for_aid_admin
     on_yes: result_FAFSA_R3_used_for_aid_admin
     on_no: fafsa_scholarship
@@ -160,6 +169,7 @@ nodes:
     type: question
     box: "6 (Page 1)"
     text: "Is the disclosure to a scholarship, tribal, or other assistance organization with the student's explicit written consent?"
+    pdf_text: "Is the disclosure to a scholarship granting organization, tribal organization, or other organization assisting the applicant in applying for and receiving federal, state, local, or tribal financial assistance for any component of the applicant's cost of attendance, and has the student provided explicit written consent? §1090(a)(3)(B)"
     fields:
       - disclosure_to_scholarship_org
       - explicit_written_consent
@@ -170,6 +180,7 @@ nodes:
     type: question
     box: "7 (Page 1)"
     text: "Is the data being used for institutional research promoting college attendance, persistence, or completion?"
+    pdf_text: "Is the disclosure for research by or on behalf of the institution to promote college attendance, persistence, and completion? §1090(a)(3)(C)"
     field: research_promote_attendance
     on_yes: fafsa_pii
     on_no: fafsa_hea_consent
@@ -178,6 +189,7 @@ nodes:
     type: question
     box: "8 (Page 1)"
     text: "Has the student provided HEA written consent under §1090(a)(3)(C)?"
+    pdf_text: "Has the student provided written consent for disclosure under the Higher Education Act (HEA)? §1090(a)(3)(C)"
     help: "This is the general Higher Education Act consent for FAFSA data disclosure, broader than FERPA consent."
     field: hea_written_consent
     on_yes: result_FAFSA_R6_HEA_written_consent
@@ -187,6 +199,7 @@ nodes:
     type: question
     box: "9 (Page 1)"
     text: "Does the data contain personally identifiable information (PII)?"
+    pdf_text: "Does the disclosure contain personally identifiable information (PII)?"
     field: contains_pii
     on_yes: ferpa_consent
     on_no: result_FAFSA_R7_no_pii
@@ -199,6 +212,7 @@ nodes:
     type: question
     box: "10"
     text: "Has the student provided FERPA written consent for this disclosure?"
+    pdf_text: "Has the student provided written consent for disclosure under the Family Educational Rights and Privacy Act (FERPA)? 99.30"
     help: "FERPA written consent must specify the records to be disclosed, the purpose, and the party to whom disclosure may be made."
     field: ferpa_written_consent
     on_yes: result_FERPA_R0_written_consent
@@ -208,6 +222,7 @@ nodes:
     type: question
     box: "11"
     text: "Is the data directory information and the student has not opted out?"
+    pdf_text: "Is the information being requested as directory information and has the student not opted out? 99.31(a)(11)"
     help: "Directory information (name, address, dates of attendance, degree, etc.) may be disclosed if designated in the institution's FERPA notice and the student has not restricted it."
     field: directory_info_and_not_opted_out
     on_yes: result_FERPA_R1_directory_info
@@ -217,6 +232,7 @@ nodes:
     type: question
     box: "12"
     text: "Is the recipient a school official with legitimate educational interest?"
+    pdf_text: "Is the disclosure to other school officials determined to have a legitimate educational interest in the disclosed information? 99.31(a)(1)"
     field: to_school_official_legitimate_interest
     on_yes: result_FERPA_R2_school_official_LEI
     on_no: ferpa_judicial
@@ -225,6 +241,7 @@ nodes:
     type: question
     box: "13"
     text: "Is the disclosure due to a lawfully issued judicial order, subpoena, or related to financial aid?"
+    pdf_text: "Is the information being requested as a result of a judicial order or subpoena, 99.31(a)(9), or in relation to financial aid for which the student has applied or received under 99.31(a)(4)(i)?"
     field: due_to_judicial_order_or_subpoena_or_financial_aid
     on_yes: result_FERPA_R3_judicial_or_finaid_related
     on_no: ferpa_transfer
@@ -233,6 +250,7 @@ nodes:
     type: question
     box: "14"
     text: "Is the disclosure to officials at another school where the student seeks or intends to enroll?"
+    pdf_text: "Is the disclosure to officials of another school where the student seeks or intends to enroll, or where the student is already enrolled for purposes related to the student's enrollment or transfer? 99.31(a)(2)"
     field: to_other_school_enrollment_transfer
     on_yes: result_FERPA_R4_other_school_enrollment
     on_no: ferpa_authorized_rep
@@ -241,6 +259,7 @@ nodes:
     type: question
     box: "15"
     text: "Is the disclosure to authorized representatives (Comptroller General, Attorney General, Secretary of Education, or state/local educational authorities)?"
+    pdf_text: "Is the disclosure to authorized representatives of the Comptroller General of the United States, The Attorney General of the United States, the Secretary, or state and local educational authorities? 99.31(a)(3)"
     field: to_authorized_representatives
     on_yes: result_FERPA_R5_authorized_representatives
     on_no: ferpa_research_org
@@ -249,6 +268,7 @@ nodes:
     type: question
     box: "16"
     text: "Is the disclosure to a research organization for developing predictive tests, administering student aid, or improving instruction?"
+    pdf_text: "Is the disclosure to an organization conducting research for, or on behalf of, your institution to: (A) Develop, validate, or administer predictive tests; (B) Administer student aid programs; or (C) Improve instruction? 99.31(a)(6)"
     field: to_research_org_ferpa
     on_yes: result_FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction
     on_no: ferpa_accreditor
@@ -257,6 +277,7 @@ nodes:
     type: question
     box: "17"
     text: "Is the disclosure to an accrediting organization to carry out its accrediting functions?"
+    pdf_text: "Is the disclosure to an accrediting agency to carry out their accrediting functions? 99.31(a)(7)"
     field: to_accrediting_agency
     on_yes: result_FERPA_R7_accrediting_agency
     on_no: ferpa_parent
@@ -265,6 +286,7 @@ nodes:
     type: question
     box: "18"
     text: "Is the disclosure to the parent of a student who is a dependent for IRS tax purposes?"
+    pdf_text: "Is the disclosure to the parent of a dependent student, as defined in section 152 of the Internal Revenue Code of 1986? 99.31(a)(8)"
     help: "This uses the IRS definition of dependency (claimed on tax return), not the FAFSA definition."
     field: parent_of_dependent_student
     on_yes: result_FERPA_R8_parent_of_dependent_student
@@ -274,6 +296,7 @@ nodes:
     type: question
     box: "19"
     text: "Is the disclosure otherwise permitted under FERPA §99.31 (e.g., health/safety emergency, sex offender registry)?"
+    pdf_text: "Is the disclosure otherwise permitted under 99.31?"
     field: otherwise_permitted_under_99_31
     on_yes: result_FERPA_R9_otherwise_permitted_99_31
     on_no: result_NONFTI_DENY_default

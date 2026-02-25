@@ -408,6 +408,97 @@ RSpec.describe Nasfaa::Walkthrough do
   end
 
   # ------------------------------------------------------------------
+  # PDF text mode (--pdf-text)
+  # ------------------------------------------------------------------
+  describe 'pdf_text mode' do
+    def run_walkthrough_pdf(*responses)
+      input = StringIO.new("#{responses.join("\n")}\n")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output,
+                                        questions_path: questions_path, pdf_text: true)
+      trace = walkthrough.run
+      [trace, output.string, walkthrough]
+    end
+
+    it 'displays pdf_text when flag is enabled' do
+      # Box 1 (fti_check) pdf_text contains "FUTURE Act Information Sharing" (may wrap)
+      _, output, = run_walkthrough_pdf('yes', 'yes')
+      expect(output).to include('FUTURE Act Information Sharing')
+    end
+
+    it 'does not display pdf_text when flag is disabled (default)' do
+      _, output, = run_walkthrough('yes', 'yes')
+      expect(output).not_to include('FUTURE Act Information Sharing')
+    end
+
+    it 'labels pdf_text with PDF: prefix' do
+      _, output, = run_walkthrough_pdf('yes', 'yes')
+      expect(output).to include('PDF:')
+    end
+
+    it 'shows pdf_text for each question node visited' do
+      # Path 'no', 'yes' visits Box 1 (fti_check) and Box 2 page 1 (nonfti_to_student)
+      _, output, = run_walkthrough_pdf('no', 'yes')
+      expect(output).to include('FUTURE Act Information Sharing')
+      # nonfti_to_student pdf_text is labeled "PDF: Is the disclosure to the student?"
+      expect(output).to include('PDF: Is the disclosure to the student?')
+    end
+
+    it 'still produces correct result with pdf_text enabled' do
+      trace, = run_walkthrough_pdf('yes', 'yes')
+      expect(trace.rule_id).to eq('FTI_R1_student')
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # Quit handling
+  # ------------------------------------------------------------------
+  describe 'quit' do
+    it 'returns nil when quit is typed in multi-key mode' do
+      input = StringIO.new("yes\nquit\n")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect(walkthrough.run).to be_nil
+    end
+
+    it 'returns nil when q is typed in multi-key mode' do
+      input = StringIO.new("yes\nq\n")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect(walkthrough.run).to be_nil
+    end
+
+    it 'prints a Walkthrough ended message on quit' do
+      input = StringIO.new("yes\nquit\n")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      walkthrough.run
+      expect(output.string).to include('Walkthrough ended.')
+    end
+
+    it 'returns nil when q is pressed in single-key mode' do
+      input = SingleKeyInput.new('yq')
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect(walkthrough.run).to be_nil
+    end
+
+    it 'treats Ctrl-C as quit in single-key mode' do
+      input = SingleKeyInput.new("y\x03")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect(walkthrough.run).to be_nil
+    end
+
+    it 'treats Ctrl-\\ as quit in single-key mode' do
+      input = SingleKeyInput.new("y\x1c")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      expect(walkthrough.run).to be_nil
+    end
+  end
+
+  # ------------------------------------------------------------------
   # Single-key mode (getch)
   # ------------------------------------------------------------------
   describe 'single-key mode' do
@@ -431,9 +522,9 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.result).to eq(:deny)
     end
 
-    it 'shows [y/n] prompt instead of [yes/no]' do
+    it 'shows [y/n/q] prompt instead of [yes/no]' do
       _, output, = run_walkthrough_single_key('y', 'y')
-      expect(output).to include('[y/n]')
+      expect(output).to include('[y/n/q]')
       expect(output).not_to include('[yes/no]')
     end
 
@@ -443,10 +534,11 @@ RSpec.describe Nasfaa::Walkthrough do
     end
 
     it 'silently ignores invalid keys and loops until a valid key is pressed' do
-      # 'x' is invalid — echoed but ignored; 'y', 'y' complete the path
+      # 'x' is invalid — not echoed, no newline; y, y complete the path
       trace, output, = run_walkthrough_single_key('x', 'y', 'y')
       expect(trace.rule_id).to eq('FTI_R1_student')
-      expect(output).to include('x')
+      # 'x' is not echoed as a standalone character on its own line
+      expect(output.lines.map(&:strip)).not_to include('x')
     end
 
     it 'raises Unexpected end of input when getch returns nil (exhausted input)' do

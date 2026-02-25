@@ -4,10 +4,11 @@
 
 ```bash
 bundle install
-bin/nasfaa walkthrough           # step through the decision tree (single-keystroke y/n)
-bin/nasfaa quiz                  # permit/deny quiz from 23 real scenarios
-bin/nasfaa quiz --random         # practice with randomly generated inputs
-bin/nasfaa evaluate ynnyp        # non-interactive: navigate the tree + assert result
+bin/nasfaa walkthrough            # step through the decision tree (single-keystroke y/n)
+bin/nasfaa walkthrough --pdf-text # show verbatim PDF box text alongside paraphrased text
+bin/nasfaa quiz                   # permit/deny quiz from 23 real scenarios
+bin/nasfaa quiz --random          # practice with randomly generated inputs
+bin/nasfaa evaluate ynnyp         # non-interactive: navigate the tree + assert result
 bin/nasfaa walkthrough --color=none  # disable color (default: dark)
 ```
 
@@ -18,12 +19,12 @@ A Ruby CLI gem implementing the NASFAA FERPA/FAFSA student financial-aid data di
 <details>
 <summary>NEXT:</summary>
 
-Phase 2.5 CLI Polish (in progress):
+Phase 2.5 CLI Polish ✅:
 - [x] Single-keystroke input (`y`/`n` and `p`/`d`/`q` register without Enter)
 - [x] Colorized output — colorblind-safe palette; `--color=dark|light|none`
-- [ ] Box-draw formatting
-- [ ] PDF-exact text mode (`--pdf-text`)
-- [ ] Rich evaluate output with scenario narrative
+- [x] Box-draw formatting — Unicode box-drawing for questions and result cards
+- [x] PDF-exact text mode (`--pdf-text`) — verbatim PDF box text alongside paraphrased
+- [x] Rich evaluate output — box-drawn result card with citation, scenario narrative, assertion
 
 Upcoming:
 - Phase 3: Visualization — Mermaid diagram generated from `nasfaa_questions.yml`
@@ -264,12 +265,17 @@ It collects yes/no answers, navigates the DAG, and displays the result with
 the governing rule, regulatory citation, and the full path of boxes traversed.
 
 ```bash
-bin/nasfaa walkthrough
+bin/nasfaa walkthrough             # interactive walkthrough
+bin/nasfaa walkthrough --pdf-text  # include verbatim PDF box text
 bin/nasfaa walkthrough --color=none   # disable color
 bin/nasfaa walkthrough --color=light  # palette for light terminals
 ```
 
 Input registers on a single keypress (`y`/`n`) — no Enter required.
+
+The `--pdf-text` flag adds the verbatim text from the original NASFAA PDF
+alongside the paraphrased question text. Useful for cross-referencing the
+printed document or verifying the implementation against the source.
 
 ```
 NASFAA Data Sharing Decision Tree — Interactive Walkthrough
@@ -278,25 +284,34 @@ v0.1.0
 Answer each question with 'yes' or 'no' to navigate the decision tree.
 The walkthrough follows the NASFAA PDF's two-page flowchart.
 
---- Box 1 (both pages) ---
-Does the disclosure include Federal Tax Information (FTI)?
-  (FTI includes any tax return data obtained through the IRS Data Retrieval Tool
-   or direct data exchange with the IRS.)
+┌─ Box 1 (both pages) ───────────────────────────────────────┐
+│ Does the disclosure include Federal Tax Information (FTI)?  │
+│ PDF: Does the disclosure include Federal Tax Information    │
+│ (FTI): Federal tax return information received from the     │
+│ IRS by ED under the FUTURE Act Information Sharing          │
+│ Program? (See pg. 2 for list of FTI data elements)          │
+│ (FTI includes any tax return data obtained through the IRS  │
+│ Data Retrieval Tool or direct data exchange with the IRS.)  │
+└─────────────────────────────────────────────────────────────┘
 [y/n] > n
 
---- Box 2 (Page 1) ---
-Is the disclosure to the student (the data subject)?
+┌─ Box 2 (Page 1) ───────────────────────────────────────────┐
+│ Is the disclosure to the student (the data subject)?        │
+└─────────────────────────────────────────────────────────────┘
 [y/n] > y
 
-============================================================
-RESULT: PERMIT
-
-The student has the right to inspect their own education records.
-
-Rule:     FAFSA_R1_to_student
-Citation: FERPA 34 CFR §99.10
-Path:     fti_check -> nonfti_to_student
-============================================================
+╔═════════════════════════════════════════════════════════════╗
+║ RESULT: permit                                              ║
+╠═════════════════════════════════════════════════════════════╣
+║ Rule: FAFSA_R1_to_student                                   ║
+║ Citation: FERPA 34 CFR §99.10                               ║
+║                                                             ║
+║ Student Views Own Education Records                         ║
+║                                                             ║
+║ The student has the right to inspect ...                    ║
+║                                                             ║
+║ Path: fti_check -> nonfti_to_student                        ║
+╚═════════════════════════════════════════════════════════════╝
 ```
 
 ### Walkthrough architecture
@@ -304,8 +319,9 @@ Path:     fti_check -> nonfti_to_student
 The walkthrough is powered by `nasfaa_questions.yml`, a structured DAG that
 mirrors the PDF's two-page layout:
 
-- **23 question nodes** — each with box number, question text, help text, the
-  `DisclosureData` field(s) it sets, and `on_yes`/`on_no` edges to the next node
+- **23 question nodes** — each with box number, question text, verbatim `pdf_text`
+  from the source PDF, optional help text, the `DisclosureData` field(s) it sets,
+  and `on_yes`/`on_no` edges to the next node
 - **22 result nodes** — each with the decision, rule ID, message, and citation
 - **Compound questions** — some PDF boxes ask about two fields simultaneously
   (e.g., "scholarship organization *with* explicit written consent"); these use
@@ -625,25 +641,25 @@ The scenario library serves three purposes:
 
 ## Testing
 
-The test suite comprises 821 examples across 11 spec files:
+The test suite comprises 867 examples across 11 spec files:
 
 | Spec file | Examples | Tests |
 |---|---|---|
-| `disclosure_data_spec.rb` | 71 | Field initialization, predicates, legacy mapping |
+| `disclosure_data_spec.rb` | 87 | Field initialization, predicates, legacy mapping |
 | `nasfaa_data_sharing_decision_tree_spec.rb` | 41 | Imperative decision tree, box-by-box |
 | `rule_engine_spec.rb` | 17 | YAML engine, cross-engine agreement |
 | `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
-| `scenario_spec.rb` | 59 | All 23 scenarios, rule coverage, metadata integrity |
-| `walkthrough_spec.rb` | 72 | DAG structure, all 22 paths, cross-verification, I/O, single-key, nil-getch guard |
+| `scenario_spec.rb` | 61 | All 23 scenarios, rule coverage, metadata integrity, find_by_rule_id |
+| `walkthrough_spec.rb` | 77 | DAG structure, all 22 paths, cross-verification, I/O, single-key, pdf_text mode |
 | `quiz_spec.rb` | 26 | Scenario mode, random mode, input handling, score tracking, single-key |
-| `evaluate_spec.rb` | 48 | All 22 paths, assertions, cross-verification, input validation, errors |
+| `evaluate_spec.rb` | 51 | All 22 paths, assertions, cross-verification, input validation, errors |
 | `colorizer_spec.rb` | 21 | All three modes, all methods, invalid mode error |
 | `evaluate_mutation_spec.rb` | 451 | Input mutation testing — see below |
 
 ```bash
 bundle install
-bundle exec rspec          # 821 examples, 0 failures (~2 seconds)
+bundle exec rspec          # 867 examples, 0 failures (~2 seconds)
 bundle exec rubocop        # 0 offenses
 bundle exec rake           # runs both spec and rubocop
 ```

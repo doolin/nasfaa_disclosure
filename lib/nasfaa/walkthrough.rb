@@ -30,10 +30,11 @@ module Nasfaa
 
     attr_reader :answers, :path
 
-    def initialize(input: $stdin, output: $stdout, questions_path: QUESTIONS_PATH, colorizer: Colorizer.new)
+    def initialize(input: $stdin, output: $stdout, questions_path: QUESTIONS_PATH, colorizer: Colorizer.new, pdf_text: false)
       @input = input
       @output = output
       @colorizer = colorizer
+      @pdf_text = pdf_text
       data = YAML.safe_load_file(questions_path)
       @start = data['start']
       @nodes = data['nodes']
@@ -57,6 +58,12 @@ module Nasfaa
 
         @path << current
         response = ask_question(node)
+        if response == :quit
+          @output.puts
+          @output.puts 'Walkthrough ended.'
+          return nil
+        end
+
         record_answer(node, response)
         current = response ? node['on_yes'] : node['on_no']
       end
@@ -74,15 +81,21 @@ module Nasfaa
       @output.puts
       @output.puts box_top("Box #{node['box']}")
       @output.puts box_line(node['text'])
+      if @pdf_text && node['pdf_text']
+        wrap_text("PDF: #{node['pdf_text']}", INNER_WIDTH).each do |line|
+          @output.puts box_line(@colorizer.dim(line))
+        end
+      end
       @output.puts box_line("(#{node['help']})") if node['help']
       @output.puts box_bottom
 
       if single_key?
-        @output.print '[y/n] > '
+        @output.print '[y/n/q] > '
         loop do
           case read_char
           when 'y' then return true
           when 'n' then return false
+          when 'q' then return :quit
           end
         end
       else
@@ -92,6 +105,7 @@ module Nasfaa
           case answer
           when 'yes', 'y' then return true
           when 'no', 'n' then return false
+          when 'quit', 'q' then return :quit
           when nil
             raise 'Unexpected end of input'
           else
@@ -109,9 +123,17 @@ module Nasfaa
       raw = @input.getch
       raise 'Unexpected end of input' if raw.nil?
 
+      # Ctrl-C (\x03) and Ctrl-\ (\x1c): treat as quit without echoing control chars
+      if ["\x03", "\x1c"].include?(raw)
+        @output.puts
+        return 'q'
+      end
+
       char = raw.downcase
-      @output.print char
-      @output.puts
+      if %w[y n q].include?(char)
+        @output.print char
+        @output.puts
+      end
       char
     end
 

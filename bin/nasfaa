@@ -12,13 +12,14 @@ colorizer = Nasfaa::Colorizer.new(mode: color_mode)
 case command
 when 'walkthrough'
   require 'io/console'
+  pdf_text_mode = ARGV.include?('--pdf-text')
   puts 'NASFAA Data Sharing Decision Tree — Interactive Walkthrough'
   puts "v#{Nasfaa::VERSION}"
   puts
   puts "Answer each question with 'yes' or 'no' to navigate the decision tree."
   puts "The walkthrough follows the NASFAA PDF's two-page flowchart."
 
-  walkthrough = Nasfaa::Walkthrough.new(colorizer: colorizer)
+  walkthrough = Nasfaa::Walkthrough.new(colorizer: colorizer, pdf_text: pdf_text_mode)
   walkthrough.run
 when 'quiz'
   require 'io/console'

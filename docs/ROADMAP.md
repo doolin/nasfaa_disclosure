@@ -77,19 +77,19 @@ Implemented as `Nasfaa::Evaluate` class that feeds the compact string to a `Walk
 
 ---
 
-## Phase 2.5: CLI Polish
+## Phase 2.5: CLI Polish ✅
 
 UX improvements to all CLI modes (walkthrough, quiz, evaluate). No new features — refines the existing interactive experience.
 
-- **Box-draw formatting**: Wrap each quiz/walkthrough section (question, inputs, result reveal, score) in Unicode box-drawing characters for visual separation in the terminal.
+- **Box-draw formatting** ✅: Unicode box-drawing characters wrap each question (light box) and result (heavy box) for visual separation in the terminal. Word-wrap inside boxes; ANSI-colored text bypasses wrap to avoid splitting escape sequences.
 
-- **PDF-exact text mode** (`--pdf-text`): Display the original verbatim text from each PDF box alongside or instead of the paraphrased question text. Switchable via flag; off by default.
+- **PDF-exact text mode** (`--pdf-text`) ✅: `bin/nasfaa walkthrough --pdf-text` displays the verbatim text from each PDF box (stored as `pdf_text:` in `nasfaa_questions.yml`) alongside the paraphrased question text, labeled `PDF:` in dim. All 23 question nodes populated from the two-page PDF images. Off by default.
 
-- **Single-keystroke advance**: Allow `y`/`n`/`q` (and `p`/`d`/`q` in quiz) to register immediately on keypress without requiring Enter. Requires raw terminal mode (`io/console`).
+- **Single-keystroke advance** ✅: `y`/`n`/`q` (and `p`/`d`/`q` in quiz) register immediately on keypress without requiring Enter. Uses raw terminal mode (`io/console`). Detected via `input.respond_to?(:getch)` so tests use StringIO unmodified.
 
-- **Colorized output**: Add color to CLI output (correct/incorrect, rule citations, box headers). Default palette uses colorblind-safe constraints (deuteranopia/protanopia friendly). Additional named color modes: `--color=light` (light terminal), `--color=dark` (dark terminal), `--color=none` (no color). Implemented as a thin wrapper so all output goes through a single colorizer.
+- **Colorized output** ✅: Colorblind-safe palette (deuteranopia/protanopia friendly): bold cyan / bold yellow for dark terminals, bold blue / yellow for light terminals. `--color=dark|light|none`. Implemented as `Nasfaa::Colorizer` thin wrapper; all output goes through it.
 
-- **Rich evaluate output**: Enhance `evaluate` results with a box-drawn result card showing the rule description, full regulatory citation, the scenario narrative (if the path matches a named scenario), and the governing statute section. Color the result box green (permit) or red (deny) using the colorizer above.
+- **Rich evaluate output** ✅: `bin/nasfaa evaluate` renders a box-drawn result card with RESULT header, rule ID, regulatory citation, scenario name and narrative (when a named scenario covers the rule), answer path, and optional assertion pass/fail. Cross-verifies DAG result against RuleEngine and warns on disagreement.
 
 ---
 
