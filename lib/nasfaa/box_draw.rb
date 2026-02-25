@@ -39,16 +39,20 @@ module Nasfaa
       "└#{'─' * BOX_WIDTH}┘"
     end
 
-    # Returns one or more box lines.  Plain text is word-wrapped;
-    # ANSI-colored text is padded by visual length without wrapping.
-    def box_line(text = '')
+    # Returns one or more box lines.  Pre-colorized text (containing ANSI codes)
+    # is padded by visual length without wrapping — use this for short labels.
+    # Plain text is word-wrapped; pass colorize: proc to colorize after wrapping.
+    def box_line(text = '', colorize: nil)
       text_str = text.to_s
       if text_str.include?("\e[")
         vlen = visual_length(text_str)
         "│ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} │"
       else
         lines = wrap_text(text_str, INNER_WIDTH)
-        lines.map { |line| "│ #{line.ljust(INNER_WIDTH)} │" }.join("\n")
+        lines.map do |line|
+          display = colorize ? colorize.call(line) : line
+          "│ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} │"
+        end.join("\n")
       end
     end
 
@@ -66,16 +70,21 @@ module Nasfaa
       "╚#{'═' * BOX_WIDTH}╝"
     end
 
-    # Returns one or more heavy box lines.  Plain text is word-wrapped;
-    # ANSI-colored text is padded by visual length without wrapping.
-    def box_heavy_line(text = '')
+    # Returns one or more heavy box lines.  Pre-colorized text (containing ANSI
+    # codes) is padded by visual length without wrapping — use this for short
+    # labels. Plain text is word-wrapped; pass colorize: proc to colorize after
+    # wrapping.
+    def box_heavy_line(text = '', colorize: nil)
       text_str = text.to_s
       if text_str.include?("\e[")
         vlen = visual_length(text_str)
         "║ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} ║"
       else
         lines = wrap_text(text_str, INNER_WIDTH)
-        lines.map { |line| "║ #{line.ljust(INNER_WIDTH)} ║" }.join("\n")
+        lines.map do |line|
+          display = colorize ? colorize.call(line) : line
+          "║ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} ║"
+        end.join("\n")
       end
     end
 

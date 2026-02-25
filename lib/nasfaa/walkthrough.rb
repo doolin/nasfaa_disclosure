@@ -131,8 +131,8 @@ module Nasfaa
       @output.puts box_heavy_divider
       @output.puts box_heavy_line(node['message'])
       @output.puts box_heavy_line
-      @output.puts box_heavy_line(@colorizer.dim("Rule:     #{node['rule_id']}"))
-      @output.puts box_heavy_line(@colorizer.dim("Citation: #{node['citation']}"))
+      @output.puts box_heavy_line("Rule:     #{node['rule_id']}", colorize: @colorizer.method(:dim))
+      @output.puts box_heavy_line("Citation: #{node['citation']}", colorize: @colorizer.method(:dim))
       @output.puts box_heavy_line("Path:     #{@path.join(' -> ')}")
       @output.puts box_heavy_bottom
     end

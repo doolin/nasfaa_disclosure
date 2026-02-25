@@ -108,9 +108,9 @@ module Nasfaa
       @output.puts box_heavy_top
       @output.puts box_heavy_line("RESULT: #{colored_result}")
       @output.puts box_heavy_divider
-      @output.puts box_heavy_line(@colorizer.dim("Rule: #{@trace.rule_id}"))
+      @output.puts box_heavy_line("Rule: #{@trace.rule_id}", colorize: @colorizer.method(:dim))
       if scenario
-        @output.puts box_heavy_line(@colorizer.dim("Citation: #{scenario.citation}"))
+        @output.puts box_heavy_line("Citation: #{scenario.citation}", colorize: @colorizer.method(:dim))
         @output.puts box_heavy_line
         @output.puts box_heavy_line(scenario.name)
         @output.puts box_heavy_line

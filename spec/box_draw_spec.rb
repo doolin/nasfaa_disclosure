@@ -113,6 +113,27 @@ RSpec.describe Nasfaa::BoxDraw do
       expect(line).to start_with("│ #{long_ansi}")
       expect(line).to end_with(' │') # max(negative, 0) => 0 spaces padding
     end
+
+    it 'wraps long text and applies colorize: proc to each wrapped line' do
+      long_text = ('word ' * 14).strip # 69 chars — must wrap
+      colorize = ->(t) { "\e[2m#{t}\e[0m" }
+      result = drawer.box_line(long_text, colorize: colorize)
+      lines = result.split("\n")
+      expect(lines.length).to be > 1
+      lines.each do |l|
+        expect(l).to start_with("│ \e[2m").and(end_with(' │'))
+      end
+    end
+
+    it 'keeps each wrapped colorized line within the box width' do
+      long_text = ('word ' * 14).strip
+      colorize = ->(t) { "\e[2m#{t}\e[0m" }
+      result = drawer.box_line(long_text, colorize: colorize)
+      result.split("\n").each do |l|
+        visual_content = l.gsub(/\e\[[0-9;]*m/, '')
+        expect(visual_content.length).to be <= described_class::INNER_WIDTH + 4
+      end
+    end
   end
 
   # ── box_heavy_line ───────────────────────────────────────────────
@@ -152,6 +173,27 @@ RSpec.describe Nasfaa::BoxDraw do
       line = drawer.box_heavy_line(long_ansi)
       expect(line).to start_with("║ #{long_ansi}")
       expect(line).to end_with(' ║')
+    end
+
+    it 'wraps long text and applies colorize: proc to each wrapped line' do
+      long_text = ('word ' * 14).strip # 69 chars — must wrap
+      colorize = ->(t) { "\e[2m#{t}\e[0m" }
+      result = drawer.box_heavy_line(long_text, colorize: colorize)
+      lines = result.split("\n")
+      expect(lines.length).to be > 1
+      lines.each do |l|
+        expect(l).to start_with("║ \e[2m").and(end_with(' ║'))
+      end
+    end
+
+    it 'keeps each wrapped colorized line within the box width' do
+      long_text = ('word ' * 14).strip
+      colorize = ->(t) { "\e[2m#{t}\e[0m" }
+      result = drawer.box_heavy_line(long_text, colorize: colorize)
+      result.split("\n").each do |l|
+        visual_content = l.gsub(/\e\[[0-9;]*m/, '')
+        expect(visual_content.length).to be <= described_class::INNER_WIDTH + 4
+      end
     end
   end
 end
