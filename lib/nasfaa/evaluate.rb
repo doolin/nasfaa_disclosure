@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'stringio'
+require 'yaml'
 
 module Nasfaa
   # Non-interactive evaluator that accepts a compact string of y/n characters
@@ -22,9 +23,10 @@ module Nasfaa
 
     attr_reader :trace, :assertion, :passed
 
-    def initialize(compact_string, output: $stdout, colorizer: Colorizer.new)
+    def initialize(compact_string, output: $stdout, colorizer: Colorizer.new, pdf_text: true)
       @output = output
       @colorizer = colorizer
+      @pdf_text = pdf_text
       @answers, @assertion = parse(compact_string)
       @trace = nil
       @passed = nil
@@ -47,6 +49,7 @@ module Nasfaa
       warn_excess_answers(walkthrough)
       cross_verify(walkthrough)
       check_assertion
+      display_pdf_questions(walkthrough.path) if @pdf_text
       display_result
       @trace
     end
@@ -123,6 +126,21 @@ module Nasfaa
         display_assertion
       end
       @output.puts box_heavy_bottom
+    end
+
+    def display_pdf_questions(path)
+      nodes = YAML.safe_load_file(Walkthrough::QUESTIONS_PATH)['nodes']
+      path.each do |node_id|
+        node = nodes[node_id]
+        @output.puts
+        @output.puts box_top("Box #{node['box']}")
+        @output.puts box_line(node['text'])
+        wrap_text("PDF: #{node['pdf_text']}", INNER_WIDTH).each do |line|
+          @output.puts box_line(@colorizer.yellow(line))
+        end
+        @output.puts box_line("(#{node['help']})") if node['help']
+        @output.puts box_bottom
+      end
     end
 
     def display_assertion

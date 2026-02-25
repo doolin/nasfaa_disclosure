@@ -32,7 +32,8 @@ module Nasfaa
         correct: "\e[1;36m", # bold cyan
         incorrect: "\e[1;33m", # bold yellow
         bold: "\e[1m",
-        dim: "\e[2m"
+        dim: "\e[2m",
+        yellow: "\e[33m" # yellow
       },
       light: {
         permit: "\e[1;34m", # bold blue
@@ -40,7 +41,8 @@ module Nasfaa
         correct: "\e[1;34m", # bold blue
         incorrect: "\e[33m", # yellow
         bold: "\e[1m",
-        dim: "\e[2m"
+        dim: "\e[2m",
+        yellow: "\e[33m" # yellow
       },
       rainbow: {
         permit: "\e[1;32m", # bold green
@@ -48,7 +50,8 @@ module Nasfaa
         correct: "\e[1;32m", # bold green
         incorrect: "\e[1;31m", # bold red
         bold: "\e[1;35m", # bold magenta
-        dim: "\e[36m" # cyan
+        dim: "\e[36m", # cyan
+        yellow: "\e[33m" # yellow
       }
     }.freeze
 
@@ -66,6 +69,7 @@ module Nasfaa
     def incorrect(text) = colorize(text, :incorrect)
     def bold(text)      = colorize(text, :bold)
     def dim(text)       = colorize(text, :dim)
+    def yellow(text)    = colorize(text, :yellow)
 
     private
 

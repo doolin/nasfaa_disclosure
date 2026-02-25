@@ -15,7 +15,7 @@
 #   Page 2: FTI branch (IRC §6103) — 4 questions, 5 results
 #   Page 1: Non-FTI branch — 18 questions, 17 results
 #
-# Total: 23 question nodes, 22 result nodes
+# Total: 23 question nodes, 21 result nodes
 
 start: fti_check
 
@@ -153,7 +153,7 @@ nodes:
     pdf_text: "Is the disclosure to the parent or spouse who contributed to the FAFSA?*"
     help: "Under the FAFSA Simplification Act, a 'contributor' is someone who provided financial information on the student's FAFSA."
     field: disclosure_to_contributor_parent_or_spouse
-    on_yes: result_FAFSA_R2_to_contributor_scope_limited
+    on_yes: ferpa_consent
     on_no: fafsa_aid_admin
 
   fafsa_aid_admin:
@@ -309,13 +309,6 @@ nodes:
     rule_id: FAFSA_R1_to_student
     message: "The student has the right to inspect their own education records."
     citation: "FERPA 34 CFR §99.10"
-
-  result_FAFSA_R2_to_contributor_scope_limited:
-    type: result
-    result: permit_with_scope
-    rule_id: FAFSA_R2_to_contributor_scope_limited
-    message: "The contributor may access only the information they personally provided on the FAFSA."
-    citation: "HEA §1090(a)"
 
   result_FAFSA_R3_used_for_aid_admin:
     type: result

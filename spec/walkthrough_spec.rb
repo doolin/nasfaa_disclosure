@@ -58,11 +58,11 @@ RSpec.describe Nasfaa::Walkthrough do
       end
     end
 
-    it 'has exactly 23 question nodes and 22 result nodes' do
+    it 'has exactly 23 question nodes and 21 result nodes' do
       questions = nodes.count { |_, n| n['type'] == 'question' }
       results = nodes.count { |_, n| n['type'] == 'result' }
       expect(questions).to eq(23)
-      expect(results).to eq(22)
+      expect(results).to eq(21)
     end
 
     it 'every result node rule_id matches a rule in nasfaa_rules.yml' do
@@ -122,12 +122,6 @@ RSpec.describe Nasfaa::Walkthrough do
       trace, = run_walkthrough('no', 'yes')
       expect(trace.rule_id).to eq('FAFSA_R1_to_student')
       expect(trace.result).to eq(:permit)
-    end
-
-    it 'permits with scope to contributor (FAFSA_R2)' do
-      trace, = run_walkthrough('no', 'no', 'yes', 'yes')
-      expect(trace.rule_id).to eq('FAFSA_R2_to_contributor_scope_limited')
-      expect(trace.result).to eq(:permit_with_scope)
     end
 
     it 'permits FAFSA for aid admin (FAFSA_R3)' do
@@ -314,7 +308,7 @@ RSpec.describe Nasfaa::Walkthrough do
   # ------------------------------------------------------------------
   describe 'cross-verification with RuleEngine' do
     # Every DAG result node should agree with the RuleEngine evaluation
-    # of the same answers. We test all 22 terminal paths.
+    # of the same answers. We test all 21 terminal paths.
     paths = {
       'FTI_R1_student' => %w[yes yes],
       'FTI_R2_aid_admin_school_official' => %w[yes no yes yes],
@@ -322,7 +316,6 @@ RSpec.describe Nasfaa::Walkthrough do
       'FTI_R3_scholarship_with_consent' => %w[yes no no yes],
       'FTI_DENY_default' => %w[yes no no no],
       'FAFSA_R1_to_student' => %w[no yes],
-      'FAFSA_R2_to_contributor_scope_limited' => %w[no no yes yes],
       'FAFSA_R3_used_for_aid_admin' => %w[no no yes no yes],
       'FAFSA_R4_scholarship_with_consent' => %w[no no yes no no yes],
       'FAFSA_R6_HEA_written_consent' => %w[no no yes no no no no yes],

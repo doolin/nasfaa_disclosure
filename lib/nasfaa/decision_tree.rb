@@ -28,9 +28,6 @@ module Nasfaa
 
         # Box 3: Is it FAFSA data?
         if disclosure_request.fafsa_data?
-          # Box 4: Is the disclosure to parent/spouse contributor?
-          return true if disclosure_request.disclosure_to_contributor_parent_or_spouse?
-
           # Box 5: Will it be used for financial aid?
           return true if disclosure_request.used_for_aid_admin?
 

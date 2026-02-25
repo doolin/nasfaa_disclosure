@@ -20,60 +20,45 @@ RSpec.describe Nasfaa::Quiz do
   # Scenario mode
   # ------------------------------------------------------------------
   describe 'scenario mode' do
-    it 'presents all 23 scenarios' do
+    it 'presents all 22 scenarios' do
       # Provide enough answers — shuffled order means we may get some wrong
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       _, total, output, = run_quiz(answers)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
       expect(output).to include('FINAL SCORE')
-      expect(output).to include('Question 1 of 23')
+      expect(output).to include('Question 1 of 22')
     end
 
     it 'scores correct answers' do
       # With srand(42), we know the shuffle order. But we can test with a
-      # single-scenario subset approach: just answer "permit" for all 23.
+      # single-scenario subset approach: just answer "permit" for all 22.
       # Most are permits, so we should get most correct.
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       correct, total, output, = run_quiz(answers)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
       expect(correct).to be >= 1
       expect(output).to include('CORRECT!')
     end
 
     it 'marks wrong answers as incorrect' do
       # Answer "deny" for everything — the permits will be wrong
-      answers = Array.new(23, 'deny')
+      answers = Array.new(22, 'deny')
       _, _, output, = run_quiz(answers)
       expect(output).to include('INCORRECT.')
     end
 
     it 'displays scenario description and inputs' do
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       _, _, output, = run_quiz(answers)
       # At least one scenario description should appear
       expect(output).to include('Inputs:')
     end
 
     it 'displays rule_id and citation on reveal' do
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       _, _, output, = run_quiz(answers)
       expect(output).to include('Rule:')
       expect(output).to match(/Citation:/)
-    end
-
-    it 'treats permit_with_scope as permit' do
-      # Find the permit_with_scope scenario
-      scope_scenario = Nasfaa::Scenarios.all.find { |s| s.expected_result == :permit_with_scope }
-      expect(scope_scenario).not_to be_nil
-
-      # Run a quiz with just one scenario, answering "permit"
-      input = StringIO.new("permit\n")
-      output = StringIO.new
-      quiz = described_class.new(input: input, output: output)
-      # Stub the scenarios to just return this one
-      allow(Nasfaa::Scenarios).to receive(:all).and_return([scope_scenario])
-      correct, = quiz.run
-      expect(correct).to eq(1)
     end
 
     it 'treats permit_with_caution as permit' do
@@ -89,10 +74,10 @@ RSpec.describe Nasfaa::Quiz do
     end
 
     it 'returns correct and total from run' do
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       correct, total, = run_quiz(answers)
       expect(correct).to be_a(Integer)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
     end
   end
 
@@ -136,13 +121,13 @@ RSpec.describe Nasfaa::Quiz do
     it 'accepts abbreviated input (p/d)' do
       answers = Array.new(23, 'p')
       _, total, = run_quiz(answers)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
     end
 
     it 'accepts mixed-case input' do
       answers = Array.new(23, 'PERMIT')
       _, total, = run_quiz(answers)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
     end
 
     it 'reprompts on invalid input then accepts valid answer' do
@@ -151,7 +136,7 @@ RSpec.describe Nasfaa::Quiz do
       quiz = described_class.new(input: input, output: output)
       srand(42)
       _, total = quiz.run
-      expect(total).to eq(23)
+      expect(total).to eq(22)
       expect(output.string).to include('Please answer permit, deny, or quit')
     end
 
@@ -183,14 +168,14 @@ RSpec.describe Nasfaa::Quiz do
   # ------------------------------------------------------------------
   describe 'score tracking' do
     it 'tracks running score after each question' do
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       _, _, output, = run_quiz(answers)
       # Score should appear after each question
-      expect(output.scan('Score:').length).to eq(23)
+      expect(output.scan('Score:').length).to eq(22)
     end
 
     it 'displays percentage in final score' do
-      answers = Array.new(23, 'permit')
+      answers = Array.new(22, 'permit')
       _, _, output, = run_quiz(answers)
       expect(output).to match(/\d+% correct/)
     end
@@ -209,15 +194,15 @@ RSpec.describe Nasfaa::Quiz do
       [correct, total, output.string, quiz]
     end
 
-    it 'accepts single-character p/d input for all 23 scenarios' do
-      answers = Array.new(23, 'p')
+    it 'accepts single-character p/d input for all 22 scenarios' do
+      answers = Array.new(22, 'p')
       _, total, output, = run_quiz_single_key(answers)
-      expect(total).to eq(23)
+      expect(total).to eq(22)
       expect(output).to include('FINAL SCORE')
     end
 
     it 'shows [p/d/q] prompt in single-key mode' do
-      answers = Array.new(23, 'p')
+      answers = Array.new(22, 'p')
       _, _, output, = run_quiz_single_key(answers)
       expect(output).to include('[p/d/q]')
       expect(output).not_to include('[permit/deny/quit]')

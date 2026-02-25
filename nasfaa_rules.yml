@@ -79,12 +79,6 @@ rules:
     when_all: ["!includes_fti", disclosure_to_student]
     result: permit
 
-  # Box 4: Contributor check — only reachable via Box 3 Yes (FAFSA data)
-  - id: FAFSA_R2_to_contributor_scope_limited
-    when_all: ["!includes_fti", is_fafsa_data, disclosure_to_contributor_parent_or_spouse]
-    result: permit_with_scope
-    scope_note: "Contributor may access only information they personally provided on the FAFSA."
-
   # FAFSA data specific allowances (HEA 1090/1098h)
   - id: FAFSA_R3_used_for_aid_admin
     when_all: ["!includes_fti", is_fafsa_data, used_for_aid_admin]

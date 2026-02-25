@@ -37,6 +37,10 @@ RSpec.describe Nasfaa::Colorizer do
     it 'returns dim text unchanged' do
       expect(colorizer.dim('IRC §6103(l)(13)')).to eq('IRC §6103(l)(13)')
     end
+
+    it 'returns yellow text unchanged' do
+      expect(colorizer.yellow('PDF: some text')).to eq('PDF: some text')
+    end
   end
 
   # ------------------------------------------------------------------
@@ -91,6 +95,13 @@ RSpec.describe Nasfaa::Colorizer do
       expect(result).to start_with("\e[")
     end
 
+    it 'wraps yellow text with ANSI codes' do
+      result = colorizer.yellow('PDF: some text')
+      expect(result).to include('PDF: some text')
+      expect(result).to start_with("\e[33m")
+      expect(result).to end_with("\e[0m")
+    end
+
     it 'uses the same code for correct and permit' do
       expect(colorizer.correct('x')).to eq(colorizer.permit('x'))
     end
@@ -121,6 +132,13 @@ RSpec.describe Nasfaa::Colorizer do
 
     it 'uses different codes for permit and deny' do
       expect(colorizer.permit('x')).not_to eq(colorizer.deny('x'))
+    end
+
+    it 'wraps yellow text with ANSI codes' do
+      result = colorizer.yellow('PDF: some text')
+      expect(result).to include('PDF: some text')
+      expect(result).to start_with("\e[33m")
+      expect(result).to end_with("\e[0m")
     end
   end
 
@@ -166,6 +184,13 @@ RSpec.describe Nasfaa::Colorizer do
       result = colorizer.dim('Citation')
       expect(result).to include('Citation')
       expect(result).to start_with("\e[")
+    end
+
+    it 'wraps yellow text with ANSI codes' do
+      result = colorizer.yellow('PDF: some text')
+      expect(result).to include('PDF: some text')
+      expect(result).to start_with("\e[33m")
+      expect(result).to end_with("\e[0m")
     end
 
     it 'uses different codes from :dark mode for permit' do

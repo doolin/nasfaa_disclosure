@@ -106,10 +106,6 @@ RSpec.describe 'Scenario Library' do
       expect(Nasfaa::Scenarios.all.any? { |s| s.expected_result == :deny }).to be true
     end
 
-    it 'includes at least one permit_with_scope scenario' do
-      expect(Nasfaa::Scenarios.all.any? { |s| s.expected_result == :permit_with_scope }).to be true
-    end
-
     it 'includes at least one permit_with_caution scenario' do
       expect(Nasfaa::Scenarios.all.any? { |s| s.expected_result == :permit_with_caution }).to be true
     end

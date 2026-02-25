@@ -43,12 +43,6 @@ RSpec.describe Nasfaa::Evaluate do
       expect(output).to include('Assertion: FAIL')
     end
 
-    it 'treats permit_with_scope as permit for assertion' do
-      _, _, evaluator = run_evaluate('nnyyp')
-      expect(evaluator.trace.result).to eq(:permit_with_scope)
-      expect(evaluator.passed).to be true
-    end
-
     it 'treats permit_with_caution as permit for assertion' do
       _, _, evaluator = run_evaluate('nnnnnnyp')
       expect(evaluator.trace.result).to eq(:permit_with_caution)
@@ -98,6 +92,50 @@ RSpec.describe Nasfaa::Evaluate do
       allow(Nasfaa::Scenarios).to receive(:find_by_rule_id).and_return(nil)
       evaluator.run
       expect(output.string).not_to include('Citation:')
+      expect(output.string).to include('RESULT:')
+    end
+  end
+
+  # ------------------------------------------------------------------
+  # PDF text mode (default on)
+  # ------------------------------------------------------------------
+  describe 'pdf_text mode' do
+    it 'shows pdf_text for each traversed question by default' do
+      _, output, = run_evaluate('yy')
+      expect(output).to include('PDF:')
+      expect(output).to include('Box 1')
+    end
+
+    it 'shows thin boxes for all questions in the path' do
+      # 'yy' path: fti_check (Box 1 both pages) -> fti_to_student (Box 1 Page 2)
+      _, output, = run_evaluate('yy')
+      expect(output).to include('Box 1 (both pages)')
+      expect(output).to include('Box 1 (Page 2)')
+    end
+
+    it 'wraps long pdf_text inside the box border' do
+      _, output, = run_evaluate('yy')
+      output.each_line do |line|
+        visual = line.gsub(/\e\[[0-9;]*m/, '').rstrip
+        next if visual.empty?
+
+        expect(visual.length).to be <= Nasfaa::BoxDraw::BOX_WIDTH + 2
+      end
+    end
+
+    it 'colors pdf_text lines yellow when a color mode is active' do
+      output = StringIO.new
+      colorizer = Nasfaa::Colorizer.new(mode: :dark)
+      evaluator = described_class.new('yy', output: output, colorizer: colorizer)
+      evaluator.run
+      expect(output.string).to include("\e[33m")
+    end
+
+    it 'can be disabled with pdf_text: false' do
+      output = StringIO.new
+      evaluator = described_class.new('yy', output: output, pdf_text: false)
+      evaluator.run
+      expect(output.string).not_to include('PDF:')
       expect(output.string).to include('RESULT:')
     end
   end

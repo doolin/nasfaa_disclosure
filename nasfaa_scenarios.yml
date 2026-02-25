@@ -148,24 +148,6 @@ scenarios:
     citation: "FERPA 34 CFR §99.10 — student's right to inspect own education records"
     tags: [fafsa, student, permit, basic]
 
-  - id: parent_contributor_requests_fafsa_data
-    name: "Parent Contributor Requests Their Own FAFSA Data"
-    description: >
-      A parent who contributed financial information to their child's FAFSA
-      (as a FAFSA "contributor" under the FAFSA Simplification Act) contacts
-      the financial aid office to review the data they provided. Under HEA
-      §1090(a), a contributor may access the information they personally
-      provided on the FAFSA — but only that information, not the student's
-      complete record. The disclosure is permitted with a scope limitation.
-    inputs:
-      is_fafsa_data: true
-      disclosure_to_contributor_parent_or_spouse: true
-    expected:
-      result: permit_with_scope
-      rule_id: FAFSA_R2_to_contributor_scope_limited
-    citation: "HEA §1090(a) — contributor access limited to personally provided data"
-    tags: [fafsa, contributor, permit_with_scope, scope_limited]
-
   - id: aid_office_processes_awards
     name: "Aid Office Uses FAFSA Data to Calculate Awards"
     description: >

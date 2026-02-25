@@ -54,14 +54,6 @@ RSpec.describe Nasfaa::RuleEngine do
         expect(result[:result]).to eq(:permit)
       end
 
-      it 'permits contributor with scope note' do
-        data = Nasfaa::DisclosureData.new(is_fafsa_data: true, disclosure_to_contributor_parent_or_spouse: true)
-        result = engine.evaluate(data)
-        expect(result[:rule_id]).to eq('FAFSA_R2_to_contributor_scope_limited')
-        expect(result[:result]).to eq(:permit_with_scope)
-        expect(result[:scope_note]).to include('only information they personally provided')
-      end
-
       it 'permits FAFSA data for aid admin' do
         data = Nasfaa::DisclosureData.new(is_fafsa_data: true, used_for_aid_admin: true)
         result = engine.evaluate(data)
@@ -153,7 +145,7 @@ RSpec.describe Nasfaa::RuleEngine do
 
   describe '#rules' do
     it 'loads all rules from YAML' do
-      expect(engine.rules.length).to eq(22)
+      expect(engine.rules.length).to eq(21)
     end
 
     it 'has a catch-all for FTI' do

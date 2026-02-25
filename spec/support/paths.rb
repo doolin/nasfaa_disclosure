@@ -15,7 +15,6 @@ TERMINAL_PATHS = {
   'FTI_R3_scholarship_with_consent' => { compact: 'ynny', result: :permit },
   'FTI_DENY_default' => { compact: 'ynnn', result: :deny },
   'FAFSA_R1_to_student' => { compact: 'ny', result: :permit },
-  'FAFSA_R2_to_contributor_scope_limited' => { compact: 'nnyy', result: :permit_with_scope },
   'FAFSA_R3_used_for_aid_admin' => { compact: 'nnyny', result: :permit },
   'FAFSA_R4_scholarship_with_consent' => { compact: 'nnynny', result: :permit },
   'FAFSA_R6_HEA_written_consent' => { compact: 'nnynnnny', result: :permit },
