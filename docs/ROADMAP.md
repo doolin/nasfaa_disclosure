@@ -160,3 +160,5 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 - **REPL mode**: `bin/nasfaa repl` drops into an interactive session where you can construct `DisclosureData` objects and evaluate them, inspect traces, compare engines. Useful for ad-hoc exploration beyond the walkthrough's fixed question sequence.
 
 - **Compliance report generator**: Given a set of disclosure scenarios (e.g., all disclosures a school made in a quarter), produce a formatted PDF/HTML report showing the decision path and citation for each. Useful for audit preparation.
+
+- **Property-based testing**: Use `rantly` or `propcheck` to generate arbitrary `DisclosureData` inputs and verify invariants that must hold regardless of input — e.g., the DAG and RuleEngine always agree, every path terminates in a result node, every result node carries a non-empty `rule_id`. Complements the existing exhaustive 2^12 spec with randomly-structured edge cases and shrinking on failure.

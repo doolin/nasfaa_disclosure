@@ -36,6 +36,47 @@ class NilGetchInput
   end
 end
 
+# Simulates a non-TTY stdin (e.g., piped input) after io/console has been loaded.
+# Responds to getch (which io/console patches onto all IO objects) but isatty
+# returns false, so single_key? correctly falls back to line-based input.
+class NonTtyInput
+  def initialize(answers)
+    @answers = answers.dup
+  end
+
+  def getch
+    raise 'getch should not be called on a non-TTY input'
+  end
+
+  def isatty # rubocop:disable Naming/PredicateMethod
+    false
+  end
+
+  def gets
+    answer = @answers.shift
+    "#{answer}\n" if answer
+  end
+end
+
+# Simulates a real TTY stdin with io/console loaded.  Responds to both getch
+# and isatty (returning true), so single_key? correctly uses single-key mode.
+class TtyInput
+  def initialize(chars)
+    @chars = chars.chars
+  end
+
+  def getch
+    char = @chars.shift
+    raise 'Unexpected end of input' unless char
+
+    char
+  end
+
+  def isatty # rubocop:disable Naming/PredicateMethod
+    true
+  end
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

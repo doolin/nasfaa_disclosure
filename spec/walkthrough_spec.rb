@@ -549,5 +549,25 @@ RSpec.describe Nasfaa::Walkthrough do
       walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
       expect { walkthrough.run }.to raise_error(RuntimeError, 'Unexpected end of input')
     end
+
+    it 'uses single-key mode when input responds to getch and isatty is true (real TTY)' do
+      input = TtyInput.new('yy')
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      trace = walkthrough.run
+      expect(trace.rule_id).to eq('FTI_R1_student')
+      expect(output.string).to include('[y/n/q]')
+    end
+
+    it 'falls back to line-based input when isatty is false (piped stdin)' do
+      # NonTtyInput responds to getch (io/console patches it onto all IO) but
+      # isatty returns false, so single_key? returns false and gets is used instead.
+      input = NonTtyInput.new(%w[yes yes])
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      trace = walkthrough.run
+      expect(trace.rule_id).to eq('FTI_R1_student')
+      expect(output.string).to include('[yes/no]')
+    end
   end
 end

@@ -7,9 +7,10 @@ module Nasfaa
   # yellow as the primary semantic contrast pair rather than red/green.
   #
   # Modes:
-  #   :none  — no ANSI codes (default; safe for tests and piped output)
-  #   :dark  — palette tuned for dark terminals (bold cyan / bold yellow)
-  #   :light — palette tuned for light terminals (bold blue / yellow)
+  #   :none    — no ANSI codes (default; safe for tests and piped output)
+  #   :dark    — palette tuned for dark terminals (bold cyan / bold yellow)
+  #   :light   — palette tuned for light terminals (bold blue / yellow)
+  #   :rainbow — vivid full-spectrum palette (green/red/yellow/magenta/cyan)
   #
   # Usage:
   #   c = Nasfaa::Colorizer.new(mode: :dark)
@@ -18,7 +19,7 @@ module Nasfaa
   #   puts c.bold("Box 1")
   #   puts c.dim("IRC §6103")
   class Colorizer
-    MODES = %i[none light dark].freeze
+    MODES = %i[none light dark rainbow].freeze
 
     RESET = "\e[0m"
 
@@ -40,6 +41,14 @@ module Nasfaa
         incorrect: "\e[33m", # yellow
         bold: "\e[1m",
         dim: "\e[2m"
+      },
+      rainbow: {
+        permit: "\e[1;32m", # bold green
+        deny: "\e[1;31m", # bold red
+        correct: "\e[1;32m", # bold green
+        incorrect: "\e[1;31m", # bold red
+        bold: "\e[1;35m", # bold magenta
+        dim: "\e[36m" # cyan
       }
     }.freeze
 

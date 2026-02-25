@@ -125,11 +125,61 @@ RSpec.describe Nasfaa::Colorizer do
   end
 
   # ------------------------------------------------------------------
+  # :rainbow mode — vivid full-spectrum palette
+  # ------------------------------------------------------------------
+  describe 'mode :rainbow' do
+    let(:colorizer) { described_class.new(mode: :rainbow) }
+
+    it 'wraps permit text with ANSI codes' do
+      result = colorizer.permit('PERMITTED')
+      expect(result).to include('PERMITTED')
+      expect(result).to start_with("\e[")
+      expect(result).to end_with("\e[0m")
+    end
+
+    it 'wraps deny text with ANSI codes' do
+      result = colorizer.deny('DENIED')
+      expect(result).to include('DENIED')
+      expect(result).to start_with("\e[")
+      expect(result).to end_with("\e[0m")
+    end
+
+    it 'uses different codes for permit and deny (green vs red)' do
+      expect(colorizer.permit('x')).not_to eq(colorizer.deny('x'))
+    end
+
+    it 'uses the same code for correct and permit' do
+      expect(colorizer.correct('x')).to eq(colorizer.permit('x'))
+    end
+
+    it 'uses the same code for incorrect and deny' do
+      expect(colorizer.incorrect('x')).to eq(colorizer.deny('x'))
+    end
+
+    it 'wraps bold text with ANSI codes' do
+      result = colorizer.bold('Header')
+      expect(result).to include('Header')
+      expect(result).to start_with("\e[")
+    end
+
+    it 'wraps dim text with ANSI codes' do
+      result = colorizer.dim('Citation')
+      expect(result).to include('Citation')
+      expect(result).to start_with("\e[")
+    end
+
+    it 'uses different codes from :dark mode for permit' do
+      dark = described_class.new(mode: :dark)
+      expect(colorizer.permit('x')).not_to eq(dark.permit('x'))
+    end
+  end
+
+  # ------------------------------------------------------------------
   # Invalid mode
   # ------------------------------------------------------------------
   describe 'invalid mode' do
     it 'raises ArgumentError for an unknown mode' do
-      expect { described_class.new(mode: :rainbow) }.to raise_error(ArgumentError, /Invalid color mode/)
+      expect { described_class.new(mode: :neon) }.to raise_error(ArgumentError, /Invalid color mode/)
     end
   end
 end
