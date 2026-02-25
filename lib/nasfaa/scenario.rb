@@ -44,6 +44,12 @@ module Nasfaa
       all.find { |s| s.id == id.to_s }
     end
 
+    # Find a scenario by the rule ID it maps to (expected_rule_id field).
+    # Returns nil when no named scenario covers the given rule.
+    def self.find_by_rule_id(rule_id)
+      all.find { |s| s.expected_rule_id == rule_id.to_s }
+    end
+
     # Filter scenarios by tag (e.g., "fti", "ferpa", "deny").
     def self.by_tag(tag)
       all.select { |s| s.tags.include?(tag.to_s) }

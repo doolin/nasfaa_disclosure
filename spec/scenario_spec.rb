@@ -68,6 +68,16 @@ RSpec.describe 'Scenario Library' do
       expect(scenario.name).to eq('Student Views Own Tax Return Information')
     end
 
+    it '.find_by_rule_id returns the scenario that maps to a given rule' do
+      scenario = Nasfaa::Scenarios.find_by_rule_id('FTI_R1_student')
+      expect(scenario).not_to be_nil
+      expect(scenario.id).to eq('student_views_own_fti')
+    end
+
+    it '.find_by_rule_id returns nil when no scenario covers the rule' do
+      expect(Nasfaa::Scenarios.find_by_rule_id('NONEXISTENT_RULE')).to be_nil
+    end
+
     it '.by_tag filters scenarios' do
       fti_scenarios = Nasfaa::Scenarios.by_tag('fti')
       expect(fti_scenarios.length).to eq(5)

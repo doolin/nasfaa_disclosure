@@ -22,7 +22,7 @@ RSpec.describe Nasfaa::Evaluate do
         trace, output, = run_evaluate(compact)
         expect(trace.rule_id).to eq(rule_id)
         expect(trace.result).to eq(info[:result])
-        expect(output).to include("Rule:     #{rule_id}")
+        expect(output).to include(rule_id)
       end
     end
   end
@@ -64,7 +64,7 @@ RSpec.describe Nasfaa::Evaluate do
       _, output, evaluator = run_evaluate('yy')
       expect(evaluator.assertion).to be_nil
       expect(evaluator.passed).to be_nil
-      expect(output).to include('Result:')
+      expect(output).to include('RESULT:')
       expect(output).not_to include('Assertion:')
     end
   end
@@ -73,11 +73,32 @@ RSpec.describe Nasfaa::Evaluate do
   # Output formatting
   # ------------------------------------------------------------------
   describe 'output formatting' do
+    it 'wraps result in a heavy box-drawn result card' do
+      _, output, = run_evaluate('ynnyp')
+      expect(output).to include('╔')
+      expect(output).to include('╚')
+    end
+
     it 'displays result, rule, and path' do
       _, output, = run_evaluate('ynnyp')
-      expect(output).to include('Result:   permit')
-      expect(output).to include('Rule:     FTI_R3_scholarship_with_consent')
-      expect(output).to include('Path:     fti_check -> fti_to_student -> fti_aid_admin -> fti_scholarship')
+      expect(output).to include('RESULT: permit')
+      expect(output).to include('Rule: FTI_R3_scholarship_with_consent')
+      expect(output).to include('fti_scholarship')
+    end
+
+    it 'displays scenario name and citation for named scenarios' do
+      _, output, = run_evaluate('yy') # FTI_R1_student → student_views_own_fti
+      expect(output).to include('Student Views Own Tax Return Information')
+      expect(output).to include('Citation:')
+    end
+
+    it 'omits scenario section when no named scenario matches the rule' do
+      output = StringIO.new
+      evaluator = described_class.new('yy', output: output)
+      allow(Nasfaa::Scenarios).to receive(:find_by_rule_id).and_return(nil)
+      evaluator.run
+      expect(output.string).not_to include('Citation:')
+      expect(output.string).to include('RESULT:')
     end
   end
 

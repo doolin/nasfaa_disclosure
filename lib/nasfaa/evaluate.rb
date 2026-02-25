@@ -16,6 +16,8 @@ module Nasfaa
   #   eval = Nasfaa::Evaluate.new('yy')
   #   trace = eval.run   # => Trace (permit, FTI_R1_student), no assertion
   class Evaluate
+    include BoxDraw
+
     VALID_CHARS = %w[y n p d].freeze
 
     attr_reader :trace, :assertion, :passed
@@ -101,18 +103,34 @@ module Nasfaa
     def display_result
       result_text = @trace.result.to_s
       colored_result = result_text.start_with?('permit') ? @colorizer.permit(result_text) : @colorizer.deny(result_text)
-      @output.puts "Result:   #{colored_result}"
-      @output.puts @colorizer.dim("Rule:     #{@trace.rule_id}")
-      @output.puts @colorizer.dim("Path:     #{@trace.path.join(' -> ')}")
-      display_assertion if @assertion
+      scenario = Scenarios.find_by_rule_id(@trace.rule_id)
+
+      @output.puts box_heavy_top
+      @output.puts box_heavy_line("RESULT: #{colored_result}")
+      @output.puts box_heavy_divider
+      @output.puts box_heavy_line(@colorizer.dim("Rule: #{@trace.rule_id}"))
+      if scenario
+        @output.puts box_heavy_line(@colorizer.dim("Citation: #{scenario.citation}"))
+        @output.puts box_heavy_line
+        @output.puts box_heavy_line(scenario.name)
+        @output.puts box_heavy_line
+        @output.puts box_heavy_line(scenario.description)
+        @output.puts box_heavy_line
+      end
+      @output.puts box_heavy_line("Path: #{@trace.path.join(' -> ')}")
+      if @assertion
+        @output.puts box_heavy_divider
+        display_assertion
+      end
+      @output.puts box_heavy_bottom
     end
 
     def display_assertion
       expected = @assertion
       if @passed
-        @output.puts "Assertion: #{@colorizer.correct('PASS')} (expected #{expected})"
+        @output.puts box_heavy_line("Assertion: #{@colorizer.correct('PASS')} (expected #{expected})")
       else
-        @output.puts "Assertion: #{@colorizer.incorrect('FAIL')} (expected #{expected}, got #{@trace.result})"
+        @output.puts box_heavy_line("Assertion: #{@colorizer.incorrect('FAIL')} (expected #{expected}, got #{@trace.result})")
       end
     end
   end
