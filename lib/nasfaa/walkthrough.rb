@@ -25,6 +25,7 @@ module Nasfaa
   #   trace = walkthrough.run
   class Walkthrough
     include BoxDraw
+    include SingleKeyReader
 
     QUESTIONS_PATH = File.expand_path('../../nasfaa_questions.yml', __dir__)
 
@@ -35,6 +36,7 @@ module Nasfaa
       @output = output
       @colorizer = colorizer
       @pdf_text = pdf_text
+      @single_key_valid_chars = %w[y n q]
       data = YAML.safe_load_file(questions_path)
       @start = data['start']
       @nodes = data['nodes']
@@ -113,28 +115,6 @@ module Nasfaa
           end
         end
       end
-    end
-
-    def single_key?
-      @input.respond_to?(:getch)
-    end
-
-    def read_char
-      raw = @input.getch
-      raise 'Unexpected end of input' if raw.nil?
-
-      # Ctrl-C (\x03) and Ctrl-\ (\x1c): treat as quit without echoing control chars
-      if ["\x03", "\x1c"].include?(raw)
-        @output.puts
-        return 'q'
-      end
-
-      char = raw.downcase
-      if %w[y n q].include?(char)
-        @output.print char
-        @output.puts
-      end
-      char
     end
 
     def record_answer(node, response)

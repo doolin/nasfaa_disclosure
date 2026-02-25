@@ -246,10 +246,28 @@ RSpec.describe Nasfaa::Quiz do
     end
 
     it 'silently ignores invalid keys and loops until a valid key is pressed' do
-      # 'x' is invalid — echoed but ignored; 'q' then quits
+      # 'x' is invalid — not echoed, no newline; 'q' then quits
       _, total, output, = run_quiz_single_key(%w[x q])
       expect(total).to eq(0)
-      expect(output).to include('x')
+      expect(output.lines.map(&:strip)).not_to include('x')
+    end
+
+    it 'treats Ctrl-C as quit in single-key mode' do
+      input = SingleKeyInput.new("\x03")
+      output = StringIO.new
+      quiz = described_class.new(input: input, output: output)
+      _, total = quiz.run
+      expect(total).to eq(0)
+      expect(output.string).to include('FINAL SCORE')
+    end
+
+    it 'treats Ctrl-\\ as quit in single-key mode' do
+      input = SingleKeyInput.new("\x1c")
+      output = StringIO.new
+      quiz = described_class.new(input: input, output: output)
+      _, total = quiz.run
+      expect(total).to eq(0)
+      expect(output.string).to include('FINAL SCORE')
     end
   end
 end

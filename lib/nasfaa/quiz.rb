@@ -21,6 +21,7 @@ module Nasfaa
   #   correct, total = quiz.run
   class Quiz
     include BoxDraw
+    include SingleKeyReader
 
     RANDOM_QUESTION_COUNT = 10
 
@@ -31,6 +32,7 @@ module Nasfaa
       @output = output
       @random = random
       @colorizer = colorizer
+      @single_key_valid_chars = %w[p d q]
       @engine = RuleEngine.new
       @correct = 0
       @total = 0
@@ -128,17 +130,6 @@ module Nasfaa
           end
         end
       end
-    end
-
-    def single_key?
-      @input.respond_to?(:getch)
-    end
-
-    def read_char
-      char = @input.getch.downcase
-      @output.print char
-      @output.puts
-      char
     end
 
     def check_answer(answer, question)
