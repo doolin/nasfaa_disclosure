@@ -394,6 +394,39 @@ Input registers on a single keypress (`p`/`d`/`q`) — no Enter required.
 Accepts `--color=dark|light|none`. For `permit_with_scope` and
 `permit_with_caution` scenarios, answering "permit" is counted as correct.
 
+## Color Palettes
+
+Three color modes are available via `--color=dark|light|rainbow|none`.
+All modes are designed for colorblind safety (deuteranopia/protanopia friendly),
+using blue/cyan and yellow as the primary semantic pair instead of red/green.
+
+### Dark (default) — for dark terminal backgrounds
+
+| Role | Color | Swatch |
+|------|-------|--------|
+| Permit / Correct | Bold Cyan | ![](https://img.shields.io/badge/-__-00CCCC?style=flat-square) |
+| Deny / Incorrect | Bold Yellow | ![](https://img.shields.io/badge/-__-CCCC00?style=flat-square) |
+| Bold | Bold White | ![](https://img.shields.io/badge/-__-FFFFFF?style=flat-square) |
+| Dim | Gray | ![](https://img.shields.io/badge/-__-808080?style=flat-square) |
+
+### Light — for light terminal backgrounds
+
+| Role | Color | Swatch |
+|------|-------|--------|
+| Permit / Correct | Bold Blue | ![](https://img.shields.io/badge/-__-0000CC?style=flat-square) |
+| Deny / Incorrect | Yellow | ![](https://img.shields.io/badge/-__-B8860B?style=flat-square) |
+| Bold | Bold Black | ![](https://img.shields.io/badge/-__-000000?style=flat-square) |
+| Dim | Gray | ![](https://img.shields.io/badge/-__-808080?style=flat-square) |
+
+### Rainbow — vivid full-spectrum
+
+| Role | Color | Swatch |
+|------|-------|--------|
+| Permit / Correct | Bold Green | ![](https://img.shields.io/badge/-__-00CC00?style=flat-square) |
+| Deny / Incorrect | Bold Red | ![](https://img.shields.io/badge/-__-CC0000?style=flat-square) |
+| Bold | Bold Magenta | ![](https://img.shields.io/badge/-__-CC00CC?style=flat-square) |
+| Dim | Cyan | ![](https://img.shields.io/badge/-__-00CCCC?style=flat-square) |
+
 ## Evaluate Mode (CLI)
 
 **TL;DR:** `bin/nasfaa evaluate ynnyp` — navigate the decision tree with a
