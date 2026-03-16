@@ -94,6 +94,10 @@ module Nasfaa
       @output.puts "#{m}#{@colorizer.dim('determine whether a student record disclosure is permitted.')}"
       @output.puts
       @output.puts "#{m}#{@colorizer.dim('Press')} #{@colorizer.bold('y')}#{@colorizer.dim('/')}#{@colorizer.bold('n')} #{@colorizer.dim('to answer, or')} #{@colorizer.bold('q')} #{@colorizer.dim('to quit.')}"
+      @output.puts
+      disclaimer = 'For Entertainment Purposes Only'
+      disc_pad = cols > 0 ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
+      @output.puts "#{disc_pad}#{@colorizer.red(disclaimer)}"
     end
 
     def ask_question(node)

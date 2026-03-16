@@ -33,7 +33,8 @@ module Nasfaa
         incorrect: "\e[1;33m", # bold yellow
         bold: "\e[1m",
         dim: "\e[2m",
-        yellow: "\e[33m" # yellow
+        yellow: "\e[33m", # yellow
+        red: "\e[1;4;38;2;204;51;51m" # bold underlined bright brick red
       },
       light: {
         permit: "\e[1;34m", # bold blue
@@ -42,7 +43,8 @@ module Nasfaa
         incorrect: "\e[33m", # yellow
         bold: "\e[1m",
         dim: "\e[2m",
-        yellow: "\e[33m" # yellow
+        yellow: "\e[33m", # yellow
+        red: "\e[1;4;38;2;204;51;51m" # bold underlined bright brick red
       },
       rainbow: {
         permit: "\e[1;32m", # bold green
@@ -51,7 +53,8 @@ module Nasfaa
         incorrect: "\e[1;31m", # bold red
         bold: "\e[1;35m", # bold magenta
         dim: "\e[36m", # cyan
-        yellow: "\e[33m" # yellow
+        yellow: "\e[33m", # yellow
+        red: "\e[1;4;38;2;204;51;51m" # bold underlined bright brick red
       }
     }.freeze
 
@@ -70,6 +73,7 @@ module Nasfaa
     def bold(text)      = colorize(text, :bold)
     def dim(text)       = colorize(text, :dim)
     def yellow(text)    = colorize(text, :yellow)
+    def red(text)       = colorize(text, :red)
 
     private
 
