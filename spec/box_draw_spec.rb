@@ -22,6 +22,65 @@ RSpec.describe Nasfaa::BoxDraw do
     it 'INNER_WIDTH is BOX_WIDTH - 2' do
       expect(described_class::INNER_WIDTH).to eq(described_class::BOX_WIDTH - 2)
     end
+
+    it 'TOTAL_WIDTH is BOX_WIDTH + 2' do
+      expect(described_class::TOTAL_WIDTH).to eq(described_class::BOX_WIDTH + 2)
+    end
+  end
+
+  # ── Centering ──────────────────────────────────────────────────────
+
+  describe 'terminal centering' do
+    it 'returns empty margin when terminal width is unavailable' do
+      allow(drawer).to receive(:terminal_columns).and_return(0)
+      margin = drawer.send(:box_margin)
+      expect(margin).to eq('')
+    end
+
+    it 'returns empty margin when terminal is too narrow for centering' do
+      allow(drawer).to receive(:terminal_columns).and_return(60)
+      margin = drawer.send(:box_margin)
+      expect(margin).to eq('')
+    end
+
+    it 'returns left padding to center the box in a wide terminal' do
+      allow(drawer).to receive(:terminal_columns).and_return(120)
+      margin = drawer.send(:box_margin)
+      expected_padding = (120 - described_class::TOTAL_WIDTH) / 2
+      expect(margin).to eq(' ' * expected_padding)
+    end
+
+    it 'prepends margin to box_top in a wide terminal' do
+      allow(drawer).to receive(:terminal_columns).and_return(120)
+      line = drawer.box_top
+      expected_padding = (120 - described_class::TOTAL_WIDTH) / 2
+      expect(line).to start_with(' ' * expected_padding + '┌')
+    end
+
+    it 'returns 0 columns when winsize is not available' do
+      io = StringIO.new
+      expect(drawer.send(:terminal_columns, io)).to eq(0)
+    end
+
+    it 'returns the column count from a TTY-like IO' do
+      io = double('tty_io', respond_to?: true, winsize: [24, 120])
+      allow(io).to receive(:respond_to?).with(:winsize).and_return(true)
+      expect(drawer.send(:terminal_columns, io)).to eq(120)
+    end
+
+    it 'returns 0 when winsize raises Errno::ENOTTY' do
+      io = double('enotty_io')
+      allow(io).to receive(:respond_to?).with(:winsize).and_return(true)
+      allow(io).to receive(:winsize).and_raise(Errno::ENOTTY)
+      expect(drawer.send(:terminal_columns, io)).to eq(0)
+    end
+
+    it 'returns 0 when winsize raises Errno::ENODEV' do
+      io = double('enodev_io')
+      allow(io).to receive(:respond_to?).with(:winsize).and_return(true)
+      allow(io).to receive(:winsize).and_raise(Errno::ENODEV)
+      expect(drawer.send(:terminal_columns, io)).to eq(0)
+    end
   end
 
   # ── Structural methods ───────────────────────────────────────────

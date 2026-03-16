@@ -563,4 +563,53 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(output.string).to include('[yes/no]')
     end
   end
+
+  # ------------------------------------------------------------------
+  # Banner and clear screen
+  # ------------------------------------------------------------------
+  describe 'banner' do
+    it 'displays the banner title' do
+      _trace, output, _wt = run_walkthrough('yes', 'yes')
+      expect(output).to include('NASFAA Data Sharing Decision Tree')
+    end
+
+    it 'displays the disclaimer' do
+      _trace, output, _wt = run_walkthrough('yes', 'yes')
+      expect(output).to include('For Entertainment Purposes Only')
+    end
+
+    it 'displays instructions' do
+      _trace, output, _wt = run_walkthrough('yes', 'yes')
+      expect(output).to include('Walk through the FERPA/FAFSA/FTI disclosure decision tree')
+    end
+
+    it 'clears the terminal when output is a TTY' do
+      input = StringIO.new("yes\nyes\n")
+      output = StringIO.new
+      allow(output).to receive(:isatty).and_return(true)
+      allow(output).to receive(:respond_to?).and_call_original
+      allow(output).to receive(:respond_to?).with(:isatty).and_return(true)
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      walkthrough.run
+      expect(output.string).to start_with("\e[2J\e[H")
+    end
+
+    it 'does not clear the terminal when output is not a TTY' do
+      _trace, output, _wt = run_walkthrough('yes', 'yes')
+      expect(output).not_to include("\e[2J")
+    end
+
+    it 'centers the title and disclaimer when terminal width is available' do
+      input = StringIO.new("yes\nyes\n")
+      output = StringIO.new
+      walkthrough = described_class.new(input: input, output: output, questions_path: questions_path)
+      allow(walkthrough).to receive(:terminal_columns).and_return(120)
+      walkthrough.run
+      lines = output.string.lines
+      title_line = lines.find { |l| l.include?('NASFAA Data Sharing Decision Tree') }
+      disclaimer_line = lines.find { |l| l.include?('For Entertainment Purposes Only') }
+      expect(title_line).to start_with(' ')
+      expect(disclaimer_line).to start_with(' ')
+    end
+  end
 end

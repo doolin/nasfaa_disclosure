@@ -41,6 +41,10 @@ RSpec.describe Nasfaa::Colorizer do
     it 'returns yellow text unchanged' do
       expect(colorizer.yellow('PDF: some text')).to eq('PDF: some text')
     end
+
+    it 'returns red text unchanged' do
+      expect(colorizer.red('disclaimer')).to eq('disclaimer')
+    end
   end
 
   # ------------------------------------------------------------------
@@ -109,6 +113,13 @@ RSpec.describe Nasfaa::Colorizer do
     it 'uses the same code for incorrect and deny' do
       expect(colorizer.incorrect('x')).to eq(colorizer.deny('x'))
     end
+
+    it 'wraps red text with ANSI codes (bold underlined bright brick red)' do
+      result = colorizer.red('disclaimer')
+      expect(result).to include('disclaimer')
+      expect(result).to start_with("\e[")
+      expect(result).to end_with("\e[0m")
+    end
   end
 
   # ------------------------------------------------------------------
@@ -138,6 +149,13 @@ RSpec.describe Nasfaa::Colorizer do
       result = colorizer.yellow('PDF: some text')
       expect(result).to include('PDF: some text')
       expect(result).to start_with("\e[33m")
+      expect(result).to end_with("\e[0m")
+    end
+
+    it 'wraps red text with ANSI codes' do
+      result = colorizer.red('disclaimer')
+      expect(result).to include('disclaimer')
+      expect(result).to start_with("\e[")
       expect(result).to end_with("\e[0m")
     end
   end
@@ -196,6 +214,13 @@ RSpec.describe Nasfaa::Colorizer do
     it 'uses different codes from :dark mode for permit' do
       dark = described_class.new(mode: :dark)
       expect(colorizer.permit('x')).not_to eq(dark.permit('x'))
+    end
+
+    it 'wraps red text with ANSI codes' do
+      result = colorizer.red('disclaimer')
+      expect(result).to include('disclaimer')
+      expect(result).to start_with("\e[")
+      expect(result).to end_with("\e[0m")
     end
   end
 

@@ -103,10 +103,11 @@ module Nasfaa
     end
 
     # Detect terminal width. Returns 0 if not a TTY or unavailable.
-    def terminal_columns
-      return 0 unless $stdout.respond_to?(:winsize)
+    # Accepts an optional IO for testability (defaults to $stdout).
+    def terminal_columns(io = $stdout)
+      return 0 unless io.respond_to?(:winsize)
 
-      $stdout.winsize[1]
+      io.winsize[1]
     rescue Errno::ENOTTY, Errno::ENODEV
       0
     end

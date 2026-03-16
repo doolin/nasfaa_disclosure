@@ -39,6 +39,8 @@ module Nasfaa
     end
 
     def run
+      @output.print "\e[2J\e[H" if @output.respond_to?(:isatty) && @output.isatty
+      display_banner
       questions = build_questions
       questions.each_with_index do |question, index|
         present_question(question, index + 1, questions.length)
@@ -53,6 +55,25 @@ module Nasfaa
     end
 
     private
+
+    def display_banner
+      title = 'NASFAA Disclosure Quiz'
+      m = box_margin
+      cols = terminal_columns
+      title_pad = cols > 0 ? ' ' * [(cols - title.length) / 2, 0].max : m
+      @output.puts
+      @output.puts "#{title_pad}#{@colorizer.bold(title)}"
+      @output.puts
+      mode_desc = @random ? 'randomly generated inputs' : '23 real-world scenarios'
+      @output.puts "#{m}#{@colorizer.dim("Test your knowledge of FERPA/FAFSA/FTI disclosure rules with #{mode_desc}.")}"
+      @output.puts "#{m}#{@colorizer.dim('Read each scenario and decide: should the disclosure be permitted or denied?')}"
+      @output.puts
+      @output.puts "#{m}#{@colorizer.dim('Press')} #{@colorizer.bold('p')}#{@colorizer.dim('/')}#{@colorizer.bold('d')} #{@colorizer.dim('to answer, or')} #{@colorizer.bold('q')} #{@colorizer.dim('to quit.')}"
+      @output.puts
+      disclaimer = 'For Entertainment Purposes Only'
+      disc_pad = cols > 0 ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
+      @output.puts "#{disc_pad}#{@colorizer.red(disclaimer)}"
+    end
 
     def build_questions
       if @random
