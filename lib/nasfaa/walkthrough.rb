@@ -48,6 +48,7 @@ module Nasfaa
     # Returns a Nasfaa::Trace with the decision and path.
     def run
       @output.print "\e[2J\e[H" if @output.respond_to?(:isatty) && @output.isatty
+      display_banner
       current = @start
 
       loop do
@@ -79,6 +80,21 @@ module Nasfaa
     end
 
     private
+
+    def display_banner
+      title = 'NASFAA Data Sharing Decision Tree'
+      m = box_margin
+      cols = terminal_columns
+      title_pad = cols > 0 ? ' ' * [(cols - title.length) / 2, 0].max : m
+      @output.puts
+      @output.puts "#{title_pad}#{@colorizer.bold(title)}"
+      @output.puts
+      @output.puts "#{m}#{@colorizer.dim('Walk through the FERPA/FAFSA/FTI disclosure decision tree')}"
+      @output.puts "#{m}#{@colorizer.dim('one question at a time. Answer each yes/no question to')}"
+      @output.puts "#{m}#{@colorizer.dim('determine whether a student record disclosure is permitted.')}"
+      @output.puts
+      @output.puts "#{m}#{@colorizer.dim('Press')} #{@colorizer.bold('y')}#{@colorizer.dim('/')}#{@colorizer.bold('n')} #{@colorizer.dim('to answer, or')} #{@colorizer.bold('q')} #{@colorizer.dim('to quit.')}"
+    end
 
     def ask_question(node)
       @output.puts
