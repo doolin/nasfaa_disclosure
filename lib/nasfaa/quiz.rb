@@ -107,7 +107,7 @@ module Nasfaa
       @output.puts
 
       if single_key?
-        @output.print '[p/d/q] > '
+        @output.print "#{box_margin}[p/d/q] > "
         loop do
           case read_char
           when 'p' then return :permit
@@ -116,7 +116,7 @@ module Nasfaa
           end
         end
       else
-        @output.print 'Should this disclosure be permitted or denied? [permit/deny/quit] > '
+        @output.print "#{box_margin}Should this disclosure be permitted or denied? [permit/deny/quit] > "
         loop do
           answer = @input.gets&.strip&.downcase
           case answer

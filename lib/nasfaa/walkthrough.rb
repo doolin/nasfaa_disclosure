@@ -47,6 +47,7 @@ module Nasfaa
     # Runs the interactive walkthrough from the start node to a result.
     # Returns a Nasfaa::Trace with the decision and path.
     def run
+      @output.print "\e[2J\e[H" if @output.respond_to?(:isatty) && @output.isatty
       current = @start
 
       loop do
@@ -92,7 +93,7 @@ module Nasfaa
       @output.puts box_bottom
 
       if single_key?
-        @output.print '[y/n/q] > '
+        @output.print "#{box_margin}[y/n/q] > "
         loop do
           case read_char
           when 'y' then return true
@@ -101,7 +102,7 @@ module Nasfaa
           end
         end
       else
-        @output.print '[yes/no] > '
+        @output.print "#{box_margin}[yes/no] > "
         loop do
           answer = @input.gets&.strip&.downcase
           case answer
@@ -111,7 +112,7 @@ module Nasfaa
           when nil
             raise 'Unexpected end of input'
           else
-            @output.print 'Please answer yes or no > '
+            @output.print "#{box_margin}Please answer yes or no > "
           end
         end
       end

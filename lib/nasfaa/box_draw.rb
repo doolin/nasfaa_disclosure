@@ -18,40 +18,43 @@ module Nasfaa
   module BoxDraw
     BOX_WIDTH = 60      # ─/═ count between corners
     INNER_WIDTH = 58    # BOX_WIDTH - 2 (one space of padding each side)
+    TOTAL_WIDTH = 62    # BOX_WIDTH + 2 (corners)
 
     # ── Thin style ─────────────────────────────────────────────────
 
     def box_top(title = nil)
+      m = box_margin
       if title
         label = "─ #{title} "
         fill = '─' * [BOX_WIDTH - label.length, 0].max
-        "┌#{label}#{fill}┐"
+        "#{m}┌#{label}#{fill}┐"
       else
-        "┌#{'─' * BOX_WIDTH}┐"
+        "#{m}┌#{'─' * BOX_WIDTH}┐"
       end
     end
 
     def box_divider
-      "├#{'─' * BOX_WIDTH}┤"
+      "#{box_margin}├#{'─' * BOX_WIDTH}┤"
     end
 
     def box_bottom
-      "└#{'─' * BOX_WIDTH}┘"
+      "#{box_margin}└#{'─' * BOX_WIDTH}┘"
     end
 
     # Returns one or more box lines.  Pre-colorized text (containing ANSI codes)
     # is padded by visual length without wrapping — use this for short labels.
     # Plain text is word-wrapped; pass colorize: proc to colorize after wrapping.
     def box_line(text = '', colorize: nil)
+      m = box_margin
       text_str = text.to_s
       if text_str.include?("\e[")
         vlen = visual_length(text_str)
-        "│ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} │"
+        "#{m}│ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} │"
       else
         lines = wrap_text(text_str, INNER_WIDTH)
         lines.map do |line|
           display = colorize ? colorize.call(line) : line
-          "│ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} │"
+          "#{m}│ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} │"
         end.join("\n")
       end
     end
@@ -59,15 +62,15 @@ module Nasfaa
     # ── Heavy style ────────────────────────────────────────────────
 
     def box_heavy_top
-      "╔#{'═' * BOX_WIDTH}╗"
+      "#{box_margin}╔#{'═' * BOX_WIDTH}╗"
     end
 
     def box_heavy_divider
-      "╠#{'═' * BOX_WIDTH}╣"
+      "#{box_margin}╠#{'═' * BOX_WIDTH}╣"
     end
 
     def box_heavy_bottom
-      "╚#{'═' * BOX_WIDTH}╝"
+      "#{box_margin}╚#{'═' * BOX_WIDTH}╝"
     end
 
     # Returns one or more heavy box lines.  Pre-colorized text (containing ANSI
@@ -75,20 +78,38 @@ module Nasfaa
     # labels. Plain text is word-wrapped; pass colorize: proc to colorize after
     # wrapping.
     def box_heavy_line(text = '', colorize: nil)
+      m = box_margin
       text_str = text.to_s
       if text_str.include?("\e[")
         vlen = visual_length(text_str)
-        "║ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} ║"
+        "#{m}║ #{text_str}#{' ' * [INNER_WIDTH - vlen, 0].max} ║"
       else
         lines = wrap_text(text_str, INNER_WIDTH)
         lines.map do |line|
           display = colorize ? colorize.call(line) : line
-          "║ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} ║"
+          "#{m}║ #{display}#{' ' * [INNER_WIDTH - visual_length(display), 0].max} ║"
         end.join("\n")
       end
     end
 
     private
+
+    # Returns whitespace to center the box in the terminal.
+    # Falls back to no margin if terminal width is unavailable or too narrow.
+    def box_margin
+      cols = terminal_columns
+      padding = (cols - TOTAL_WIDTH) / 2
+      padding > 0 ? ' ' * padding : ''
+    end
+
+    # Detect terminal width. Returns 0 if not a TTY or unavailable.
+    def terminal_columns
+      return 0 unless $stdout.respond_to?(:winsize)
+
+      $stdout.winsize[1]
+    rescue Errno::ENOTTY, Errno::ENODEV
+      0
+    end
 
     # Strip ANSI escape sequences before measuring, so colorized text
     # is padded to the correct visual width.
