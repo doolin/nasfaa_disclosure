@@ -171,4 +171,6 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 
 - **Print-ready DAG poster**: Print the official PDF of the decision tree DAG distributed by NASFAA to use for manual QA. Print at Copy Central: one copy on 100lb stock in color, plus 10 copies black and white. Good first task for a clawbot — find the nearest Copy Central, place the order, let the human know when it's ready to pick up.
 
+- **Fix Box 5 Yes transition**: Box 5 Yes currently permits immediately; the PDF routes it to Box 12 (school official LEI check). Detailed plan: [nasfaa-box-5-transition.md](nasfaa-box-5-transition.md)
+
 - **Recreate decision tree from original references**: Build the decision tree directly from the primary regulatory sources (IRC §6103, HEA §1090/§1098h, FERPA 34 CFR Part 99) rather than from the NASFAA PDF. Compare the independently derived tree against the current NASFAA-sourced implementation to identify any discrepancies, missing branches, or simplifications NASFAA introduced. Would validate the current logic against statute and potentially surface edge cases the PDF glosses over. Also serves as an audit of whether NASFAA's packaging introduced editorial choices — simplifications, omissions, or groupings — that diverge from what the regulations actually require.
