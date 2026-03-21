@@ -173,4 +173,6 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 
 - **Fix Box 5 Yes transition**: Box 5 Yes currently permits immediately; the PDF routes it to Box 12 (school official LEI check). Detailed plan: [nasfaa-box-5-transition.md](nasfaa-box-5-transition.md)
 
+- **Fix Box 7 Yes/No swap** *(needs discussion)*: Box 7 Yes/No transitions appear inverted — research (Yes) skips consent, non-research (No) checks §1090(a)(3)(C) consent. PDF and regulatory logic suggest the opposite. However, the "general HEA consent" interpretation may be intentional. Detailed plan: [nasfaa-box-7-transition.md](nasfaa-box-7-transition.md)
+
 - **Recreate decision tree from original references**: Build the decision tree directly from the primary regulatory sources (IRC §6103, HEA §1090/§1098h, FERPA 34 CFR Part 99) rather than from the NASFAA PDF. Compare the independently derived tree against the current NASFAA-sourced implementation to identify any discrepancies, missing branches, or simplifications NASFAA introduced. Would validate the current logic against statute and potentially surface edge cases the PDF glosses over. Also serves as an audit of whether NASFAA's packaging introduced editorial choices — simplifications, omissions, or groupings — that diverge from what the regulations actually require.
