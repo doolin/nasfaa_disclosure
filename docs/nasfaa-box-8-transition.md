@@ -148,3 +148,127 @@ is not accidentally bypassed by rule ordering or imperative fall-through.
 5. Evaluate-mode checks:
    - add compact path for new Box 8 No terminal
    - confirm no extra answers are consumed past Box 8 on that path
+
+## Appendix: Investigation Method (Detailed)
+
+This appendix records exactly how the transition error was identified, including tool
+use, image extraction steps, and how each extracted image was interpreted.
+
+### Why a visual method was required
+
+The NASFAA artifact is titled as a "tree" but functions as a DAG with crossing edges.
+Text extraction alone does not preserve edge geometry, so label adjacency (`Yes`/`No`)
+can be misread. For transition validation, we traced rendered arrows and connectors,
+not just node text.
+
+### Tool use
+
+1. **Read source images directly**
+   - Used `ReadFile` on:
+     - `docs/nasfaa-2025-page-1.png`
+     - `docs/nasfaa-2025-page-2.png`
+   - Purpose: establish baseline visual understanding of global flow.
+
+2. **Generate focused crops and coordinate aids**
+   - Used `Shell` with Python/Pillow scripts to create derivative inspection images.
+   - Purpose: isolate ambiguous zones (Boxes 7/8/9 and nearby crossing edges).
+
+3. **Cross-check implementation graph**
+   - Compared observed PDF edges against:
+     - `nasfaa_questions.yml`
+     - `nasfaa_rules.yml`
+     - `lib/nasfaa/decision_tree.rb`
+   - Purpose: determine whether mismatch is edge destination, branch inversion, or terminal-vs-fallthrough.
+
+### Image extraction commands (exact workflow)
+
+First-pass targeted zooms:
+
+```shell
+python - <<'PY'
+from PIL import Image
+img=Image.open('/Users/daviddoolin/src/nasfaa/docs/nasfaa-2025-page-1.png')
+c1=img.crop((430,140,790,470)).resize((720,660))
+c1.save('/Users/daviddoolin/src/nasfaa/docs/page1-box7-8-9-zoom.png')
+c2=img.crop((180,180,600,560)).resize((840,760))
+c2.save('/Users/daviddoolin/src/nasfaa/docs/page1-box4-5-10-12-zoom.png')
+PY
+```
+
+Coordinate grid overlay for orientation:
+
+```shell
+python - <<'PY'
+from PIL import Image, ImageDraw
+img=Image.open('/Users/daviddoolin/src/nasfaa/docs/nasfaa-2025-page-1.png')
+canvas=img.copy()
+d=ImageDraw.Draw(canvas)
+for x in range(0, img.width, 200):
+    d.line((x,0,x,img.height), fill=(255,0,0), width=2)
+    d.text((x+5,5), str(x), fill=(255,0,0))
+for y in range(0, img.height, 200):
+    d.line((0,y,img.width,y), fill=(255,0,0), width=2)
+    d.text((5,y+5), str(y), fill=(255,0,0))
+canvas.save('/Users/daviddoolin/src/nasfaa/docs/page1-grid.png')
+PY
+```
+
+Second-pass higher-resolution crops in ambiguous regions:
+
+```shell
+python - <<'PY'
+from PIL import Image
+img=Image.open('/Users/daviddoolin/src/nasfaa/docs/nasfaa-2025-page-1.png')
+img.crop((950,420,1676,1180)).resize((1452,1520)).save('/Users/daviddoolin/src/nasfaa/docs/box7-8-9-zoom2.png')
+img.crop((420,500,1300,1200)).resize((1760,1400)).save('/Users/daviddoolin/src/nasfaa/docs/box4-5-10-11-12-zoom2.png')
+img.crop((900,900,1676,1550)).resize((1552,1300)).save('/Users/daviddoolin/src/nasfaa/docs/box12-13-14-zoom2.png')
+img.crop((1080,260,1676,1100)).resize((1192,1680)).save('/Users/daviddoolin/src/nasfaa/docs/box9-right-context-zoom.png')
+PY
+```
+
+### Image evidence and how each was used
+
+Source references:
+- `docs/nasfaa-2025-page-1.png` — full-page DAG context on non-FTI side
+- `docs/nasfaa-2025-page-2.png` — FTI branch sanity check
+
+Extracted inspection images:
+- `docs/page1-grid.png`
+  - Used to reference approximate coordinates and ensure crops covered full connector segments.
+- `docs/page1-box7-8-9-zoom.png`
+  - First pass on Box 7/8/9 area; too tight for reliable full connector tracing.
+- `docs/page1-box4-5-10-12-zoom.png`
+  - First pass on Box 4/5/10/11/12 region; used for orientation and branch context.
+- `docs/box7-8-9-zoom2.png`
+  - Primary evidence for Box 7 and Box 8 branches.
+  - Showed Box 7 `Yes` feeding up/right into Box 9 and Box 7 `No` dropping into Box 8.
+  - Showed Box 8 `No` dropping into the gray "Disclosure Not Permitted (Review ...)" node.
+- `docs/box4-5-10-11-12-zoom2.png`
+  - Verified neighboring branch topology to avoid misattributing crossing connectors.
+- `docs/box12-13-14-zoom2.png`
+  - Used to inspect downstream continuation patterns and reduce false positives from nearby lines.
+- `docs/box9-right-context-zoom.png`
+  - Highest-confidence local evidence around Box 9 and Box 8 terminals.
+  - Confirmed Box 8 `No` branch terminates at gray node in rendered geometry.
+
+### Step-by-step determination
+
+1. Start from full page (`nasfaa-2025-page-1.png`) to map the local neighborhood
+   around Boxes 7/8/9 and identify likely crossing points.
+2. Use `page1-grid.png` to define larger crop windows that preserve connector context.
+3. Inspect `box7-8-9-zoom2.png` and `box9-right-context-zoom.png` together:
+   - Box 7 `Yes` branch is routed to Box 9.
+   - Box 7 `No` branch drops to Box 8.
+   - Box 8 `No` branch drops to gray terminal text block (not to Box 9).
+4. Use `box4-5-10-11-12-zoom2.png` and `box12-13-14-zoom2.png` to ensure nearby
+   connectors were not being visually conflated with Box 8 branches.
+5. Compare observed transitions to current DAG:
+   - `fafsa_research` transitions appear aligned with PDF rendering.
+   - `fafsa_hea_consent.on_no` appears to be the likely mismatched transition.
+
+### Confidence and caveat
+
+- Confidence is high for the geometric reading of Box 8 `No` -> gray terminal.
+- The plan still marks implementation as "needs discussion" because semantic mapping
+  of the gray terminal into current result taxonomy (`deny` vs. specialized result)
+  requires a project-level decision.
