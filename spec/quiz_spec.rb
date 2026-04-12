@@ -257,6 +257,90 @@ RSpec.describe Nasfaa::Quiz do
   end
 
   # ------------------------------------------------------------------
+  # Injected questions (questions: parameter)
+  # ------------------------------------------------------------------
+  describe 'injected questions' do
+    let(:custom_questions) do
+      [
+        Nasfaa::QuizQuestion.new(
+          description: 'A student asks to see their own records.',
+          inputs: { disclosure_to_student: true },
+          expected_result: :permit,
+          rule_id: 'CUSTOM_R1',
+          citation: 'Test Citation §1'
+        ),
+        Nasfaa::QuizQuestion.new(
+          description: nil,
+          inputs: { includes_fti: true },
+          expected_result: :deny,
+          rule_id: 'CUSTOM_R2',
+          citation: nil
+        )
+      ]
+    end
+
+    def run_injected_quiz(responses, questions:)
+      input = StringIO.new("#{responses.join("\n")}\n")
+      output = StringIO.new
+      quiz = described_class.new(input: input, output: output, questions: questions)
+      srand(42)
+      correct, total = quiz.run
+      [correct, total, output.string, quiz]
+    end
+
+    it 'uses the injected questions instead of Scenarios' do
+      _, total, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(total).to eq(2)
+      expect(output).to include('Question 1 of 2')
+      expect(output).to include('FINAL SCORE')
+    end
+
+    it 'scores injected questions correctly' do
+      # Use same expected_result to be shuffle-order-independent
+      permit_questions = [
+        Nasfaa::QuizQuestion.new(description: 'Q1', inputs: { a: true }, expected_result: :permit, rule_id: 'R1', citation: nil),
+        Nasfaa::QuizQuestion.new(description: 'Q2', inputs: { b: true }, expected_result: :permit, rule_id: 'R2', citation: nil)
+      ]
+      correct, total, output, = run_injected_quiz(%w[permit permit], questions: permit_questions)
+      expect(total).to eq(2)
+      expect(correct).to eq(2)
+      expect(output).to include('CORRECT!')
+      expect(output).not_to include('INCORRECT.')
+    end
+
+    it 'displays description when present' do
+      _, _, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(output).to include('A student asks to see their own records.')
+      expect(output).to include('Inputs:')
+    end
+
+    it 'shows parametric prompt when description is nil' do
+      _, _, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(output).to include('Given the following disclosure parameters:')
+      expect(output).to include('All other fields are false.')
+    end
+
+    it 'displays rule_id and citation from injected questions' do
+      _, _, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(output).to include('CUSTOM_R1')
+      expect(output).to include('Test Citation §1')
+      expect(output).to include('CUSTOM_R2')
+    end
+
+    it 'describes question count in banner' do
+      _, _, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(output).to include('2 questions')
+    end
+
+    it 'does not require RuleEngine or Scenarios' do
+      # Stub both to raise — proving Quiz never touches them
+      allow(Nasfaa::Scenarios).to receive(:all).and_raise('should not be called')
+      _, total, = run_injected_quiz(%w[permit deny], questions: custom_questions)
+      expect(total).to eq(2)
+    end
+  end
+
+  # ------------------------------------------------------------------
   # Banner and clear screen
   # ------------------------------------------------------------------
   describe 'banner' do

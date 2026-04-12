@@ -27,13 +27,14 @@ module Nasfaa
 
     attr_reader :correct, :total
 
-    def initialize(input: $stdin, output: $stdout, random: false, colorizer: Colorizer.new)
+    def initialize(input: $stdin, output: $stdout, random: false, questions: nil, colorizer: Colorizer.new)
       @input = input
       @output = output
       @random = random
+      @injected_questions = questions
       @colorizer = colorizer
       @single_key_valid_chars = %w[p d q]
-      @engine = RuleEngine.new
+      @engine = RuleEngine.new if random && questions.nil?
       @correct = 0
       @total = 0
     end
@@ -64,7 +65,13 @@ module Nasfaa
       @output.puts
       @output.puts "#{title_pad}#{@colorizer.bold(title)}"
       @output.puts
-      mode_desc = @random ? 'randomly generated inputs' : '23 real-world scenarios'
+      mode_desc = if @injected_questions
+                    "#{@injected_questions.length} questions"
+                  elsif @random
+                    'randomly generated inputs'
+                  else
+                    '23 real-world scenarios'
+                  end
       @output.puts "#{m}#{@colorizer.dim("Test your knowledge of FERPA/FAFSA/FTI disclosure rules with #{mode_desc}.")}"
       @output.puts "#{m}#{@colorizer.dim('Read each scenario and decide: should the disclosure be permitted or denied?')}"
       @output.puts
@@ -76,10 +83,12 @@ module Nasfaa
     end
 
     def build_questions
-      if @random
+      if @injected_questions
+        @injected_questions.shuffle
+      elsif @random
         Array.new(RANDOM_QUESTION_COUNT) { build_random_question }
       else
-        Scenarios.all.shuffle
+        Scenarios.all.map { |s| QuizQuestion.from_scenario(s) }.shuffle
       end
     end
 
@@ -89,14 +98,13 @@ module Nasfaa
       data = DisclosureData.new(inputs)
       trace = @engine.evaluate(data)
 
-      {
+      QuizQuestion.new(
         description: nil,
         inputs: inputs,
         expected_result: trace.result,
         rule_id: trace.rule_id,
-        citation: nil,
-        random: true
-      }
+        citation: nil
+      )
     end
 
     def present_question(question, number, total_count)
@@ -105,19 +113,18 @@ module Nasfaa
       @output.puts box_line("Question #{number} of #{total_count}")
       @output.puts box_divider
       @output.puts box_line
-      if question.is_a?(Scenario)
+      if question.description
         @output.puts box_line(question.description)
         @output.puts box_line
         @output.puts box_line('Inputs:')
-        question.inputs.each do |field, value|
-          @output.puts box_line("  #{field}: #{value}")
-        end
       else
         @output.puts box_line('Given the following disclosure parameters:')
         @output.puts box_line
-        question[:inputs].each do |field, value|
-          @output.puts box_line("  #{field}: #{value}")
-        end
+      end
+      question.inputs.each do |field, value|
+        @output.puts box_line("  #{field}: #{value}")
+      end
+      unless question.description
         @output.puts box_line
         @output.puts box_line('(All other fields are false.)')
       end
@@ -154,11 +161,7 @@ module Nasfaa
     end
 
     def check_answer(answer, question)
-      expected = if question.is_a?(Scenario)
-                   question.expected_result
-                 else
-                   question[:expected_result]
-                 end
+      expected = question.expected_result
 
       # permit_with_scope and permit_with_caution count as "permit"
       expected_simple = %i[permit permit_with_scope permit_with_caution].include?(expected) ? :permit : :deny
@@ -167,8 +170,6 @@ module Nasfaa
 
       answer_text = expected.to_s
       colored_answer = answer_text.start_with?('permit') ? @colorizer.permit(answer_text) : @colorizer.deny(answer_text)
-      rule_id = question.is_a?(Scenario) ? question.expected_rule_id : question[:rule_id]
-      citation = question.is_a?(Scenario) ? question.citation : question[:citation]
 
       @output.puts
       @output.puts box_top
@@ -178,8 +179,8 @@ module Nasfaa
         @output.puts box_line(@colorizer.incorrect('INCORRECT.'))
       end
       @output.puts box_line("Answer:   #{colored_answer}")
-      @output.puts box_line("Rule:     #{rule_id}")
-      @output.puts box_line("Citation: #{citation}") if citation
+      @output.puts box_line("Rule:     #{question.rule_id}")
+      @output.puts box_line("Citation: #{question.citation}") if question.citation
       @output.puts box_line("Score:    #{@correct}/#{@total}")
       @output.puts box_bottom
     end
