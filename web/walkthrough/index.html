@@ -8,6 +8,8 @@
       name="description"
       content="Walk through the NASFAA FERPA / FAFSA / FTI disclosure decision tree, one question at a time."
     />
+    <link rel="stylesheet" href="../shared/tokens.css" />
+    <link rel="stylesheet" href="../shared/theme-toggle.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -58,7 +60,12 @@
       <footer class="footer">
         <a href="test.html">tests</a> ·
         <span>source: <code>nasfaa_questions.yml</code></span> ·
-        <span>build: <code id="build-sha">dev</code></span>
+        <span>build: <code id="build-sha">dev</code></span> ·
+        <button type="button"
+                class="theme-toggle inline"
+                id="theme-toggle"
+                onclick="NasfaaTheme.cycle(); window.updateThemeLabel && window.updateThemeLabel();"
+                aria-label="Cycle color theme">theme [m]: <span id="theme-toggle-label">…</span></button>
       </footer>
     </main>
 
@@ -66,6 +73,15 @@
        class="shamrock-link"
        aria-label="Blurbpress"><span class="shamrock">&#9752;</span> blurbpress.com</a>
 
+    <script src="../shared/theme.js"></script>
+    <script>
+      // Render the currently effective theme name into the footer toggle.
+      window.updateThemeLabel = function () {
+        var el = document.getElementById('theme-toggle-label');
+        if (el && window.NasfaaTheme) el.textContent = window.NasfaaTheme.current();
+      };
+      window.updateThemeLabel();
+    </script>
     <script src="data.js"></script>
     <script src="box-draw.js"></script>
     <script src="engine.js"></script>

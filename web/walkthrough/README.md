@@ -89,6 +89,17 @@ step, no node_modules required.
 The handler serves an allow-list of static files only and rejects
 path traversal attempts.
 
+## Theming
+
+Colors come from the shared design-token system in `web/shared/`. See
+[`web/shared/README.md`](../shared/README.md) for the token vocabulary
+and the available themes (light / dark / vt102 / system).
+
+The footer shows a small `theme [m]: <name>` toggle. Click it or press
+`m` to cycle: light -> dark -> vt102 -> system -> light. The choice
+persists in `localStorage`; when no choice is stored the page follows
+`prefers-color-scheme`.
+
 ## Why JSON, not YAML, in the browser
 
 The Ruby gem keeps YAML as the canonical source. The browser does not

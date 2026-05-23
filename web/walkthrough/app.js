@@ -96,6 +96,12 @@
 
   function handleKey(key) {
     const k = key.toLowerCase();
+    // Global: 'm' cycles theme (mode). 'm' instead of 't' (tests) or 'c' (copy).
+    if (k === 'm' && window.NasfaaTheme) {
+      window.NasfaaTheme.cycle();
+      if (window.updateThemeLabel) window.updateThemeLabel();
+      return;
+    }
     if (mode === 'question') {
       if (k === 'y' || k === 'n') {
         walker.answer(k === 'y');
