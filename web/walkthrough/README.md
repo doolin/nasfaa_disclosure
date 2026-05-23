@@ -3,7 +3,7 @@
 Static single-page port of the NASFAA Data Sharing Decision Tree CLI
 walkthrough (`lib/nasfaa/walkthrough.rb`).
 
-Target URL: `blurbpress.com/nasfaa-disclose-or-not`.
+Target URL: `blurbpress.com/nasfaa/walkthrough`.
 
 ## Layout
 
@@ -23,8 +23,6 @@ web/walkthrough/
 
   run-tests-node.mjs        # node-side scenario runner
   run-dag-cross-verify.mjs  # exhaustive DAG vs RuleEngine check
-
-  lambda.js                 # AWS Lambda handler (Node 20)
 ```
 
 The YAML files in the repo root remain the canonical source of truth.
@@ -72,22 +70,22 @@ node web/walkthrough/run-dag-cross-verify.mjs
 # engine.js' RuleEngine agrees on every terminal rule_id
 ```
 
-## Deploy as AWS Lambda
+## Deploy
 
-`lambda.js` is a single-file Node 20 handler. No Express, no build
-step, no node_modules required.
+The repo-root `Makefile` syncs this directory to
+`s3://blurbpress.com/nasfaa/walkthrough/` via `aws s3 sync` using the
+`blurbpress_deploy` profile.
 
-1. Zip the whole `web/walkthrough/` directory.
-2. Create a Node 20 Lambda; set handler to `lambda.handler`.
-3. Attach a Function URL (or front with API Gateway HTTP API).
-4. Map the base path `/nasfaa-disclose-or-not` to the Lambda.
-   - At the Function URL itself, requests will arrive as
-     `/nasfaa-disclose-or-not/...` — set `BASE_PATH` to match if
-     mounting under a different prefix.
-5. Optional: front with CloudFront for edge caching.
+```sh
+make deploy-walkthrough    # build + sync just this page
+make deploy                # build + sync shared + walkthrough + quiz
+make verify                # curl deployed URLs and report HTTP codes
+```
 
-The handler serves an allow-list of static files only and rejects
-path traversal attempts.
+The build step (`make build`) regenerates `data.js`, `rules.json`,
+`questions.json`, and `scenarios.json` from the canonical YAML. The
+sync excludes source-only files (`build.rb`, `*.mjs`, `verify_*`,
+`README.md`).
 
 ## Theming
 

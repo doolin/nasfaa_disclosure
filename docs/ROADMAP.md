@@ -107,7 +107,7 @@ nasfaa diagram --format=mermaid > decision_tree.mmd
 
 ## Phase 4: Node.js + Browser ✅
 
-Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa-disclose-or-not) and `web/quiz/` (target: blurbpress.com/nasfaa-disclosure-quiz). Each:
+Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa/walkthrough) and `web/quiz/` (target: blurbpress.com/nasfaa/quiz). Each:
 
 - Vanilla HTML/CSS/JS, no framework, no build step (works via `file://`).
 - JS port of `Nasfaa::RuleEngine`, `BoxDraw`, and (walkthrough) the DAG walker. Plain scripts attached to `window.Nasfaa.*`.
@@ -122,14 +122,18 @@ Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa-disclos
 
 ---
 
-## Phase 5: Lambda API ✅ (handlers built, not yet deployed)
+## Phase 5: Hosting ✅ (originally scoped as a Lambda API; resolved as S3-static)
 
-Each web page includes a Node 20 `lambda.js` handler (allow-list of static files, no Express, designed for API Gateway HTTP API or Lambda Function URL). Returns the same HTML/JS/CSS/data.js bundle that the static page uses.
+The original plan was a Lambda-backed API serving the YAML rules. The sister project on blurbpress.com (cantilever-fea) deploys as static S3, which fits this app's needs too — the JS engine already runs the rules client-side, so there's no compute layer to host. The Lambda handlers that were built earlier (`lambda.js` in each page directory) have been removed.
 
-**Open gaps:**
-- Deploy both Lambdas to AWS and wire the blurbpress.com routes.
-- Capture deploy SHA into `version.json` at deploy time so the page shows the deployed commit (not the build-time commit). Pattern is already documented in `add-build-sha` skill.
-- Consider adding a JSON evaluation endpoint (POST `/evaluate` with boolean inputs → trace JSON) for third-party integrations that don't want to embed the JS engine.
+**Status:**
+- `s3://blurbpress.com/nasfaa/shared/` — canonical theme + tokens
+- `s3://blurbpress.com/nasfaa/walkthrough/` — walkthrough page (`https://blurbpress.com/nasfaa/walkthrough/`)
+- `s3://blurbpress.com/nasfaa/quiz/` — quiz page (`https://blurbpress.com/nasfaa/quiz/`)
+- Deploy via `make deploy` from the repo root using the `blurbpress_deploy` AWS profile.
+- Verify via `make verify` (HTTP 200 checks).
+
+**Open gap (deferred):** If a third party ever wants a JSON evaluation endpoint (POST inputs → trace JSON) without embedding the JS engine, that's a small Lambda + API Gateway add-on. Not needed for the current consumers.
 
 ---
 
@@ -197,8 +201,8 @@ Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
 
 - **Marp presentation for the work**: Generate a [Marp](https://marp.app) slide deck (`docs/presentation.md`) that walks through the project: motivation, architecture (two engines + exhaustive cross-verification + 24-scenario contract), the PDF-transcription error class (Box 5 / Box 8 fixes, Box 9 PII inversion, why crossing-line diagrams are an LLM failure mode), the CLI / web ports, and lessons. Embed screenshots of the walkthrough / quiz / test harness. Single `marp` command should render to PDF and HTML for sharing. Useful for talks and for new contributors who want the 20-minute overview before diving into the YAML.
 
-- **Deploy lambdas + wire blurbpress.com routes** *(blocked on Phase 5 deploy)*: Actually ship the two `lambda.js` handlers behind blurbpress.com/nasfaa-disclose-or-not and blurbpress.com/nasfaa-disclosure-quiz. Capture deploy SHA into `version.json` so the page's footer reflects the deployed commit. Add a tiny `bin/deploy` script (or GitHub Action) so redeploy after a YAML change is one command.
+- **Deploy to blurbpress.com** ✅: Static S3 deploy from the repo-root `Makefile` (`make deploy`). Shared theme assets at `s3://blurbpress.com/nasfaa/shared/`, pages at `/nasfaa/walkthrough/` and `/nasfaa/quiz/`. The Lambda handlers from the original (mistaken) plan have been removed; blurbpress is S3-static. Build SHA is captured at build time and baked into each page's `data.js`. A `make verify` target HTTP-probes all the deployed URLs.
 
 - **Mobile / browser test matrix**: The web pages have touch-controls fallback and `prefers-reduced-motion` overrides, but neither has been tested in a real browser on a real device. Smoke-test in Chrome / Firefox / Safari (desktop) and Safari iOS / Chrome Android. Capture screenshots into `docs/screenshots/` for the README. Likely surfaces small font-size / overflow / cursor-blink issues to fix.
 
-- **Dedupe web-styling shared assets**: `tokens.css`, `theme.js`, and `theme-toggle.css` are duplicated verbatim under `web/walkthrough/` and `web/quiz/` (with `MIRROR:` header comments). The bucket-root option (`s3://blurbpress.com/shared/`) was rejected because blurbpress hosts multiple unrelated projects and a shared namespace there would invite collisions. Two viable deduplication paths: (a) symlink each page's copies to a single canonical source at `web/shared/` — `aws s3 sync` follows symlinks by default and uploads dereferenced content, so both `file://` and S3 work; (b) build-time copy in each page's `build.rb` / `build.js`, reading from `web/shared/` and writing into the page directory alongside the generated `data.js`. Until one of these is in place, edit both copies when changing tokens or theme code (see `docs/web-styling/README.md` for the documented contract).
+- **Dedupe web-styling shared assets** ✅: Resolved by namespacing the deploy paths under `/nasfaa/` on blurbpress.com. The canonical `web/shared/` directory ships once to `s3://blurbpress.com/nasfaa/shared/`, and both pages reference it via the relative path `../shared/...` from their own deploy subdirectories (`/nasfaa/walkthrough/` and `/nasfaa/quiz/`). Same relative path works under `file://` for local dev. No bucket-root collision with sibling projects on blurbpress because everything lives under the `/nasfaa/` namespace. The earlier duplicated-and-mirror-tagged copies under each page directory have been removed.

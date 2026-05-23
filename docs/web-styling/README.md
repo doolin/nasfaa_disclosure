@@ -7,48 +7,31 @@ tiny JavaScript helper that persists the user's choice.
 
 No build step. Works from `file://`. No modules.
 
-## Source layout (and the duplication problem)
+## Source layout
 
-Each page directory currently contains **its own copy** of the three
-shared files:
+The three shared files live under `web/shared/` as a single canonical
+copy and ship to `s3://blurbpress.com/nasfaa/shared/`. Both pages
+reference them via `../shared/...` from their own deploy subdirectories
+(`/nasfaa/walkthrough/` and `/nasfaa/quiz/`) — same relative path works
+under `file://` for local dev. The `/nasfaa/` namespace keeps shared
+assets isolated from sibling projects on the blurbpress bucket.
 
 ```
+web/shared/
+  tokens.css           ← single canonical source
+  theme.js
+  theme-toggle.css
+
 web/walkthrough/
-  tokens.css           ← duplicated
-  theme.js             ← duplicated
-  theme-toggle.css     ← duplicated
+  index.html           ← <link href="../shared/tokens.css"> etc.
   (page-specific files...)
 
 web/quiz/
-  tokens.css           ← duplicated
-  theme.js             ← duplicated
-  theme-toggle.css     ← duplicated
+  index.html           ← <link href="../shared/tokens.css"> etc.
   (page-specific files...)
 ```
 
-There is **no** `web/shared/` directory. The shared files live inline
-in each page directory because the deploy target (`blurbpress.com`) is
-a multi-project static S3 bucket — putting shared assets at
-`s3://blurbpress.com/shared/` would collide with other projects'
-namespace, and burying them under a project-specific subdirectory
-(e.g. `nasfaa-shared/`) for one consumer felt worse than two copies.
-
-Each duplicated file carries a `MIRROR:` header comment naming its
-counterpart. **When you edit one copy, edit the other.** A grep-based
-check is on the ROADMAP under "Dedupe web-styling shared assets".
-
-If the duplication becomes painful, two options worth considering:
-
-- **Symlink** each page's copies to a single canonical source
-  (e.g. `web/shared/tokens.css`). `aws s3 sync` follows symlinks by
-  default and uploads the dereferenced content, so the symlinked
-  layout works for both local `file://` browsing and S3 deploy.
-- **Build-time copy** in each page's `build.rb` / `build.js`: read
-  from `web/shared/` and write into the page directory at the same
-  time the generated `data.js` is produced. Adds a build step but
-  eliminates drift.
-
-## Files (per page)
+## Files
 
 | File                | Purpose                                                |
 |---------------------|--------------------------------------------------------|
@@ -65,11 +48,11 @@ This directory (`docs/web-styling/`) also contains:
 
 ## Wiring a page
 
-Add to `<head>` (paths are local to the page directory):
+Add to `<head>` (paths are relative to the page directory):
 
 ```html
-<link rel="stylesheet" href="tokens.css" />
-<link rel="stylesheet" href="theme-toggle.css" />
+<link rel="stylesheet" href="../shared/tokens.css" />
+<link rel="stylesheet" href="../shared/theme-toggle.css" />
 <link rel="stylesheet" href="styles.css" />  <!-- page-specific, uses var(--color-*) -->
 ```
 
@@ -84,7 +67,7 @@ Add somewhere visible (the page footer currently mirrors the shamrock-link style
 Load the script before any code that calls `NasfaaTheme.*`:
 
 ```html
-<script src="theme.js"></script>
+<script src="../shared/theme.js"></script>
 ```
 
 Bind the `m` key in your page's key handler to call

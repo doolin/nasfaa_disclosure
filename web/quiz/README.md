@@ -1,14 +1,12 @@
 # NASFAA Disclosure Quiz — Web Port
 
-A static + Lambda-hosted port of the NASFAA disclosure quiz
-(`lib/nasfaa/quiz.rb`). Target URL:
-`blurbpress.com/nasfaa-disclosure-quiz`.
+Static page port of the NASFAA disclosure quiz (`lib/nasfaa/quiz.rb`).
+Deployed at `https://blurbpress.com/nasfaa/quiz/`.
 
 The browser app loads `rules.json` and `scenarios.json` (built from the
 canonical YAML at the project root) and runs the quiz entirely
 client-side. Single-page app, vanilla JS, no framework, no build step
-for the browser. The Lambda handler is optional and only serves the
-static files.
+for the browser.
 
 ## File layout
 
@@ -23,7 +21,6 @@ web/quiz/
   rules.json       Built from ../../nasfaa_rules.yml
   scenarios.json   Built from ../../nasfaa_scenarios.yml
   build.js         Regenerates rules.json + scenarios.json from YAML
-  lambda.js        Optional AWS Lambda handler (Node 20, no deps)
   README.md        This file
 ```
 
@@ -95,26 +92,21 @@ cycle. The active theme is persisted in `localStorage` under
 On touch-only devices (coarse pointer), on-screen `[P] [D] [Q]
 [Space]` buttons appear automatically.
 
-## Deploying the Lambda
+## Deploy
 
-`lambda.js` is a self-contained Node 20 handler — no dependencies, no
-build step. It serves the files in this directory under the path
-`/nasfaa-disclosure-quiz/...`.
+The repo-root `Makefile` syncs this directory to
+`s3://blurbpress.com/nasfaa/quiz/` via `aws s3 sync` using the
+`blurbpress_deploy` profile.
 
-```
-cd web/quiz
-zip -r quiz-lambda.zip index.html styles.css *.js *.json lambda.js
-aws lambda create-function \
-  --function-name nasfaa-disclosure-quiz \
-  --runtime nodejs20.x \
-  --handler lambda.handler \
-  --zip-file fileb://quiz-lambda.zip \
-  --role <execution-role-arn>
+```sh
+make deploy-quiz   # build + sync just this page
+make deploy        # build + sync shared + walkthrough + quiz
+make verify        # curl deployed URLs and report HTTP codes
 ```
 
-Then attach a Lambda Function URL or wire to an API Gateway HTTP API
-stage routed under `/nasfaa-disclosure-quiz`. The handler accepts both
-event shapes.
+The build step (`make build`) regenerates `data.js`, `rules.json`,
+and `scenarios.json` from the canonical YAML. The sync excludes
+source-only files (`build.js`, `README.md`).
 
 ## Verification checklist
 
