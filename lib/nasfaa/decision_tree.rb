@@ -28,8 +28,16 @@ module Nasfaa
 
         # Box 3: Is it FAFSA data?
         if disclosure_request.fafsa_data?
-          # Box 5: Will it be used for financial aid?
-          return true if disclosure_request.used_for_aid_admin?
+          # Box 5 Yes: aid admin → Box 12 (LEI), skipping Boxes 6/7/8/9.
+          # Permits via a §99.31 exception (most commonly LEI via Box 12).
+          # The ferpa_consent check mirrors the rule engine's flatten — the PDF
+          # routes Box 5 Yes around Box 10, but FERPA_R0 (ferpa_consent) has no
+          # !aid_admin guard, so we include it here to keep both engines aligned.
+          if disclosure_request.used_for_aid_admin?
+            return true if disclosure_request.ferpa_written_consent?
+
+            return ferpa_99_31_exceptions_apply?
+          end
 
           # Box 6: Is it to scholarship org with consent?
           return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?

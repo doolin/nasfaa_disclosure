@@ -13,9 +13,9 @@
 # The DAG faithfully mirrors the PDF's two-page layout:
 #   Entry point: 1 shared question (Box 1, both pages)
 #   Page 2: FTI branch (IRC §6103) — 4 questions, 5 results
-#   Page 1: Non-FTI branch — 18 questions, 17 results (incl. Box 8 No deny)
+#   Page 1: Non-FTI branch — 18 questions, 16 results (Box 5 Yes → Box 12, Box 8 No deny)
 #
-# Total: 23 question nodes, 22 result nodes
+# Total: 23 question nodes, 21 result nodes
 
 start: fti_check
 
@@ -161,8 +161,9 @@ nodes:
     box: "5 (Page 1)"
     text: "Will the data be used for financial aid administration?"
     pdf_text: "Will the information be used for the application, award, and/or administration of financial aid, per ED's definition?"
+    help: "Aid admin alone does not authorize disclosure — the recipient must also be a school official with legitimate educational interest (Box 12) or another §99.31 exception must apply."
     field: used_for_aid_admin
-    on_yes: result_FAFSA_R3_used_for_aid_admin
+    on_yes: ferpa_school_official
     on_no: fafsa_scholarship
 
   fafsa_scholarship:
@@ -309,13 +310,6 @@ nodes:
     rule_id: FAFSA_R1_to_student
     message: "The student has the right to inspect their own education records."
     citation: "FERPA 34 CFR §99.10"
-
-  result_FAFSA_R3_used_for_aid_admin:
-    type: result
-    result: permit
-    rule_id: FAFSA_R3_used_for_aid_admin
-    message: "FAFSA data may be used for the application, award, and administration of financial aid."
-    citation: "HEA §1090(a); §1098h"
 
   result_FAFSA_R4_scholarship_with_consent:
     type: result

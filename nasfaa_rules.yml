@@ -79,32 +79,37 @@ rules:
     when_all: ["!includes_fti", disclosure_to_student]
     result: permit
 
-  # FAFSA data specific allowances (HEA 1090/1098h)
-  - id: FAFSA_R3_used_for_aid_admin
-    when_all: ["!includes_fti", is_fafsa_data, used_for_aid_admin]
-    result: permit
+  # FAFSA data specific allowances (HEA 1090/1098h).
+  # Box 5 Yes (aid admin) routes through the FERPA 99.31 exception chain
+  # starting at Box 12 (school official LEI); the FAFSA-side rules below
+  # only fire on the Box 5 No branch, so each carries !used_for_aid_admin.
+  # No standalone "aid_admin permits" rule — aid admin permits manifest as
+  # FERPA_R2_school_official_LEI (or another 99.31 exception) downstream.
 
   - id: FAFSA_R4_scholarship_with_consent
-    when_all: ["!includes_fti", is_fafsa_data, disclosure_to_scholarship_org, explicit_written_consent]
+    when_all: ["!includes_fti", is_fafsa_data, "!used_for_aid_admin", disclosure_to_scholarship_org, explicit_written_consent]
     result: permit
 
-  # Box 8 is only reached via Box 7 No (not research) and Box 4 No (not contributor)
+  # Box 8 is reached only via Box 5 No (not aid admin), Box 6 No (not scholarship+consent),
+  # Box 7 No (not research), and Box 4 No (not contributor).
   - id: FAFSA_R6_HEA_written_consent
-    when_all: ["!includes_fti", is_fafsa_data, "!research_promote_attendance", hea_written_consent]
+    when_all: ["!includes_fti", is_fafsa_data, "!used_for_aid_admin", "!research_promote_attendance", hea_written_consent]
     result: permit
 
   # Box 8 No: HEA consent absent on a Box 8-reachable path → terminal deny.
-  # !contributor guard: contributor=Yes bypasses Box 5-8 to FERPA consent.
-  # !research guard: research=Yes bypasses Box 8 to PII (Box 9).
+  # Guards mirror the DAG: contributor=Yes routes to FERPA (Box 4 → Box 10);
+  # aid_admin=Yes routes to FERPA exceptions (Box 5 → Box 12);
+  # research=Yes bypasses Box 8 to PII (Box 7 → Box 9).
   # Must precede FAFSA_R7 so the no-PII fall-through cannot rescue a Box 8 No.
   - id: FAFSA_R6b_no_hea_consent_review_deny
-    when_all: ["!includes_fti", is_fafsa_data, "!disclosure_to_contributor_parent_or_spouse", "!research_promote_attendance", "!hea_written_consent"]
+    when_all: ["!includes_fti", is_fafsa_data, "!disclosure_to_contributor_parent_or_spouse", "!used_for_aid_admin", "!research_promote_attendance", "!hea_written_consent"]
     result: deny
     caution_note: "Review §99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
 
-  # Box 9: FAFSA data without PII → Permit (no further checks needed)
+  # Box 9 No (no PII) → Permit. Only reachable via Box 7 Yes (research)
+  # since Box 8 No is now a terminal deny.
   - id: FAFSA_R7_no_pii
-    when_all: ["!includes_fti", is_fafsa_data, "!contains_pii"]
+    when_all: ["!includes_fti", is_fafsa_data, "!used_for_aid_admin", "!contains_pii"]
     result: permit
 
   # Box 10: FERPA written consent → Permit

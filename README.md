@@ -213,9 +213,9 @@ evaluation engines that have been proven equivalent across all possible inputs:
 | `Nasfaa::Quiz` | Scenario and random quiz modes | `lib/nasfaa/quiz.rb` |
 | `Nasfaa::Evaluate` | Non-interactive compact-string evaluator | `lib/nasfaa/evaluate.rb` |
 | `Nasfaa::Colorizer` | ANSI color wrapper; colorblind-safe palette | `lib/nasfaa/colorizer.rb` |
-| `nasfaa_rules.yml` | 22 rules — the language-neutral specification | `nasfaa_rules.yml` |
+| `nasfaa_rules.yml` | 21 rules — the language-neutral specification | `nasfaa_rules.yml` |
 | `nasfaa_scenarios.yml` | Scenario definitions (inputs, expected results) | `nasfaa_scenarios.yml` |
-| `nasfaa_questions.yml` | Decision tree DAG (23 questions, 22 results) | `nasfaa_questions.yml` |
+| `nasfaa_questions.yml` | Decision tree DAG (23 questions, 21 results) | `nasfaa_questions.yml` |
 
 Key architectural insight: the YAML rules are a language-neutral specification.
 Once verified exhaustively, they become the portable target for other platforms.
@@ -322,7 +322,7 @@ mirrors the PDF's two-page layout:
 - **23 question nodes** — each with box number, question text, verbatim `pdf_text`
   from the source PDF, optional help text, the `DisclosureData` field(s) it sets,
   and `on_yes`/`on_no` edges to the next node
-- **22 result nodes** — each with the decision, rule ID, message, and citation
+- **21 result nodes** — each with the decision, rule ID, message, and citation
 - **Compound questions** — some PDF boxes ask about two fields simultaneously
   (e.g., "scholarship organization *with* explicit written consent"); these use
   a `fields` array instead of a single `field`
@@ -343,7 +343,7 @@ trace.rule_id == engine_trace.rule_id  # => true (verified for all 22 paths)
 
 ## Quiz Mode (CLI)
 
-**TL;DR:** `bin/nasfaa quiz` — 23 scenario-based permit/deny questions.
+**TL;DR:** `bin/nasfaa quiz` — 24 scenario-based permit/deny questions.
 `bin/nasfaa quiz --random` — randomly generated inputs, unlimited practice.
 
 Quiz mode tests your knowledge of FERPA/FAFSA/FTI disclosure rules by
@@ -462,7 +462,7 @@ if they disagree.
 
 ## YAML Rules
 
-The `nasfaa_rules.yml` file encodes the decision tree as 22 rules evaluated
+The `nasfaa_rules.yml` file encodes the decision tree as 21 rules evaluated
 in first-match-wins order. Each rule specifies a `when_all` array of boolean
 conditions (negated conditions are prefixed with `!`) and a result:
 
@@ -683,7 +683,7 @@ The test suite comprises 867 examples across 11 spec files:
 | `rule_engine_spec.rb` | 17 | YAML engine, cross-engine agreement |
 | `trace_spec.rb` | 14 | Audit trail struct, RuleEngine integration |
 | `exhaustive_verification_spec.rb` | 1 | 36,864 input combinations, 0 disagreements |
-| `scenario_spec.rb` | 61 | All 23 scenarios, rule coverage, metadata integrity, find_by_rule_id |
+| `scenario_spec.rb` | 61 | All 24 scenarios, rule coverage, metadata integrity, find_by_rule_id |
 | `walkthrough_spec.rb` | 77 | DAG structure, all 22 paths, cross-verification, I/O, single-key, pdf_text mode |
 | `quiz_spec.rb` | 26 | Scenario mode, random mode, input handling, score tracking, single-key |
 | `evaluate_spec.rb` | 51 | All 22 paths, assertions, cross-verification, input validation, errors |

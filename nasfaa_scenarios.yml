@@ -1,6 +1,6 @@
 # NASFAA Data Sharing Decision Tree — Scenario Library
 #
-# 23 named real-world scenarios covering every rule in nasfaa_rules.yml.
+# 24 named real-world scenarios covering every rule in nasfaa_rules.yml.
 # Each scenario describes a situation a financial aid administrator might
 # encounter, with the boolean inputs that characterize it, the expected
 # decision, the rule that fires, and the governing regulatory citation.
@@ -154,16 +154,38 @@ scenarios:
       The financial aid office uses a student's FAFSA data — including
       Student Aid Index (SAI), dependency status, and household size — to
       calculate the student's financial need and prepare a Title IV aid
-      package. This is the core use case for FAFSA data: the application,
-      award, and administration of financial aid under Title IV.
+      package. This is the core use case for FAFSA data. Per the PDF, aid
+      admin (Box 5 Yes) routes through the FERPA school official check
+      (Box 12); since the aid office staff have been designated as school
+      officials with legitimate educational interest, the disclosure is
+      permitted under §99.31(a)(1).
+    inputs:
+      is_fafsa_data: true
+      used_for_aid_admin: true
+      to_school_official_legitimate_interest: true
+    expected:
+      result: permit
+      rule_id: FERPA_R2_school_official_LEI
+    citation: "HEA §1090(a); §1098h; FERPA 34 CFR §99.31(a)(1) — aid admin via school official with LEI"
+    tags: [fafsa, aid_admin, school_official, permit]
+
+  - id: aid_admin_use_without_lei
+    name: "Aid Administrator Forwards Data to Non-School-Official (No LEI)"
+    description: >
+      A staff member uses FAFSA data for aid administration (Box 5 Yes) and
+      forwards the data to a third party who has NOT been designated a
+      school official with legitimate educational interest in the
+      institution's FERPA notification. Per the PDF, aid admin alone does
+      not authorize disclosure — Box 5 Yes routes to Box 12 (LEI check),
+      and without LEI or another §99.31 exception the disclosure is denied.
     inputs:
       is_fafsa_data: true
       used_for_aid_admin: true
     expected:
-      result: permit
-      rule_id: FAFSA_R3_used_for_aid_admin
-    citation: "HEA §1090(a); §1098h — use for aid administration"
-    tags: [fafsa, aid_admin, permit]
+      result: deny
+      rule_id: NONFTI_DENY_default
+    citation: "HEA §1090(a); §1098h — aid admin requires a §99.31 exception (typically LEI) to authorize disclosure"
+    tags: [fafsa, aid_admin, deny]
 
   - id: scholarship_foundation_with_student_consent
     name: "Scholarship Foundation Requests FAFSA Data With Student Consent"

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Canonical table of all 22 terminal paths through the NASFAA decision DAG.
+# Canonical table of all 21 terminal paths through the NASFAA decision DAG.
 #
 # compact  — y/n answers only (no trailing assertion character)
 # result   — expected Trace#result symbol
@@ -8,6 +8,11 @@
 # Assertions (p/d) are derived: permit family → 'p', deny → 'd'.
 # This table is the single source of truth shared between evaluate_spec
 # and evaluate_mutation_spec.
+#
+# FAFSA aid admin (Box 5 Yes) routes through the FERPA 99.31 exception
+# chain starting at Box 12; the permit canonically surfaces as
+# FERPA_R2_school_official_LEI (via path nnynyy) rather than a separate
+# FAFSA-specific rule. The deny case lands at NONFTI_DENY_default.
 TERMINAL_PATHS = {
   'FTI_R1_student' => { compact: 'yy', result: :permit },
   'FTI_R2_aid_admin_school_official' => { compact: 'ynyy', result: :permit },
@@ -15,7 +20,6 @@ TERMINAL_PATHS = {
   'FTI_R3_scholarship_with_consent' => { compact: 'ynny', result: :permit },
   'FTI_DENY_default' => { compact: 'ynnn', result: :deny },
   'FAFSA_R1_to_student' => { compact: 'ny', result: :permit },
-  'FAFSA_R3_used_for_aid_admin' => { compact: 'nnyny', result: :permit },
   'FAFSA_R4_scholarship_with_consent' => { compact: 'nnynny', result: :permit },
   'FAFSA_R6_HEA_written_consent' => { compact: 'nnynnnny', result: :permit },
   'FAFSA_R6b_no_hea_consent_review_deny' => { compact: 'nnynnnnn', result: :deny },

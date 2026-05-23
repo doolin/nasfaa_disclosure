@@ -54,10 +54,19 @@ RSpec.describe Nasfaa::RuleEngine do
         expect(result[:result]).to eq(:permit)
       end
 
-      it 'permits FAFSA data for aid admin' do
+      it 'permits FAFSA aid admin via Box 5 Yes → Box 12 (FERPA_R2 school official LEI)' do
+        data = Nasfaa::DisclosureData.new(is_fafsa_data: true, used_for_aid_admin: true,
+                                          to_school_official_legitimate_interest: true)
+        result = engine.evaluate(data)
+        expect(result[:rule_id]).to eq('FERPA_R2_school_official_LEI')
+        expect(result[:result]).to eq(:permit)
+      end
+
+      it 'denies FAFSA aid admin without LEI or another §99.31 exception' do
         data = Nasfaa::DisclosureData.new(is_fafsa_data: true, used_for_aid_admin: true)
         result = engine.evaluate(data)
-        expect(result[:rule_id]).to eq('FAFSA_R3_used_for_aid_admin')
+        expect(result[:rule_id]).to eq('NONFTI_DENY_default')
+        expect(result[:result]).to eq(:deny)
       end
 
       it 'permits FAFSA data without PII via research route' do
@@ -104,7 +113,7 @@ RSpec.describe Nasfaa::RuleEngine do
           { disclosure_to_student: true },
           { includes_fti: true, disclosure_to_student: true },
           { includes_fti: true, used_for_aid_admin: true, to_school_official_legitimate_interest: true },
-          { is_fafsa_data: true, used_for_aid_admin: true },
+          { is_fafsa_data: true, used_for_aid_admin: true, to_school_official_legitimate_interest: true },
           { is_fafsa_data: true, disclosure_to_scholarship_org: true, explicit_written_consent: true },
           { is_fafsa_data: true, research_promote_attendance: true },
           { is_fafsa_data: true, hea_written_consent: true },
@@ -154,7 +163,7 @@ RSpec.describe Nasfaa::RuleEngine do
 
   describe '#rules' do
     it 'loads all rules from YAML' do
-      expect(engine.rules.length).to eq(22)
+      expect(engine.rules.length).to eq(21)
     end
 
     it 'has a catch-all for FTI' do

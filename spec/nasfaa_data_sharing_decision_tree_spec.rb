@@ -126,11 +126,19 @@ RSpec.describe Nasfaa::DecisionTree do
         end
       end
 
-      context 'and disclosure is FAFSA data for financial aid purposes' do
+      context 'and disclosure is FAFSA data for aid admin with school official LEI (Box 5 Yes → Box 12 Yes)' do
+        let(:disclosure_request) do
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, used_for_aid_admin: true,
+                                     to_school_official_legitimate_interest: true)
+        end
+        it { expect(tree.disclose?).to be true }
+      end
+
+      context 'and disclosure is FAFSA data for aid admin without LEI or any §99.31 exception' do
         let(:disclosure_request) do
           Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, used_for_aid_admin: true)
         end
-        it { expect(tree.disclose?).to be true }
+        it('terminates at deny — aid admin alone no longer permits') { expect(tree.disclose?).to be false }
       end
 
       context 'and disclosure is FAFSA data to scholarship organization with explicit written consent' do

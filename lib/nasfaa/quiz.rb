@@ -70,7 +70,7 @@ module Nasfaa
                   elsif @random
                     'randomly generated inputs'
                   else
-                    '23 real-world scenarios'
+                    '24 real-world scenarios'
                   end
       @output.puts "#{m}#{@colorizer.dim("Test your knowledge of FERPA/FAFSA/FTI disclosure rules with #{mode_desc}.")}"
       @output.puts "#{m}#{@colorizer.dim('Read each scenario and decide: should the disclosure be permitted or denied?')}"

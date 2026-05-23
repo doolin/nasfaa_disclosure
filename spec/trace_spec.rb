@@ -93,7 +93,7 @@ RSpec.describe Nasfaa::Trace do
       data = Nasfaa::DisclosureData.new
       trace = engine.evaluate(data)
       expect(trace.rule_id).to eq('NONFTI_DENY_default')
-      expect(trace.path.length).to eq(22)
+      expect(trace.path.length).to eq(21)
       expect(trace.path.last).to eq('NONFTI_DENY_default')
     end
   end
