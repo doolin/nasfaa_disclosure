@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NASFAA Disclosure Quiz</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="terminal" aria-label="Quiz terminal">
+    <div class="scanlines" aria-hidden="true"></div>
+    <pre id="screen" role="log" aria-live="polite">Loading…</pre>
+    <span id="cursor" class="blinking-cursor" aria-hidden="true">▌</span>
+
+    <div id="touch-controls" aria-hidden="true">
+      <button type="button" id="btn-permit">[P]ermit</button>
+      <button type="button" id="btn-deny">[D]eny</button>
+      <button type="button" id="btn-advance">[Space] Next</button>
+      <button type="button" id="btn-quit">[Q]uit</button>
+    </div>
+  </main>
+
+  <script src="engine.js"></script>
+  <script src="box-draw.js"></script>
+  <script src="quiz.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
