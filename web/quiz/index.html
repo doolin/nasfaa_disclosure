@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>NASFAA Disclosure Quiz</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/theme-toggle.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,13 +21,18 @@
       <button type="button" id="btn-quit">[Q]uit</button>
     </div>
 
-    <footer class="build-footer">build: <code id="build-sha">dev</code></footer>
+    <footer class="build-footer">build: <code id="build-sha">dev</code> &middot; <button
+        type="button"
+        class="theme-toggle inline"
+        onclick="NasfaaTheme.cycle(); document.getElementById('theme-label').textContent = NasfaaTheme.current();"
+        aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button></footer>
   </main>
 
   <a href="https://blurbpress.com"
      class="shamrock-link"
      aria-label="Blurbpress"><span class="shamrock">&#9752;</span> blurbpress.com</a>
 
+  <script src="../shared/theme.js"></script>
   <script src="data.js"></script>
   <script src="engine.js"></script>
   <script src="box-draw.js"></script>

@@ -193,6 +193,13 @@
     } else if (k === ' ' || k === 'Enter' || k === 'Spacebar') {
       handleAdvance();
       ev.preventDefault();
+    } else if (k === 'm' || k === 'M') {
+      if (window.NasfaaTheme) {
+        window.NasfaaTheme.cycle();
+        const label = document.getElementById('theme-label');
+        if (label) label.textContent = window.NasfaaTheme.current();
+      }
+      ev.preventDefault();
     }
   }
 
@@ -242,6 +249,11 @@
     const shaEl = document.getElementById('build-sha');
     if (shaEl && data.build && data.build.sha) {
       shaEl.textContent = data.build.sha.slice(0, 7);
+    }
+
+    const themeLabel = document.getElementById('theme-label');
+    if (themeLabel && window.NasfaaTheme) {
+      themeLabel.textContent = window.NasfaaTheme.current();
     }
 
     document.addEventListener('keydown', onKeyDown);

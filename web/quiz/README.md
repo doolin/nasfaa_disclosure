@@ -79,6 +79,16 @@ bag, like the CLI's random mode.
 - `d` / `D` — answer **deny**
 - `q` / `Q` — quit (jumps straight to the final score)
 - `Space` / `Enter` — advance past the reveal to the next question
+- `m` / `M` — cycle color theme (light → dark → vt102 → system)
+
+## Theming
+
+Colors come from the shared token system in [`web/shared/`](../shared/README.md).
+Three themes are selectable (`light`, `dark`, `vt102`); the page also
+honors `prefers-color-scheme` when no theme is stored. Use the `m`
+keystroke or click the `theme [m]:` toggle in the build footer to
+cycle. The active theme is persisted in `localStorage` under
+`nasfaa-theme`.
 
 `permit_with_caution` and `permit_with_scope` both count as **permit**.
 

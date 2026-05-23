@@ -1,13 +1,11 @@
-/* styles.css — terminal aesthetic for the NASFAA disclosure quiz. */
+/* styles.css — terminal aesthetic for the NASFAA disclosure quiz.
+ *
+ * All colors come from the shared token vocabulary in
+ * web/shared/tokens.css. Themes (light / dark / vt102) rebind those
+ * tokens; this stylesheet binds page-specific selectors to them.
+ */
 
 :root {
-  --bg: #06090b;
-  --fg: #b8f5d8;          /* light cyan-green */
-  --fg-dim: #6da08a;
-  --accent: #5be29a;
-  --warn: #f0c674;
-  --error: #ff7b7b;
-  --frame: rgba(91, 226, 154, 0.18);
   --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace;
 }
 
@@ -16,8 +14,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--color-bg);
+  color: var(--color-fg);
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1.35;
@@ -34,25 +32,23 @@ body {
   max-width: 78ch;
   margin: 0 auto;
   padding: 16px 18px 32px;
-  border: 1px solid var(--frame);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  box-shadow: 0 0 24px rgba(91, 226, 154, 0.08) inset,
-              0 4px 32px rgba(0, 0, 0, 0.5);
-  background:
-    radial-gradient(ellipse at center, rgba(91,226,154,0.04), transparent 70%),
-    var(--bg);
+  box-shadow: var(--shadow-elevated);
+  background: var(--color-bg-elevated);
 }
 
-/* Optional faint scanlines */
+/* Optional faint scanlines — visibility is theme-controlled. */
 .scanlines {
   pointer-events: none;
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  opacity: var(--scanlines-opacity);
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.02) 0px,
-    rgba(255, 255, 255, 0.02) 1px,
+    var(--color-fg-subtle) 0px,
+    var(--color-fg-subtle) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -62,19 +58,17 @@ body {
 #screen {
   margin: 0;
   white-space: pre;
-  color: var(--fg);
+  color: var(--color-fg);
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1.35;
-  text-shadow: 0 0 4px rgba(91, 226, 154, 0.25);
 }
 
 /* Blinking block cursor — sits inline at the end of the content. */
 .blinking-cursor {
   display: inline-block;
-  color: var(--accent);
+  color: var(--color-accent);
   margin-left: 2px;
-  text-shadow: 0 0 6px var(--accent);
   animation: blink 1s step-end infinite;
 }
 
@@ -96,23 +90,25 @@ body {
   min-width: 6em;
   padding: 10px 14px;
   background: transparent;
-  color: var(--fg);
-  border: 1px solid var(--frame);
+  color: var(--color-fg-muted);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-family: var(--mono);
   font-size: 14px;
   cursor: pointer;
-  text-shadow: 0 0 4px rgba(91, 226, 154, 0.25);
 }
 
 #touch-controls button:hover,
 #touch-controls button:focus-visible {
-  background: rgba(91, 226, 154, 0.08);
+  background: var(--color-accent-tint);
+  border-color: var(--color-accent);
+  color: var(--color-fg);
   outline: none;
 }
 
 #touch-controls button:active {
-  background: rgba(91, 226, 154, 0.16);
+  background: var(--color-accent-tint);
+  border-color: var(--color-border-strong);
 }
 
 @media (max-width: 720px) {
@@ -131,7 +127,7 @@ body {
   bottom: 0.75rem;
   right: 0.75rem;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-fg-muted);
   text-decoration: none;
   opacity: 0.6;
   z-index: 50;
@@ -139,15 +135,15 @@ body {
   transition: opacity 0.15s ease-in;
 }
 .shamrock-link:hover { opacity: 1; }
-.shamrock-link .shamrock { color: #16a34a; }
+.shamrock-link .shamrock { color: var(--color-shamrock); }
 
 .build-footer {
   position: absolute;
   bottom: 0.5rem;
   left: 0.75rem;
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--color-fg-subtle);
   opacity: 0.7;
   font-family: inherit;
 }
-.build-footer code { color: #9ca3af; }
+.build-footer code { color: var(--color-fg-muted); }
