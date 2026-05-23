@@ -69,14 +69,14 @@ button suitable for the footer area. Recommended snippet for the
 walkthrough and quiz pages:
 
 ```html
-<link rel="stylesheet" href="../shared/tokens.css" />
-<link rel="stylesheet" href="../shared/theme-toggle.css" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="theme-toggle.css" />
 <!-- ... page content ... -->
 <button type="button"
         class="theme-toggle"
         onclick="NasfaaTheme.cycle()"
         aria-label="Cycle color theme">[theme]</button>
-<script src="../shared/theme.js"></script>
+<script src="theme.js"></script>
 ```
 
 Pages may bind a keyboard shortcut (e.g. `t` for "theme") that calls

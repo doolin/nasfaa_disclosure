@@ -83,7 +83,7 @@ bag, like the CLI's random mode.
 
 ## Theming
 
-Colors come from the shared token system in [`web/shared/`](../shared/README.md).
+Colors come from the shared token system in [`docs/web-styling/`](../../docs/web-styling/README.md).
 Three themes are selectable (`light`, `dark`, `vt102`); the page also
 honors `prefers-color-scheme` when no theme is stored. Use the `m`
 keystroke or click the `theme [m]:` toggle in the build footer to

@@ -1,3 +1,4 @@
+// MIRROR: keep web/walkthrough/theme.js and web/quiz/theme.js in sync.
 /* theme.js — theme switcher for NASFAA web pages.
  *
  * Plain script (no modules) so it works from file://. Attaches to

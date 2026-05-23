@@ -91,8 +91,8 @@ path traversal attempts.
 
 ## Theming
 
-Colors come from the shared design-token system in `web/shared/`. See
-[`web/shared/README.md`](../shared/README.md) for the token vocabulary
+Colors come from the shared design-token system in `docs/web-styling/`. See
+[`docs/web-styling/README.md`](../../docs/web-styling/README.md) for the token vocabulary
 and the available themes (light / dark / vt102 / system).
 
 The footer shows a small `theme [m]: <name>` toggle. Click it or press
