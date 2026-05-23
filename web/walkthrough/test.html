@@ -13,13 +13,14 @@
       <header class="banner">
         <div class="title">NASFAA Scenario Test Harness</div>
         <div class="subtitle">
-          Loads every scenario from <code>scenarios.json</code> and runs<br />
+          Loads every scenario from <code>nasfaa_scenarios.yml</code> and runs<br />
           it through <code>engine.js</code> (first-match-wins). Each scenario's<br />
           <code>expected.rule_id</code> and <code>expected.result</code> must match.
         </div>
         <div class="hint">
           When rules change, scenarios are the canonical contract.
         </div>
+        <div class="disclaimer">For Entertainment Purposes Only</div>
       </header>
 
       <div class="tests-summary" id="tests-summary">running tests...</div>
@@ -27,10 +28,17 @@
       <ul class="tests-list" id="tests-out"></ul>
 
       <footer class="footer">
-        <a href="index.html">walkthrough</a>
+        <a href="index.html">walkthrough</a> ·
+        <span>build: <code id="build-sha">dev</code></span>
       </footer>
     </main>
 
-    <script type="module" src="tests.js"></script>
+    <a href="https://clubstraylight.com"
+       class="shamrock-link"
+       aria-label="Club Straylight"><span class="shamrock">&#9752;</span> clubstraylight.com</a>
+
+    <script src="data.js"></script>
+    <script src="engine.js"></script>
+    <script src="tests.js"></script>
   </body>
 </html>
