@@ -85,7 +85,7 @@ module Nasfaa
       title = 'NASFAA Data Sharing Decision Tree'
       m = box_margin
       cols = terminal_columns
-      title_pad = cols > 0 ? ' ' * [(cols - title.length) / 2, 0].max : m
+      title_pad = cols.positive? ? ' ' * [(cols - title.length) / 2, 0].max : m
       @output.puts
       @output.puts "#{title_pad}#{@colorizer.bold(title)}"
       @output.puts
@@ -93,10 +93,13 @@ module Nasfaa
       @output.puts "#{m}#{@colorizer.dim('one question at a time. Answer each yes/no question to')}"
       @output.puts "#{m}#{@colorizer.dim('determine whether a student record disclosure is permitted.')}"
       @output.puts
-      @output.puts "#{m}#{@colorizer.dim('Press')} #{@colorizer.bold('y')}#{@colorizer.dim('/')}#{@colorizer.bold('n')} #{@colorizer.dim('to answer, or')} #{@colorizer.bold('q')} #{@colorizer.dim('to quit.')}"
+      press_keys = "#{@colorizer.bold('y')}#{@colorizer.dim('/')}#{@colorizer.bold('n')}"
+      quit_key = @colorizer.bold('q')
+      @output.puts "#{m}#{@colorizer.dim('Press')} #{press_keys} #{@colorizer.dim('to answer, or')} " \
+                   "#{quit_key} #{@colorizer.dim('to quit.')}"
       @output.puts
       disclaimer = 'For Entertainment Purposes Only'
-      disc_pad = cols > 0 ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
+      disc_pad = cols.positive? ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
       @output.puts "#{disc_pad}#{@colorizer.red(disclaimer)}"
     end
 

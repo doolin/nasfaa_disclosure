@@ -99,7 +99,7 @@ module Nasfaa
     def box_margin
       cols = terminal_columns
       padding = (cols - TOTAL_WIDTH) / 2
-      padding > 0 ? ' ' * padding : ''
+      padding.positive? ? ' ' * padding : ''
     end
 
     # Detect terminal width. Returns 0 if not a TTY or unavailable.

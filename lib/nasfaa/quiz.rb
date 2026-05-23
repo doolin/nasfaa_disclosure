@@ -61,7 +61,7 @@ module Nasfaa
       title = 'NASFAA Disclosure Quiz'
       m = box_margin
       cols = terminal_columns
-      title_pad = cols > 0 ? ' ' * [(cols - title.length) / 2, 0].max : m
+      title_pad = cols.positive? ? ' ' * [(cols - title.length) / 2, 0].max : m
       @output.puts
       @output.puts "#{title_pad}#{@colorizer.bold(title)}"
       @output.puts
@@ -75,10 +75,13 @@ module Nasfaa
       @output.puts "#{m}#{@colorizer.dim("Test your knowledge of FERPA/FAFSA/FTI disclosure rules with #{mode_desc}.")}"
       @output.puts "#{m}#{@colorizer.dim('Read each scenario and decide: should the disclosure be permitted or denied?')}"
       @output.puts
-      @output.puts "#{m}#{@colorizer.dim('Press')} #{@colorizer.bold('p')}#{@colorizer.dim('/')}#{@colorizer.bold('d')} #{@colorizer.dim('to answer, or')} #{@colorizer.bold('q')} #{@colorizer.dim('to quit.')}"
+      press_keys = "#{@colorizer.bold('p')}#{@colorizer.dim('/')}#{@colorizer.bold('d')}"
+      quit_key = @colorizer.bold('q')
+      @output.puts "#{m}#{@colorizer.dim('Press')} #{press_keys} #{@colorizer.dim('to answer, or')} " \
+                   "#{quit_key} #{@colorizer.dim('to quit.')}"
       @output.puts
       disclaimer = 'For Entertainment Purposes Only'
-      disc_pad = cols > 0 ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
+      disc_pad = cols.positive? ? ' ' * [(cols - disclaimer.length) / 2, 0].max : m
       @output.puts "#{disc_pad}#{@colorizer.red(disclaimer)}"
     end
 

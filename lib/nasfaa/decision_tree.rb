@@ -12,72 +12,67 @@ module Nasfaa
       # Box 1&2 always disclose to the student.
       return true if disclosure_request.disclosure_to_student?
 
-      # Box 1: Does the disclosure include Federal Tax Information (FTI)?
-      if disclosure_request.includes_fti?
-        # Box 2 Yes → Box 4 Yes: Aid admin + school official LEI → Permit
-        return true if disclosure_request.used_for_aid_admin? && disclosure_request.to_school_official_legitimate_interest?
+      return fti_branch_permits? if disclosure_request.includes_fti?
 
-        # Box 2 Yes → Box 4 No: Aid admin without LEI → Deny
-        return false if disclosure_request.used_for_aid_admin?
-
-        # Box 2 No → Box 3: Scholarship org with explicit written consent → Permit
-        return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
-      else # disclosure does not include FTI
-        # Main Branch (Page 1)
-        # Box 2: Is the disclosure to the student? Handled above.
-
-        # Box 3: Is it FAFSA data?
-        if disclosure_request.fafsa_data?
-          # Box 5 Yes: aid admin → Box 12 (LEI), skipping Boxes 6/7/8/9.
-          # Permits via a §99.31 exception (most commonly LEI via Box 12).
-          # The ferpa_consent check mirrors the rule engine's flatten — the PDF
-          # routes Box 5 Yes around Box 10, but FERPA_R0 (ferpa_consent) has no
-          # !aid_admin guard, so we include it here to keep both engines aligned.
-          if disclosure_request.used_for_aid_admin?
-            return true if disclosure_request.ferpa_written_consent?
-
-            return ferpa_99_31_exceptions_apply?
-          end
-
-          # Box 6: Is it to scholarship org with consent?
-          return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
-
-          # Box 7: Is it for research promoting attendance?
-          # Yes → skip to Box 9 (PII check); No → Box 8 (HEA consent)
-
-          # Box 8: Has HEA consent? (only reached when Box 7 = No)
-          return true if !disclosure_request.research_promote_attendance? && disclosure_request.hea_written_consent?
-
-          # Box 8 No: terminal deny. Mirrors the gray "Disclosure Not Permitted
-          # (Review §99.31(a)(9)(ii)...)" PDF terminal. Bypassed when Box 4
-          # contributor=Yes (skips to FERPA) or Box 7 research=Yes (skips to PII).
-          if !disclosure_request.disclosure_to_contributor_parent_or_spouse? &&
-             !disclosure_request.research_promote_attendance? &&
-             !disclosure_request.hea_written_consent?
-            return false
-          end
-
-          # Box 9: Contains PII?
-          # No PII → Disclosure Permitted; Yes PII → continue to Box 10
-          return true unless disclosure_request.contains_pii?
-          # Box 10: Has FERPA consent?
-          return true if disclosure_request.ferpa_written_consent?
-
-          # Check FERPA 99.31 exceptions (Boxes 11-19)
-
-        elsif disclosure_request.ferpa_written_consent?
-          # Box 3 "No" → Box 10: Has FERPA consent?
-          return true
-
-          # Check FERPA 99.31 exceptions (Boxes 11-19)
-
-        end
-        return true if ferpa_99_31_exceptions_apply?
-      end
-      false
+      non_fti_branch_permits?
     end
 
     private
+
+    # Box 1 Yes (FTI). Two narrow permits: aid admin + LEI, or
+    # scholarship + explicit consent. Aid admin without LEI is an
+    # immediate deny; everything else falls through to deny.
+    def fti_branch_permits?
+      return true if disclosure_request.used_for_aid_admin? && disclosure_request.to_school_official_legitimate_interest?
+      return false if disclosure_request.used_for_aid_admin?
+      return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
+
+      false
+    end
+
+    # Box 1 No (non-FTI). Splits FAFSA vs non-FAFSA.
+    def non_fti_branch_permits?
+      return fafsa_branch_permits? if disclosure_request.fafsa_data?
+      return true if disclosure_request.ferpa_written_consent?
+
+      ferpa_99_31_exceptions_apply?
+    end
+
+    # Box 3 Yes (FAFSA data). Always returns a terminal verdict — the
+    # Box 9 Yes path runs the 99.31 chain inline rather than falling
+    # through to the caller.
+    def fafsa_branch_permits?
+      # Box 5 Yes: aid admin → Box 12 (LEI), skipping Boxes 6/7/8/9.
+      # ferpa_consent check mirrors the rule engine's flatten (FERPA_R0
+      # has no !aid_admin guard, so we include it to keep engines aligned).
+      if disclosure_request.used_for_aid_admin?
+        return true if disclosure_request.ferpa_written_consent?
+
+        return ferpa_99_31_exceptions_apply?
+      end
+
+      # Box 6: scholarship org with explicit written consent.
+      return true if disclosure_request.disclosure_to_scholarship_org? && disclosure_request.explicit_written_consent?
+
+      # Box 8 Yes: HEA consent (only reached when Box 7 research = No).
+      return true if !disclosure_request.research_promote_attendance? && disclosure_request.hea_written_consent?
+
+      # Box 8 No: terminal deny (gray PDF terminal). Bypassed when
+      # contributor=Yes (Box 4) or research=Yes (Box 7).
+      if !disclosure_request.disclosure_to_contributor_parent_or_spouse? &&
+         !disclosure_request.research_promote_attendance? &&
+         !disclosure_request.hea_written_consent?
+        return false
+      end
+
+      # Box 9 No (no PII): permit.
+      return true unless disclosure_request.contains_pii?
+
+      # Box 10: FERPA consent → permit. Otherwise check 99.31 exceptions.
+      return true if disclosure_request.ferpa_written_consent?
+
+      ferpa_99_31_exceptions_apply?
+    end
 
     def ferpa_99_31_exceptions_apply?
       # Box 11: Is directory information?

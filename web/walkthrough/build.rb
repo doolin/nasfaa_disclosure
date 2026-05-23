@@ -25,7 +25,7 @@ ROOT = File.expand_path('../..', __dir__)
 OUT  = File.expand_path(__dir__)
 
 SOURCES = {
-  'rules.json'     => 'nasfaa_rules.yml',
+  'rules.json' => 'nasfaa_rules.yml',
   'questions.json' => 'nasfaa_questions.yml',
   'scenarios.json' => 'nasfaa_scenarios.yml'
 }.freeze

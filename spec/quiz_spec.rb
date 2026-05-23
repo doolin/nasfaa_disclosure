@@ -376,7 +376,7 @@ RSpec.describe Nasfaa::Quiz do
     end
 
     it 'clears the terminal when output is a TTY' do
-      input = StringIO.new("#{"permit\n" * 24}")
+      input = StringIO.new(("permit\n" * 24).to_s)
       output = StringIO.new
       allow(output).to receive(:isatty).and_return(true)
       allow(output).to receive(:respond_to?).and_call_original
@@ -394,7 +394,7 @@ RSpec.describe Nasfaa::Quiz do
     end
 
     it 'centers the title and disclaimer when terminal width is available' do
-      input = StringIO.new("#{"permit\n" * 24}")
+      input = StringIO.new(("permit\n" * 24).to_s)
       output = StringIO.new
       quiz = described_class.new(input: input, output: output)
       allow(quiz).to receive(:terminal_columns).and_return(120)

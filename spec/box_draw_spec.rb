@@ -54,7 +54,7 @@ RSpec.describe Nasfaa::BoxDraw do
       allow(drawer).to receive(:terminal_columns).and_return(120)
       line = drawer.box_top
       expected_padding = (120 - described_class::TOTAL_WIDTH) / 2
-      expect(line).to start_with((' ' * expected_padding) + '┌')
+      expect(line).to start_with("#{' ' * expected_padding}┌")
     end
 
     it 'returns 0 columns when winsize is not available' do
