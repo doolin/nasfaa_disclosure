@@ -105,26 +105,31 @@ nasfaa diagram --format=mermaid > decision_tree.mmd
 
 ---
 
-## Phase 4: Node.js + Browser
+## Phase 4: Node.js + Browser ✅
 
-### Node Module (`nodejs/`)
-Port the YAML rule engine (not the imperative decision tree) — the YAML is language-neutral and the evaluator is ~50 lines of JavaScript. Share `nasfaa_rules.yml` between Ruby and Node (symlink or copy at build). Port `DisclosureData` as a simple property bag. Run the same exhaustive 2^20 cross-verification and scenario library tests.
+Static SPAs live under `web/walkthrough/` (target: clubstraylight.com/nasfaa-disclose-or-not) and `web/quiz/` (target: clubstraylight.com/nasfaa-disclosure-quiz). Each:
 
-### Browser Walkthrough (`nodejs/web/walkthrough.html`)
-Single-page app, no framework (vanilla HTML/CSS/JS). Presents one question at a time. Optionally highlights current position on a Mermaid diagram. Shows result with citation and audit trail. All logic runs client-side from the embedded YAML.
+- Vanilla HTML/CSS/JS, no framework, no build step (works via `file://`).
+- JS port of `Nasfaa::RuleEngine`, `BoxDraw`, and (walkthrough) the DAG walker. Plain scripts attached to `window.Nasfaa.*`.
+- Canonical YAML stays the source of truth; `build.rb` / `build.js` regenerate `rules.json` / `questions.json` / `scenarios.json` and a `data.js` bundle (`window.NASFAA_DATA` / `window.NASFAA_QUIZ_DATA`) that the HTML loads via `<script>` tag — no fetch, no modules.
+- Terminal aesthetic: monospace, dark bg, blinking `▌` cursor, faint scanlines, single-keystroke input, Unicode box-drawn frames mirroring the CLI.
+- Touch-controls fallback on coarse-pointer devices.
+- Footer shows build SHA (short form, `dev` fallback) and a shamrock link to clubstraylight.com.
+- `web/walkthrough/test.html` runs all 24 scenarios through the JS engine and reports pass/fail — same scenarios file as the Ruby specs (rule changes show up immediately).
+- Cross-engine verification confirmed: both web engines pass 24/24 scenarios against `nasfaa_scenarios.yml`.
 
-### Browser Quiz (`nodejs/web/quiz.html`)
-Same quiz flow as CLI. Score tracking via localStorage. Optional timer.
-
-**Verification:** `npm test` passes all ported tests. Browser pages work as static files (no server needed).
+**Open gaps:** see "Web page styling refresh", "PDF text fidelity audit", "Citation hyperlinks" in Additional Ideas below.
 
 ---
 
-## Phase 5: Lambda API
+## Phase 5: Lambda API ✅ (handlers built, not yet deployed)
 
-Serve the YAML rules from a publicly available AWS Lambda. The Lambda loads `nasfaa_rules.yml`, accepts a JSON payload of boolean inputs, evaluates the rule engine, and returns the result with rule ID, citation, and audit trail. Enables third-party integrations without requiring the Ruby gem or Node module.
+Each web page includes a Node 20 `lambda.js` handler (allow-list of static files, no Express, designed for API Gateway HTTP API or Lambda Function URL). Returns the same HTML/JS/CSS/data.js bundle that the static page uses.
 
-**Verification:** Deploy Lambda, `curl` with a known scenario, verify response matches Ruby/Node engines.
+**Open gaps:**
+- Deploy both Lambdas to AWS and wire the clubstraylight.com routes.
+- Capture deploy SHA into `version.json` at deploy time so the page shows the deployed commit (not the build-time commit). Pattern is already documented in `add-build-sha` skill.
+- Consider adding a JSON evaluation endpoint (POST `/evaluate` with boolean inputs → trace JSON) for third-party integrations that don't want to embed the JS engine.
 
 ---
 
@@ -141,15 +146,14 @@ Phase 1 (Gem) ✅
     |
 Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
     |
-    +---> Phase 2 (CLI)
+    +---> Phase 2 (CLI) ✅
+    +---> Phase 2.5 (CLI Polish) ✅
     +---> Phase 3 (Visualization)
-    +---> Phase 4 (Node.js + Browser)
-    +---> Phase 5 (Lambda API)
+    +---> Phase 4 (Node.js + Browser) ✅
+    +---> Phase 5 (Lambda API) ✅ (code) — deploy outstanding
               |
           Phase 6 (Versioning) — independent, anytime
 ```
-
-Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 
 ---
 
@@ -173,10 +177,26 @@ Phases 2, 3, 4, 5 can proceed in parallel after 1.5.
 
 - **Fix Box 5 Yes transition** ✅: Box 5 Yes now routes through the FERPA §99.31 exception chain starting at Box 12 (school official LEI) rather than auto-permitting. The standalone `FAFSA_R3_used_for_aid_admin` rule was deleted entirely — aid admin permits now surface as `FERPA_R2_school_official_LEI` (or whichever §99.31 exception matches), giving the walkthrough and rule engine a single shared rule_id per terminal. Cascading `!used_for_aid_admin` guards added to `FAFSA_R4`, `FAFSA_R6`, `FAFSA_R6b`, and `FAFSA_R7` keep the engines aligned with the DAG flow. `DecisionTree`'s Box 5 Yes branch checks `ferpa_written_consent` before falling into the §99.31 chain to mirror the rule engine's flatten (FERPA_R0 has no `!aid_admin` guard since the rule syntax can't express path-based exclusion). Exhaustive verification (36,864 combos) passes with 0 disagreements. Plan: [nasfaa-box-5-transition.md](nasfaa-box-5-transition.md)
 
-- **Fix Box 7 Yes/No swap** *(needs discussion)*: Box 7 Yes/No transitions appear inverted — research (Yes) skips consent, non-research (No) checks §1090(a)(3)(C) consent. PDF and regulatory logic suggest the opposite. However, the "general HEA consent" interpretation may be intentional. Detailed plan: [nasfaa-box-7-transition.md](nasfaa-box-7-transition.md)
+- **Box 7 Yes/No transition** ✅ *(no fix needed)*: The original plan claimed Box 7's branches were inverted. Re-reading the PDF zoom ([box9-right-context-zoom.png](box9-right-context-zoom.png)) directly confirms the current implementation is correct: Box 7 **Yes** (research) arrow goes up-right to **Box 9** (PII), Box 7 **No** arrow goes down to **Box 8** (HEA consent). Statutory citations match this routing too — Box 7 cites §1090(a)(3)(C)(ii) (the research carve-out) while Box 8 cites §1090(a)(3)(C) (the general consent). The plan-writing agent appears to have conflated Box 7 with Box 8 (the gray-terminal fix that did land). The detailed plan at [nasfaa-box-7-transition.md](nasfaa-box-7-transition.md) is kept for archival purposes but should be considered superseded by this resolution.
 
 - **Fix Box 8 No transition** ✅: Box 8 No now terminates at `FAFSA_R6b_no_hea_consent_review_deny` matching the gray PDF terminal. Adds `!disclosure_to_contributor_parent_or_spouse` guard so contributor paths still route through FERPA correctly. The duplicate §99.31(a)(9)(ii) caution text moved from `FERPA_R3_judicial_or_finaid_related` (where it was misattributed) to the new Box 8 deny rule. Exhaustive verification (36,864 combos) passes with 0 disagreements. Plan: [nasfaa-box-8-transition.md](nasfaa-box-8-transition.md)
 
 - **Fix FAFSA_R6 contributor over-permit** *(follow-up surfaced during Box 8 fix)*: `FAFSA_R6_HEA_written_consent` permits whenever `!FTI && fafsa && !research && hea_consent`, regardless of `disclosure_to_contributor_parent_or_spouse`. Per the DAG, contributor=Yes routes through Box 10 (FERPA consent) and should not auto-permit via HEA. Both `DecisionTree` and `RuleEngine` have the same gap, so exhaustive verification doesn't catch it — but the walkthrough disagrees with both engines when contributor=Yes && hea_consent=Yes && !ferpa_consent && no 99.31 exceptions. Fix: add `!disclosure_to_contributor_parent_or_spouse` to FAFSA_R6's `when_all` and add the matching guard in `decision_tree.rb`.
 
 - **Recreate decision tree from original references**: Build the decision tree directly from the primary regulatory sources (IRC §6103, HEA §1090/§1098h, FERPA 34 CFR Part 99) rather than from the NASFAA PDF. Compare the independently derived tree against the current NASFAA-sourced implementation to identify any discrepancies, missing branches, or simplifications NASFAA introduced. Would validate the current logic against statute and potentially surface edge cases the PDF glosses over. Also serves as an audit of whether NASFAA's packaging introduced editorial choices — simplifications, omissions, or groupings — that diverge from what the regulations actually require.
+
+- **Web page styling refresh — accessible color system + light/dark modes**: The current terminal aesthetic is a fun VT102 throwback but the cyan-on-near-black palette is too bright for sustained reading and isn't WCAG 508-compliant. Redesign using the accessible color system from <https://stripe.com/blog/accessible-color-systems> — derive a palette of foreground / dim / accent / permit / deny / caution tokens that hit AA contrast (≥4.5:1) on both backgrounds. Implement both light and dark themes via CSS custom properties under `[data-theme="dark"]` / `[data-theme="light"]`, with a theme toggle in the page footer (default to system `prefers-color-scheme`). Preserve the terminal aesthetic (monospace, scanlines optional and toggleable, blinking cursor) but soften the palette and ensure the permit/deny accent colors are distinguishable for the common color-vision deficiencies. Apply to both [web/walkthrough/](../web/walkthrough/) and [web/quiz/](../web/quiz/), plus [web/walkthrough/test.html](../web/walkthrough/test.html).
+
+- **PDF text fidelity audit**: Walk through every question and result node in `nasfaa_questions.yml` and every rule message in `nasfaa_rules.yml` against the canonical PDF (`docs/NASFAA_Data_Sharing_Decision_Tree.pdf`). Two deliverables: (1) verify every `pdf_text:` field on question nodes is verbatim (the CLI's `--pdf-text` mode and the web pages' help text rely on it); (2) decide for each user-facing string in result nodes / rule messages whether to track the PDF verbatim, paraphrase, or offer both via a `--pdf-text` equivalent toggle on the web pages. Output a diff report identifying any drift, then update the YAML to bring drift back to zero. Also add a CI check (or rake task) that flags future drift when the PDF is updated.
+
+- **Quiz scenario accuracy deep dive**: The 24 scenarios in `nasfaa_scenarios.yml` were authored alongside the rules but haven't been independently verified for real-world plausibility and regulatory accuracy. For each scenario, audit: (a) does the narrative match the inputs (e.g., "aid office staff have been designated as school officials with LEI" should set `to_school_official_legitimate_interest: true`)? (b) does the expected rule match what a financial aid administrator would actually do? (c) does the citation point to the right regulation? (d) is the scenario representative of a situation that actually occurs in practice, or is it a contrived edge case? Likely outcome: 3–6 scenarios get rewritten or replaced. Consider sourcing scenarios from NASFAA's published guidance or training materials.
+
+- **Hyperlink every citation reference**: Every `citation:` field on result nodes (and the `Citation:` line in `Trace`-derived output) currently contains plain text like "FERPA 34 CFR §99.31(a)(1)" or "IRC §6103(l)(13)". Build a citation-resolution layer that maps each citation string to its public regulatory URL — eCFR for FERPA / Title 34 (e.g., `https://www.ecfr.gov/current/title-34/subtitle-A/part-99/subpart-D/section-99.31`), USC for HEA and IRC (e.g., `https://www.law.cornell.edu/uscode/text/20/1090`). The mapping lives in a new YAML or JSON file so the same lookup powers the CLI (could open via `open <url>` on macOS), the walkthrough/quiz web pages (`<a href>` in the result card), and the test harness. Render as clickable links on the web; print as `Citation: TEXT (url)` in the terminal.
+
+- **Update the README "Timeline" section**: It currently reads "Partly estimated and partly extracted from the commit history." with no table. Extract the actual timeline from `git log` (per-phase elapsed wall-clock and approximate active hours), and render as a Markdown table: phase / scope / commits / wall-clock / notes. Include the recent Box 5/8 fixes, the static-page web work, and the Lambda handler builds. Tie each row back to the relevant section of this roadmap.
+
+- **Marp presentation for the work**: Generate a [Marp](https://marp.app) slide deck (`docs/presentation.md`) that walks through the project: motivation, architecture (two engines + exhaustive cross-verification + 24-scenario contract), the PDF-transcription error class (Box 5 / Box 8 fixes, Box 9 PII inversion, why crossing-line diagrams are an LLM failure mode), the CLI / web ports, and lessons. Embed screenshots of the walkthrough / quiz / test harness. Single `marp` command should render to PDF and HTML for sharing. Useful for talks and for new contributors who want the 20-minute overview before diving into the YAML.
+
+- **Deploy lambdas + wire clubstraylight.com routes** *(blocked on Phase 5 deploy)*: Actually ship the two `lambda.js` handlers behind clubstraylight.com/nasfaa-disclose-or-not and clubstraylight.com/nasfaa-disclosure-quiz. Capture deploy SHA into `version.json` so the page's footer reflects the deployed commit. Add a tiny `bin/deploy` script (or GitHub Action) so redeploy after a YAML change is one command.
+
+- **Mobile / browser test matrix**: The web pages have touch-controls fallback and `prefers-reduced-motion` overrides, but neither has been tested in a real browser on a real device. Smoke-test in Chrome / Firefox / Safari (desktop) and Safari iOS / Chrome Android. Capture screenshots into `docs/screenshots/` for the README. Likely surfaces small font-size / overflow / cursor-blink issues to fix.

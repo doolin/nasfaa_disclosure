@@ -19,19 +19,23 @@ A Ruby CLI gem implementing the NASFAA FERPA/FAFSA student financial-aid data di
 <details>
 <summary>NEXT:</summary>
 
-Phase 2.5 CLI Polish ✅:
-- [x] Single-keystroke input (`y`/`n` and `p`/`d`/`q` register without Enter)
-- [x] Colorized output — colorblind-safe palette; `--color=dark|light|none`
-- [x] Box-draw formatting — Unicode box-drawing for questions and result cards
-- [x] PDF-exact text mode (`--pdf-text`) — verbatim PDF box text alongside paraphrased
-- [x] Rich evaluate output — box-drawn result card with citation, scenario narrative, assertion
+Done so far:
+- ✅ Phase 1 / 1.5 — gem packaging, rule engine, audit trail, exhaustive verification (36,864 combos, 0 disagreements)
+- ✅ Phase 2 / 2.5 — interactive CLI (walkthrough, quiz, evaluate) with single-keystroke input, colorblind-safe palette, Unicode box-draw, `--pdf-text` mode, rich evaluate output
+- ✅ Box 5 Yes transition fix (aid admin → §99.31 chain)
+- ✅ Box 8 No transition fix (terminate at deny per PDF)
+- ✅ Box 7 transition verified correct (no fix needed — see ROADMAP)
+- ✅ Phase 4 — static web pages for walkthrough and quiz under `web/`, with JS port of the rule engine and a 24-scenario test page
+- ✅ Phase 5 — Lambda handlers built (deploy outstanding)
 
-Upcoming:
-- Phase 3: Visualization — Mermaid diagram generated from `nasfaa_questions.yml`
-- Phase 4: Node.js + Browser port (shared YAML rules, no re-translation)
-- Phase 5: Lambda API
+Up next (largest items):
+- Web page styling refresh: Stripe-style accessible color system + light/dark modes
+- PDF text fidelity audit; quiz scenario accuracy deep dive
+- Citation hyperlinks (eCFR / USC) on every result
+- Deploy Lambdas to clubstraylight.com
+- Phase 3 visualization (Mermaid diagram from `nasfaa_questions.yml`)
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for full plan.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan and ~15 other items.
 </details>
 
 
