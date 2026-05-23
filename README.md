@@ -28,14 +28,13 @@ Done so far:
 - ✅ Phase 4 — static web pages for walkthrough and quiz under `web/`, with JS port of the rule engine and a 24-scenario test page
 - ✅ Phase 5 — Lambda handlers built (deploy outstanding)
 
-Up next (largest items):
-- Web page styling refresh: Stripe-style accessible color system + light/dark modes
-- PDF text fidelity audit; quiz scenario accuracy deep dive
-- Citation hyperlinks (eCFR / USC) on every result
-- Deploy Lambdas to blurbpress.com
-- Phase 3 visualization (Mermaid diagram from `nasfaa_questions.yml`)
+**v0.1.0 release is gated on four items:**
+1. Unify UX look and feel across walkthrough, quiz, and test page.
+2. Landing page at `https://blurbpress.com/nasfaa/` with a project writeup (drawn from this README, the commit log, and curated agent-memory lessons).
+3. Human-oriented rule display — surface a plain-language label instead of `FAFSA_R6b_no_hea_consent_review_deny`.
+4. PDF text fidelity — every user-visible string is verbatim from the PDF, or available behind a toggle.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan and ~15 other items.
+See [docs/ROADMAP.md#release-gates-v010](docs/ROADMAP.md) for detailed working notes and the broader queue of ~15 post-v0.1.0 items.
 </details>
 
 

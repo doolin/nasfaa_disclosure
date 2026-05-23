@@ -8,6 +8,19 @@ Key insight from this session: the YAML rules are a language-neutral specificati
 
 ---
 
+## Release Gates: v0.1.0
+
+The initial public release is gated on four items. All four must be done before announcing.
+
+1. **Unify UX look and feel.** Walkthrough, quiz, and test pages currently share the design tokens and theme switcher but the higher-level layout (banner, question/result framing, footer, padding, typography rhythm) drifts between them. Pick one canonical visual grammar and apply it across all three pages. Detail entry: [§ Unify UX across web pages](#unify-ux-across-web-pages).
+2. **Landing page at `/nasfaa/` with project writeup.** A simple HTML page at the root of the `/nasfaa/` namespace (`https://blurbpress.com/nasfaa/`) that links to the walkthrough and quiz, and tells the story of the project. Content drawn from the top-level README, the commit log (PDF-transcription error class, Box 5 / Box 8 fixes, etc.), and curated lessons from the agent memory (diagram spatial reasoning, gitignored build artifacts, etc.). Detail entry: [§ Landing page with project writeup](#landing-page-with-project-writeup).
+3. **Rule display more human oriented.** Result rule IDs like `FAFSA_R6b_no_hea_consent_review_deny` are inscrutable to non-developers. Add a human-readable label and (optional) one-sentence rationale to each rule, and use those as the primary display in result cards (CLI + web). The rule ID stays available as a small reference. Detail entry: [§ Human-oriented rule display](#human-oriented-rule-display).
+4. **Text matching from PDF.** Every user-visible question and result string must match the NASFAA PDF verbatim — or the page must offer a verbatim-mode toggle alongside the paraphrased text. Detail entry: existing [§ PDF text fidelity audit](#additional-ideas-worth-considering) under Additional Ideas (will be promoted on completion).
+
+Everything beyond these four is post-v0.1.0.
+
+---
+
 ## Phase 1: Ruby Gem Packaging ✅
 
 Restructure the flat project into a proper gem. Mechanical refactoring, no behavior changes.
@@ -140,6 +153,76 @@ The original plan was a Lambda-backed API serving the YAML rules. The sister pro
 ## Phase 6 (Future): Regulatory Change Tracking
 
 Version YAML rules with effective dates. Build a diff tool (`nasfaa diff v1 v2`) showing which rules changed. Low urgency until the first regulatory change occurs.
+
+---
+
+## v0.1.0 Release-Gate Detail
+
+The four blockers listed at the top of this document. Each has its own working notes here so the release-gate list stays scannable.
+
+### Unify UX across web pages
+
+**Goal:** walkthrough, quiz, and test page feel like the same product. Today the design tokens and theme switcher are shared, but the higher-level visual grammar diverges.
+
+**Diverges between pages today:**
+- **Banner:** walkthrough has a multi-line title + subtitle + hint + disclaimer block built in HTML; quiz builds its banner as a `<pre>`-rendered string in JS. Different fonts/spacing/colors.
+- **Frame:** walkthrough wraps each question in its own thin Unicode box and each result in a heavy Unicode box, then shows the path display separately. Quiz puts everything (banner, score bar, question card, reveal, prompt) inside one `<pre id="screen">`. Test page is a card list with no terminal frame.
+- **Footer:** walkthrough has a `<footer>` element with `tests · source · build` links; quiz has its own `.build-footer` element; test page has just a "walkthrough" link.
+- **Touch controls:** walkthrough exposes 4 buttons (Y/N/Q/R); quiz exposes 4 buttons (P/D/Q/Space). Styles differ.
+- **Score / progress:** quiz only.
+
+**Plan:**
+- Pick one canonical surface (single-screen `<pre>` per the quiz, OR per-card frames per the walkthrough) and apply across all three pages.
+- Standardize: header band, prompt line, footer row, touch-control row.
+- Single `Banner` helper (CSS class + JS builder) used by both pages.
+- Single `TouchBar` helper.
+- The shared tokens and theme switcher are already in place; this just builds higher-level components on top.
+
+**Acceptance:** screenshots of all three pages side-by-side show the same banner treatment, same prompt-line position, same footer style, same touch-bar style.
+
+### Landing page with project writeup
+
+**Goal:** a static HTML page at `https://blurbpress.com/nasfaa/` (i.e., `s3://blurbpress.com/nasfaa/index.html`) that introduces the project to a first-time visitor and links into the walkthrough and quiz.
+
+**Content sources:**
+- **README.md** — motivation, design choices, the two-engine architecture, the 24-scenario contract.
+- **Commit log** — selected highlights: Box 5 / Box 8 / Box 9 transition fixes; the PDF-transcription error class as a recurring theme; the static-S3 deploy story; the quiz-engine extraction.
+- **Curated agent memory** — public-facing lessons only, not workflow tics. Strong candidates: the diagram-spatial-reasoning rule (crossing lines are an LLM failure mode), the gitignored-build-artifacts technique, the deployment-target clarification (clubstraylight vs slacronym). Skip "user prefers DAMP specs", commit cadence, etc.
+
+**Structure (draft):**
+1. One-paragraph TL;DR with two big CTA buttons → walkthrough, quiz.
+2. The PDF. Embedded thumbnail of page 1, link to the full PDF.
+3. The architecture. Two engines + exhaustive cross-verification + scenario contract.
+4. Lessons learned. Three or four bullets from the agent memory, in story form.
+5. Source links: GitHub, the canonical YAML files, the test harness.
+
+**Style:** the same unified UX from gate #1 — terminal aesthetic, theme switcher, shamrock-link in the corner.
+
+**Build/deploy:** add `web/landing/` (or repurpose the existing `web/` root structure). Add a `deploy-landing` Makefile target syncing to `s3://blurbpress.com/nasfaa/`. The existing `make deploy` should include it.
+
+**Acceptance:** `https://blurbpress.com/nasfaa/` returns 200 and shows the writeup. Walkthrough and quiz are reachable via clear in-page links.
+
+### Human-oriented rule display
+
+**Goal:** when a result fires, the user sees a plain-language explanation, not a developer rule_id like `FAFSA_R6b_no_hea_consent_review_deny`.
+
+**Today:**
+- Result cards (CLI + web) lead with `RESULT: PERMIT` then show `Rule: FAFSA_R6b_no_hea_consent_review_deny` and `Citation: ...`.
+- The `message:` field on each result node in `nasfaa_questions.yml` and the `caution_note` field on some rules in `nasfaa_rules.yml` already carry human prose, but they're shown small/below.
+
+**Plan:**
+- Add a `label:` field on each rule in `nasfaa_rules.yml` (short, plain-English: "HEA written consent missing — disclosure not permitted") and on each result node in `nasfaa_questions.yml` (likely the same label). Consider whether `label` should live on the rule or on the result node; the rule is the more canonical home if we want the CLI's rule-engine-only path to use it too.
+- Optionally add a `rationale:` field on each rule (one-sentence justification: "The Higher Education Act §1090(a)(3)(C) requires written consent before this category of FAFSA data can be released to a non-aid-administration third party.").
+- Update the result-card rendering in `Trace`-derived output (CLI), in `Walkthrough#display_result` (Ruby walkthrough), in `web/walkthrough/box-draw.js#renderResultBox`, and in `web/quiz/app.js#renderReveal` to lead with the human label, then the message, then the rule_id as a small reference at the bottom.
+- Update scenarios in `nasfaa_scenarios.yml` to use the new labels in their narrative if helpful.
+
+**Acceptance:** a non-developer reading any result card can summarize the outcome in one sentence without consulting the rule_id.
+
+### PDF text matching
+
+See [§ PDF text fidelity audit](#additional-ideas-worth-considering) under Additional Ideas. Audit `pdf_text:` on every question node + every result node `message:` field against the canonical PDF; either bring them to verbatim parity or add a `--pdf-text`-style toggle on the web pages. Already partially done in the CLI (`bin/nasfaa walkthrough --pdf-text` populates `pdf_text:`). The web pages need their own verbatim-mode toggle and a drift check that flags divergence in CI.
+
+**Acceptance:** every question and result string is either verbatim from the PDF or has both forms available behind a toggle. A grep / diff script can verify no drift.
 
 ---
 
