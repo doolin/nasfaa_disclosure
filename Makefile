@@ -5,9 +5,14 @@
 # S3 bucket using the blurbpress_deploy profile.
 #
 # Layout on the bucket:
-#   s3://blurbpress.com/nasfaa/shared/      (canonical theme + tokens, served from web/shared/)
-#   s3://blurbpress.com/nasfaa/walkthrough/ (served from web/walkthrough/)
-#   s3://blurbpress.com/nasfaa/quiz/        (served from web/quiz/)
+#   s3://blurbpress.com/nasfaa/shared/            (canonical theme + tokens, served from web/shared/)
+#   s3://blurbpress.com/nasfaa/disclose-or-not/   (served from web/walkthrough/)
+#   s3://blurbpress.com/nasfaa/disclosure-quiz/   (served from web/quiz/)
+#
+# The descriptive leaf names (disclose-or-not, disclosure-quiz) are
+# user-visible URLs chosen for search and human friendliness; the local
+# source directories (web/walkthrough, web/quiz) keep their internal
+# names to match the bin/nasfaa CLI subcommands.
 #
 # Both pages reference ../shared/... from their HTML, which resolves to
 # /nasfaa/shared/... on the bucket — sibling under the nasfaa/ namespace
@@ -26,8 +31,8 @@
 BUCKET   := blurbpress.com
 PROFILE  := blurbpress_deploy
 
-WALKTHROUGH_SUBDIR := nasfaa/walkthrough
-QUIZ_SUBDIR        := nasfaa/quiz
+WALKTHROUGH_SUBDIR := nasfaa/disclose-or-not
+QUIZ_SUBDIR        := nasfaa/disclosure-quiz
 SHARED_SUBDIR      := nasfaa/shared
 
 WALKTHROUGH_DIR := web/walkthrough

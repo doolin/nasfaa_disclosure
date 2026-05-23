@@ -12,7 +12,7 @@ No build step. Works from `file://`. No modules.
 The three shared files live under `web/shared/` as a single canonical
 copy and ship to `s3://blurbpress.com/nasfaa/shared/`. Both pages
 reference them via `../shared/...` from their own deploy subdirectories
-(`/nasfaa/walkthrough/` and `/nasfaa/quiz/`) — same relative path works
+(`/nasfaa/disclose-or-not/` and `/nasfaa/disclosure-quiz/`) — same relative path works
 under `file://` for local dev. The `/nasfaa/` namespace keeps shared
 assets isolated from sibling projects on the blurbpress bucket.
 

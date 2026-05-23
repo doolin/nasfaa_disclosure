@@ -1,7 +1,7 @@
 # NASFAA Disclosure Quiz — Web Port
 
 Static page port of the NASFAA disclosure quiz (`lib/nasfaa/quiz.rb`).
-Deployed at `https://blurbpress.com/nasfaa/quiz/`.
+Deployed at `https://blurbpress.com/nasfaa/disclosure-quiz/`.
 
 The browser app loads `rules.json` and `scenarios.json` (built from the
 canonical YAML at the project root) and runs the quiz entirely
@@ -95,7 +95,7 @@ On touch-only devices (coarse pointer), on-screen `[P] [D] [Q]
 ## Deploy
 
 The repo-root `Makefile` syncs this directory to
-`s3://blurbpress.com/nasfaa/quiz/` via `aws s3 sync` using the
+`s3://blurbpress.com/nasfaa/disclosure-quiz/` via `aws s3 sync` using the
 `blurbpress_deploy` profile.
 
 ```sh

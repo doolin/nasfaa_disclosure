@@ -3,7 +3,7 @@
 Static single-page port of the NASFAA Data Sharing Decision Tree CLI
 walkthrough (`lib/nasfaa/walkthrough.rb`).
 
-Target URL: `blurbpress.com/nasfaa/walkthrough`.
+Target URL: `blurbpress.com/nasfaa/disclose-or-not`.
 
 ## Layout
 
@@ -73,7 +73,7 @@ node web/walkthrough/run-dag-cross-verify.mjs
 ## Deploy
 
 The repo-root `Makefile` syncs this directory to
-`s3://blurbpress.com/nasfaa/walkthrough/` via `aws s3 sync` using the
+`s3://blurbpress.com/nasfaa/disclose-or-not/` via `aws s3 sync` using the
 `blurbpress_deploy` profile.
 
 ```sh

@@ -107,7 +107,7 @@ nasfaa diagram --format=mermaid > decision_tree.mmd
 
 ## Phase 4: Node.js + Browser ✅
 
-Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa/walkthrough) and `web/quiz/` (target: blurbpress.com/nasfaa/quiz). Each:
+Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa/disclose-or-not) and `web/quiz/` (target: blurbpress.com/nasfaa/disclosure-quiz). Each:
 
 - Vanilla HTML/CSS/JS, no framework, no build step (works via `file://`).
 - JS port of `Nasfaa::RuleEngine`, `BoxDraw`, and (walkthrough) the DAG walker. Plain scripts attached to `window.Nasfaa.*`.
@@ -128,8 +128,8 @@ The original plan was a Lambda-backed API serving the YAML rules. The sister pro
 
 **Status:**
 - `s3://blurbpress.com/nasfaa/shared/` — canonical theme + tokens
-- `s3://blurbpress.com/nasfaa/walkthrough/` — walkthrough page (`https://blurbpress.com/nasfaa/walkthrough/`)
-- `s3://blurbpress.com/nasfaa/quiz/` — quiz page (`https://blurbpress.com/nasfaa/quiz/`)
+- `s3://blurbpress.com/nasfaa/disclose-or-not/` — walkthrough page (`https://blurbpress.com/nasfaa/disclose-or-not/`)
+- `s3://blurbpress.com/nasfaa/disclosure-quiz/` — quiz page (`https://blurbpress.com/nasfaa/disclosure-quiz/`)
 - Deploy via `make deploy` from the repo root using the `blurbpress_deploy` AWS profile.
 - Verify via `make verify` (HTTP 200 checks).
 
@@ -201,8 +201,8 @@ Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
 
 - **Marp presentation for the work**: Generate a [Marp](https://marp.app) slide deck (`docs/presentation.md`) that walks through the project: motivation, architecture (two engines + exhaustive cross-verification + 24-scenario contract), the PDF-transcription error class (Box 5 / Box 8 fixes, Box 9 PII inversion, why crossing-line diagrams are an LLM failure mode), the CLI / web ports, and lessons. Embed screenshots of the walkthrough / quiz / test harness. Single `marp` command should render to PDF and HTML for sharing. Useful for talks and for new contributors who want the 20-minute overview before diving into the YAML.
 
-- **Deploy to blurbpress.com** ✅: Static S3 deploy from the repo-root `Makefile` (`make deploy`). Shared theme assets at `s3://blurbpress.com/nasfaa/shared/`, pages at `/nasfaa/walkthrough/` and `/nasfaa/quiz/`. The Lambda handlers from the original (mistaken) plan have been removed; blurbpress is S3-static. Build SHA is captured at build time and baked into each page's `data.js`. A `make verify` target HTTP-probes all the deployed URLs.
+- **Deploy to blurbpress.com** ✅: Static S3 deploy from the repo-root `Makefile` (`make deploy`). Shared theme assets at `s3://blurbpress.com/nasfaa/shared/`, pages at `/nasfaa/disclose-or-not/` and `/nasfaa/disclosure-quiz/`. The Lambda handlers from the original (mistaken) plan have been removed; blurbpress is S3-static. Build SHA is captured at build time and baked into each page's `data.js`. A `make verify` target HTTP-probes all the deployed URLs.
 
 - **Mobile / browser test matrix**: The web pages have touch-controls fallback and `prefers-reduced-motion` overrides, but neither has been tested in a real browser on a real device. Smoke-test in Chrome / Firefox / Safari (desktop) and Safari iOS / Chrome Android. Capture screenshots into `docs/screenshots/` for the README. Likely surfaces small font-size / overflow / cursor-blink issues to fix.
 
-- **Dedupe web-styling shared assets** ✅: Resolved by namespacing the deploy paths under `/nasfaa/` on blurbpress.com. The canonical `web/shared/` directory ships once to `s3://blurbpress.com/nasfaa/shared/`, and both pages reference it via the relative path `../shared/...` from their own deploy subdirectories (`/nasfaa/walkthrough/` and `/nasfaa/quiz/`). Same relative path works under `file://` for local dev. No bucket-root collision with sibling projects on blurbpress because everything lives under the `/nasfaa/` namespace. The earlier duplicated-and-mirror-tagged copies under each page directory have been removed.
+- **Dedupe web-styling shared assets** ✅: Resolved by namespacing the deploy paths under `/nasfaa/` on blurbpress.com. The canonical `web/shared/` directory ships once to `s3://blurbpress.com/nasfaa/shared/`, and both pages reference it via the relative path `../shared/...` from their own deploy subdirectories (`/nasfaa/disclose-or-not/` and `/nasfaa/disclosure-quiz/`). Same relative path works under `file://` for local dev. No bucket-root collision with sibling projects on blurbpress because everything lives under the `/nasfaa/` namespace. The earlier duplicated-and-mirror-tagged copies under each page directory have been removed.
