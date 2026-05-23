@@ -24,15 +24,21 @@ web/quiz/
   README.md        This file
 ```
 
-## Regenerating JSON from YAML
+## Build first
 
-The two `*.json` files are derived from the canonical
-`nasfaa_rules.yml` / `nasfaa_scenarios.yml` at the project root. Re-run
-the build after editing either file:
+`data.js`, `rules.json`, and `scenarios.json` in this directory are
+**gitignored build artifacts**. After a fresh clone (or after
+editing either canonical YAML file), regenerate them:
 
 ```
+make build          # from the repo root
+# or just this page's bundle:
 node web/quiz/build.js
 ```
+
+If you open `index.html` without building first, the page detects the
+missing data and renders a terminal-framed "NOT BUILT" notice telling
+you to run `make build` — no broken-page mystery.
 
 `build.js` shells out to `ruby -ryaml -rjson` so it uses the same
 parser as the canonical Ruby code (no `npm install` needed).

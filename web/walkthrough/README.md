@@ -27,15 +27,23 @@ web/walkthrough/
 
 The YAML files in the repo root remain the canonical source of truth.
 
-## Regenerate JSON from YAML
+## Build first
 
-After editing any of `nasfaa_rules.yml`, `nasfaa_questions.yml`, or
-`nasfaa_scenarios.yml`, regenerate the JSON copies that the browser
-loads:
+The `data.js`, `rules.json`, `questions.json`, and `scenarios.json`
+files in this directory are **gitignored build artifacts**. After a
+fresh clone (or after editing any of the canonical YAML files at the
+repo root), regenerate them:
 
 ```sh
+make build         # from the repo root
+# or just this page's bundle:
 ruby web/walkthrough/build.rb
 ```
+
+If you open `index.html` or `test.html` without building first, the
+page detects the missing data and renders a terminal-framed "NOT
+BUILT" notice telling you to run `make build` — no broken-page
+mystery.
 
 Output is UTF-8, LF endings, no BOM.
 

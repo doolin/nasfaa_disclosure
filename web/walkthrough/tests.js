@@ -87,7 +87,12 @@
   const summary = document.getElementById('tests-summary');
   const shaEl = document.getElementById('build-sha');
   if (!N || !data) {
-    summary.textContent = 'Failed: data.js or engine.js did not load.';
+    // data.js is a build artifact (gitignored). If it's missing, the
+    // page was opened before `make build` ran.
+    summary.innerHTML =
+      "This page hasn't been built yet.<br><br>" +
+      'From the project root, run: <code>make build</code><br>' +
+      'Then refresh this page.';
     summary.classList.add('any-fail');
     return;
   }

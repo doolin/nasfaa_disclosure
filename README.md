@@ -226,6 +226,57 @@ Once verified exhaustively, they become the portable target for other platforms.
 Rather than hand-translating Ruby `if/elsif` logic to JavaScript, you build a
 YAML evaluator in each language and share the same rule file.
 
+## Web pages: gitignored build artifacts + in-page "not built" notice
+
+The static web pages under `web/walkthrough/` and `web/quiz/` load
+their data from generated `data.js` bundles (and `rules.json` etc.)
+that are derived from the canonical YAML at the repo root. Those
+generated files are **gitignored** rather than committed, for two
+reasons:
+
+1. The build script bakes the current `git rev-parse HEAD` into
+   `data.js` under `build.sha`. A committed `data.js` would always
+   contain the *previous* commit's SHA (chicken-and-egg: you can't
+   commit a file containing its own commit's SHA), so every deploy
+   would leave a stale `M` in `git status` — pure churn.
+2. The YAML is the source of truth. The JS/JSON bundles are deploy
+   artifacts; keeping them out of git makes that clear.
+
+Trade-off: a fresh clone needs `make build` once before the pages
+will load locally via `file://`. To soften the surprise, each page
+detects the missing global (`window.NASFAA_DATA` /
+`window.NASFAA_QUIZ_DATA`) at startup and renders a clear,
+terminal-styled notice inside the existing page frame telling the
+user exactly what to run:
+
+```
+┌─ NOT BUILT ─────────────────────────────────────────────────┐
+│                                                             │
+│  This page hasn't been built yet.                           │
+│                                                             │
+│  The walkthrough loads its data from data.js, which is      │
+│  generated from the canonical YAML files at the repo root.  │
+│                                                             │
+│  From the project root, run:                                │
+│                                                             │
+│      make build                                             │
+│                                                             │
+│  Then refresh this page.                                    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+The detection is a single-line check at the top of each page's
+`app.js`; when triggered it writes the notice into the same DOM
+element the page would otherwise use for its content, so the
+terminal aesthetic is preserved and the notice doesn't look like a
+crash. The same pattern applies to `web/walkthrough/test.html`.
+
+This pattern — *gitignore generated artifacts that bake the build
+SHA, and detect-and-explain at startup* — generalizes to any static
+site whose data is derived from a canonical source elsewhere in the
+repo.
+
 ## Usage
 
 ```ruby

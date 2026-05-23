@@ -228,10 +228,26 @@
   function bootstrap() {
     const data = window.NASFAA_QUIZ_DATA;
     if (!data || !data.rules || !data.scenarios) {
-      screen.textContent =
-        'Failed to load quiz data: window.NASFAA_QUIZ_DATA is missing.\n\n' +
-        'Make sure data.js loads before app.js, and re-run:\n' +
-        '  node web/quiz/build.js';
+      // data.js is a build artifact (gitignored). If it's missing, the
+      // page was opened before `make build` ran. Show a terminal-styled
+      // notice instead of a tech-y stack trace.
+      screen.textContent = [
+        '┌─ NOT BUILT ─────────────────────────────────────────────────┐',
+        '│                                                             │',
+        "│  This page hasn't been built yet.                           │",
+        '│                                                             │',
+        '│  The quiz loads its data from data.js, which is generated   │',
+        '│  from the canonical YAML files at the repo root.            │',
+        '│                                                             │',
+        '│  From the project root, run:                                │',
+        '│                                                             │',
+        '│      make build                                             │',
+        '│                                                             │',
+        '│  Then refresh this page.                                    │',
+        '│                                                             │',
+        '└─────────────────────────────────────────────────────────────┘',
+      ].join('\n');
+      cursor.style.display = 'none';
       return;
     }
     const engine = new RuleEngine(data.rules.rules);

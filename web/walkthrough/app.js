@@ -7,10 +7,38 @@
   const N = window.Nasfaa;
   const data = window.NASFAA_DATA;
   if (!N || !data) {
-    document.body.textContent =
-      'Walkthrough failed to load: missing Nasfaa or NASFAA_DATA. ' +
-      'Make sure data.js, engine.js, dag.js, and box-draw.js are loaded before app.js.';
+    renderUnbuiltNotice();
     return;
+  }
+
+  function renderUnbuiltNotice() {
+    // data.js is a build artifact (gitignored). If it's missing, the page
+    // was opened before `make build` ran. Show a clear, terminal-styled
+    // notice instead of a tech-y stack trace.
+    const box = document.getElementById('question-box');
+    const lines = [
+      '┌─ NOT BUILT ─────────────────────────────────────────────────┐',
+      '│                                                             │',
+      "│  This page hasn't been built yet.                           │",
+      '│                                                             │',
+      '│  The walkthrough loads its data from data.js, which is      │',
+      '│  generated from the canonical YAML files at the repo root.  │',
+      '│                                                             │',
+      '│  From the project root, run:                                │',
+      '│                                                             │',
+      '│      make build                                             │',
+      '│                                                             │',
+      '│  Then refresh this page.                                    │',
+      '│                                                             │',
+      '└─────────────────────────────────────────────────────────────┘',
+    ];
+    if (box) {
+      box.textContent = lines.join('\n');
+      const prompt = document.getElementById('prompt-text');
+      if (prompt) prompt.textContent = '(awaiting build) > ';
+    } else {
+      document.body.textContent = lines.join('\n');
+    }
   }
 
   const $ = (id) => document.getElementById(id);
