@@ -60,11 +60,20 @@ RSpec.describe Nasfaa::RuleEngine do
         expect(result[:rule_id]).to eq('FAFSA_R3_used_for_aid_admin')
       end
 
-      it 'permits FAFSA data without PII' do
-        data = Nasfaa::DisclosureData.new(is_fafsa_data: true, contains_pii: false)
+      it 'permits FAFSA data without PII via research route' do
+        # research=true bypasses Box 8 (R6b deny) to reach the FAFSA_R7 no-PII permit.
+        data = Nasfaa::DisclosureData.new(is_fafsa_data: true, research_promote_attendance: true, contains_pii: false)
         result = engine.evaluate(data)
         expect(result[:rule_id]).to eq('FAFSA_R7_no_pii')
         expect(result[:result]).to eq(:permit)
+      end
+
+      it 'denies FAFSA data at Box 8 No when HEA consent is absent' do
+        data = Nasfaa::DisclosureData.new(is_fafsa_data: true, contains_pii: true)
+        result = engine.evaluate(data)
+        expect(result[:rule_id]).to eq('FAFSA_R6b_no_hea_consent_review_deny')
+        expect(result[:result]).to eq(:deny)
+        expect(result[:caution_note]).to include('99.31(a)(9)(ii)')
       end
 
       it 'permits with FERPA written consent' do
@@ -73,12 +82,12 @@ RSpec.describe Nasfaa::RuleEngine do
         expect(result[:rule_id]).to eq('FERPA_R0_written_consent')
       end
 
-      it 'permits judicial order with caution note' do
+      it 'permits judicial order without caution (review note moved to FAFSA_R6b)' do
         data = Nasfaa::DisclosureData.new(due_to_judicial_order_or_subpoena_or_financial_aid: true)
         result = engine.evaluate(data)
         expect(result[:rule_id]).to eq('FERPA_R3_judicial_or_finaid_related')
         expect(result[:result]).to eq(:permit_with_caution)
-        expect(result[:caution_note]).to include('consult counsel')
+        expect(result[:caution_note]).to be_nil
       end
 
       it 'denies non-FTI by default' do
@@ -99,7 +108,7 @@ RSpec.describe Nasfaa::RuleEngine do
           { is_fafsa_data: true, disclosure_to_scholarship_org: true, explicit_written_consent: true },
           { is_fafsa_data: true, research_promote_attendance: true },
           { is_fafsa_data: true, hea_written_consent: true },
-          { is_fafsa_data: true, contains_pii: false },
+          { is_fafsa_data: true, research_promote_attendance: true, contains_pii: false },
           { ferpa_written_consent: true },
           { directory_info_and_not_opted_out: true },
           { to_school_official_legitimate_interest: true },
@@ -145,7 +154,7 @@ RSpec.describe Nasfaa::RuleEngine do
 
   describe '#rules' do
     it 'loads all rules from YAML' do
-      expect(engine.rules.length).to eq(21)
+      expect(engine.rules.length).to eq(22)
     end
 
     it 'has a catch-all for FTI' do

@@ -13,9 +13,9 @@
 # The DAG faithfully mirrors the PDF's two-page layout:
 #   Entry point: 1 shared question (Box 1, both pages)
 #   Page 2: FTI branch (IRC §6103) — 4 questions, 5 results
-#   Page 1: Non-FTI branch — 18 questions, 17 results
+#   Page 1: Non-FTI branch — 18 questions, 17 results (incl. Box 8 No deny)
 #
-# Total: 23 question nodes, 21 result nodes
+# Total: 23 question nodes, 22 result nodes
 
 start: fti_check
 
@@ -193,7 +193,7 @@ nodes:
     help: "This is the general Higher Education Act consent for FAFSA data disclosure, broader than FERPA consent."
     field: hea_written_consent
     on_yes: result_FAFSA_R6_HEA_written_consent
-    on_no: fafsa_pii
+    on_no: result_FAFSA_R6b_no_hea_consent_review_deny
 
   fafsa_pii:
     type: question
@@ -330,6 +330,13 @@ nodes:
     rule_id: FAFSA_R6_HEA_written_consent
     message: "The student has provided HEA written consent for FAFSA data disclosure."
     citation: "HEA §1090(a)(3)(C)"
+
+  result_FAFSA_R6b_no_hea_consent_review_deny:
+    type: result
+    result: deny
+    rule_id: FAFSA_R6b_no_hea_consent_review_deny
+    message: "Disclosure Not Permitted. Review §99.31(a)(9)(ii) and consult legal counsel if this is a subpoena, court order, or other law enforcement request."
+    citation: "HEA §1090(a)(3)(C); FERPA 34 CFR §99.31(a)(9)(ii)"
 
   result_FAFSA_R7_no_pii:
     type: result

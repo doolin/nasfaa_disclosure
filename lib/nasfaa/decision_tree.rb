@@ -40,6 +40,15 @@ module Nasfaa
           # Box 8: Has HEA consent? (only reached when Box 7 = No)
           return true if !disclosure_request.research_promote_attendance? && disclosure_request.hea_written_consent?
 
+          # Box 8 No: terminal deny. Mirrors the gray "Disclosure Not Permitted
+          # (Review §99.31(a)(9)(ii)...)" PDF terminal. Bypassed when Box 4
+          # contributor=Yes (skips to FERPA) or Box 7 research=Yes (skips to PII).
+          if !disclosure_request.disclosure_to_contributor_parent_or_spouse? &&
+             !disclosure_request.research_promote_attendance? &&
+             !disclosure_request.hea_written_consent?
+            return false
+          end
+
           # Box 9: Contains PII?
           # No PII → Disclosure Permitted; Yes PII → continue to Box 10
           return true unless disclosure_request.contains_pii?

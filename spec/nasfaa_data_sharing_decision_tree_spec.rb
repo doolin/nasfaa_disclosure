@@ -155,79 +155,85 @@ RSpec.describe Nasfaa::DecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII and has FERPA consent' do
+      # FAFSA+PII reaches the FERPA chain only via Box 4 contributor or Box 7
+      # research (Box 8 No is now a terminal deny). These contexts use the
+      # research route to exercise the downstream FERPA exceptions.
+      context 'and disclosure is FAFSA data with PII (research route) and has FERPA consent' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true, ferpa_written_consent: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, ferpa_written_consent: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII and is directory information' do
+      context 'and disclosure is FAFSA data with PII (research route) and is directory information' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     directory_info_and_not_opted_out: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, directory_info_and_not_opted_out: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to school official with legitimate interest' do
+      context 'and disclosure is FAFSA data with PII (research route) to school official with legitimate interest' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     to_school_official_legitimate_interest: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, to_school_official_legitimate_interest: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII under judicial order' do
+      context 'and disclosure is FAFSA data with PII (research route) under judicial order' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     due_to_judicial_order_or_subpoena_or_financial_aid: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, due_to_judicial_order_or_subpoena_or_financial_aid: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to other school for enrollment' do
+      context 'and disclosure is FAFSA data with PII (research route) to other school for enrollment' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     to_other_school_enrollment_transfer: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, to_other_school_enrollment_transfer: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to federal representative' do
+      context 'and disclosure is FAFSA data with PII (research route) to federal representative' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     to_authorized_representatives: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, to_authorized_representatives: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to research organization' do
+      context 'and disclosure is FAFSA data with PII (research route) to research organization' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true, to_research_org_ferpa: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, to_research_org_ferpa: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to accrediting agency' do
+      context 'and disclosure is FAFSA data with PII (research route) to accrediting agency' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true, to_accrediting_agency: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, to_accrediting_agency: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII to parent of dependent student' do
+      context 'and disclosure is FAFSA data with PII (research route) to parent of dependent student' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     parent_of_dependent_student: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, parent_of_dependent_student: true)
         end
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data with PII otherwise permitted under 99.31' do
+      context 'and disclosure is FAFSA data with PII (research route) otherwise permitted under 99.31' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true,
-                                     otherwise_permitted_under_99_31: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: true, otherwise_permitted_under_99_31: true)
         end
         it { expect(tree.disclose?).to be true }
       end
@@ -251,36 +257,42 @@ RSpec.describe Nasfaa::DecisionTree do
         it { expect(tree.disclose?).to be false }
       end
 
-      context 'and disclosure is FAFSA data but contains no PII and no other conditions met' do
-        let(:disclosure_request) { Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false) }
+      context 'and disclosure is FAFSA data without PII via research route (FAFSA_R7)' do
+        let(:disclosure_request) do
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true,
+                                     research_promote_attendance: true, contains_pii: false)
+        end
         it('is permitted at Box 9 (no PII)') { expect(tree.disclose?).to be true }
       end
 
       context 'and disclosure is FAFSA data with PII but no other conditions met' do
         let(:disclosure_request) { Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: true) }
-        it { expect(tree.disclose?).to be false }
+        it('terminates at Box 8 No deny') { expect(tree.disclose?).to be false }
       end
 
-      # Additional edge cases to improve coverage
-      context 'and disclosure is FAFSA data without PII but has FERPA consent' do
+      # Box 9 No (no PII) is only reachable via Box 7 Yes (research) since Box 8 No
+      # is now a terminal deny. These cases verify Box 9 No short-circuits to permit
+      # before any downstream FERPA check is consulted.
+      context 'and disclosure is FAFSA data via research without PII but has FERPA consent' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false, ferpa_written_consent: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: false, ferpa_written_consent: true)
         end
         it('is permitted at Box 9 before FERPA consent is reached') { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data without PII but is directory information' do
+      context 'and disclosure is FAFSA data via research without PII but is directory information' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false,
-                                     directory_info_and_not_opted_out: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: false, directory_info_and_not_opted_out: true)
         end
         it('is permitted at Box 9 before directory info is reached') { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data without PII but to school official with legitimate interest' do
+      context 'and disclosure is FAFSA data via research without PII but to school official with legitimate interest' do
         let(:disclosure_request) do
-          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, contains_pii: false,
-                                     to_school_official_legitimate_interest: true)
+          Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, research_promote_attendance: true,
+                                     contains_pii: false, to_school_official_legitimate_interest: true)
         end
         it('is permitted at Box 9 before school official check is reached') { expect(tree.disclose?).to be true }
       end

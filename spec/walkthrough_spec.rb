@@ -58,11 +58,11 @@ RSpec.describe Nasfaa::Walkthrough do
       end
     end
 
-    it 'has exactly 23 question nodes and 21 result nodes' do
+    it 'has exactly 23 question nodes and 22 result nodes' do
       questions = nodes.count { |_, n| n['type'] == 'question' }
       results = nodes.count { |_, n| n['type'] == 'result' }
       expect(questions).to eq(23)
-      expect(results).to eq(21)
+      expect(results).to eq(22)
     end
 
     it 'every result node rule_id matches a rule in nasfaa_rules.yml' do
@@ -149,10 +149,11 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.result).to eq(:permit)
     end
 
-    it 'permits FAFSA without PII (FAFSA_R7)' do
-      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'no', 'no', 'no')
-      expect(trace.rule_id).to eq('FAFSA_R7_no_pii')
-      expect(trace.result).to eq(:permit)
+    it 'denies FAFSA at Box 8 No (FAFSA_R6b)' do
+      # !FTI → !student → fafsa → !contributor → !aid_admin → !scholarship_consent → !research → !hea_consent
+      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'no', 'no')
+      expect(trace.rule_id).to eq('FAFSA_R6b_no_hea_consent_review_deny')
+      expect(trace.result).to eq(:deny)
     end
   end
 
@@ -230,16 +231,18 @@ RSpec.describe Nasfaa::Walkthrough do
   end
 
   describe 'FERPA branch (via FAFSA data with PII)' do
-    # non-FTI → not student → FAFSA → all FAFSA-specific no → has PII → FERPA consent
-    it 'routes FAFSA+PII into FERPA consent check' do
+    # FAFSA+PII reaches the FERPA chain via Box 7 Yes (research) → Box 9 Yes (PII).
+    # The Box 8 No path now terminates at FAFSA_R6b, so the research route is the
+    # only walkthrough path that places FAFSA data into the FERPA exception chain.
+    it 'routes FAFSA+PII into FERPA consent check via research' do
       # no(FTI) → no(student) → yes(FAFSA) → no(contributor) → no(aid admin) →
-      # no(scholarship) → no(research) → no(HEA consent) → yes(PII) → yes(FERPA consent)
-      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'no', 'no', 'yes', 'yes')
+      # no(scholarship) → yes(research) → yes(PII) → yes(FERPA consent)
+      trace, = run_walkthrough('no', 'no', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'yes')
       expect(trace.rule_id).to eq('FERPA_R0_written_consent')
     end
 
-    it 'reaches default deny via FAFSA+PII path' do
-      answers = %w[no no yes no no no no no yes] + Array.new(10, 'no')
+    it 'reaches default deny via FAFSA+PII research path' do
+      answers = %w[no no yes no no no yes yes] + Array.new(10, 'no')
       trace, = run_walkthrough(*answers)
       expect(trace.rule_id).to eq('NONFTI_DENY_default')
       expect(trace.result).to eq(:deny)
@@ -308,7 +311,7 @@ RSpec.describe Nasfaa::Walkthrough do
   # ------------------------------------------------------------------
   describe 'cross-verification with RuleEngine' do
     # Every DAG result node should agree with the RuleEngine evaluation
-    # of the same answers. We test all 21 terminal paths.
+    # of the same answers. We test all 22 terminal paths.
     paths = {
       'FTI_R1_student' => %w[yes yes],
       'FTI_R2_aid_admin_school_official' => %w[yes no yes yes],
@@ -319,7 +322,8 @@ RSpec.describe Nasfaa::Walkthrough do
       'FAFSA_R3_used_for_aid_admin' => %w[no no yes no yes],
       'FAFSA_R4_scholarship_with_consent' => %w[no no yes no no yes],
       'FAFSA_R6_HEA_written_consent' => %w[no no yes no no no no yes],
-      'FAFSA_R7_no_pii' => %w[no no yes no no no no no no],
+      'FAFSA_R6b_no_hea_consent_review_deny' => %w[no no yes no no no no no],
+      'FAFSA_R7_no_pii' => %w[no no yes no no no yes no],
       'FERPA_R0_written_consent' => %w[no no no yes],
       'FERPA_R1_directory_info' => %w[no no no no yes],
       'FERPA_R2_school_official_LEI' => %w[no no no no no yes],

@@ -88,10 +88,19 @@ rules:
     when_all: ["!includes_fti", is_fafsa_data, disclosure_to_scholarship_org, explicit_written_consent]
     result: permit
 
-  # Box 8 is only reached via Box 7 No (not research)
+  # Box 8 is only reached via Box 7 No (not research) and Box 4 No (not contributor)
   - id: FAFSA_R6_HEA_written_consent
     when_all: ["!includes_fti", is_fafsa_data, "!research_promote_attendance", hea_written_consent]
     result: permit
+
+  # Box 8 No: HEA consent absent on a Box 8-reachable path → terminal deny.
+  # !contributor guard: contributor=Yes bypasses Box 5-8 to FERPA consent.
+  # !research guard: research=Yes bypasses Box 8 to PII (Box 9).
+  # Must precede FAFSA_R7 so the no-PII fall-through cannot rescue a Box 8 No.
+  - id: FAFSA_R6b_no_hea_consent_review_deny
+    when_all: ["!includes_fti", is_fafsa_data, "!disclosure_to_contributor_parent_or_spouse", "!research_promote_attendance", "!hea_written_consent"]
+    result: deny
+    caution_note: "Review §99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
 
   # Box 9: FAFSA data without PII → Permit (no further checks needed)
   - id: FAFSA_R7_no_pii
@@ -118,7 +127,6 @@ rules:
   - id: FERPA_R3_judicial_or_finaid_related
     when_all: ["!includes_fti", due_to_judicial_order_or_subpoena_or_financial_aid]
     result: permit_with_caution
-    caution_note: "If subpoena/court order/law enforcement, review 99.31(a)(9)(ii) and consult counsel."
 
   - id: FERPA_R4_other_school_enrollment
     when_all: ["!includes_fti", to_other_school_enrollment_transfer]
