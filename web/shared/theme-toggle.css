@@ -1,0 +1,62 @@
+/* theme-toggle.css — styles for an unobtrusive theme cycle button.
+ *
+ * Designed to sit in the page footer or fixed lower-left, mirroring
+ * the visual weight of the .shamrock-link in the lower right. The
+ * button itself is small, low-contrast, transparent background, and
+ * lifts to full opacity on hover/focus.
+ *
+ * Pages include this stylesheet AFTER tokens.css, then drop a button:
+ *
+ *   <button type="button"
+ *           class="theme-toggle"
+ *           onclick="NasfaaTheme.cycle()"
+ *           aria-label="Cycle color theme">[theme]</button>
+ */
+
+.theme-toggle {
+  /* Fixed-position variant — pair with the shamrock-link in the
+     opposite corner. Use .theme-toggle.inline to opt out of fixed
+     positioning and place inline in a footer. */
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 50;
+
+  /* Visual weight: match shamrock-link */
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--color-fg-muted, #9ca3af);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s ease-in, border-color 0.15s ease-in;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  opacity: 1;
+  border-color: var(--color-border, currentColor);
+  outline: none;
+}
+
+.theme-toggle:active {
+  background: var(--color-accent-tint, rgba(0, 0, 0, 0.05));
+}
+
+/* Inline variant — place inside a .footer instead of fixed-positioning. */
+.theme-toggle.inline {
+  position: static;
+  display: inline;
+  margin: 0 0.25rem;
+}
+
+/* Optional theme-name badge — pages may render the current theme name
+   inside the button via JS: <span class="theme-toggle__label">vt102</span>.
+   Hidden by default unless explicitly added. */
+.theme-toggle__label {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
