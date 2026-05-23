@@ -32,7 +32,7 @@ Up next (largest items):
 - Web page styling refresh: Stripe-style accessible color system + light/dark modes
 - PDF text fidelity audit; quiz scenario accuracy deep dive
 - Citation hyperlinks (eCFR / USC) on every result
-- Deploy Lambdas to clubstraylight.com
+- Deploy Lambdas to blurbpress.com
 - Phase 3 visualization (Mermaid diagram from `nasfaa_questions.yml`)
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan and ~15 other items.

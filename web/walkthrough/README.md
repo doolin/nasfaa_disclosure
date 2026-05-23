@@ -3,7 +3,7 @@
 Static single-page port of the NASFAA Data Sharing Decision Tree CLI
 walkthrough (`lib/nasfaa/walkthrough.rb`).
 
-Target URL: `clubstraylight.com/nasfaa-disclose-or-not`.
+Target URL: `blurbpress.com/nasfaa-disclose-or-not`.
 
 ## Layout
 

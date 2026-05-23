@@ -2,7 +2,7 @@
 
 A static + Lambda-hosted port of the NASFAA disclosure quiz
 (`lib/nasfaa/quiz.rb`). Target URL:
-`clubstraylight.com/nasfaa-disclosure-quiz`.
+`blurbpress.com/nasfaa-disclosure-quiz`.
 
 The browser app loads `rules.json` and `scenarios.json` (built from the
 canonical YAML at the project root) and runs the quiz entirely

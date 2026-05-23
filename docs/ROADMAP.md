@@ -107,14 +107,14 @@ nasfaa diagram --format=mermaid > decision_tree.mmd
 
 ## Phase 4: Node.js + Browser ✅
 
-Static SPAs live under `web/walkthrough/` (target: clubstraylight.com/nasfaa-disclose-or-not) and `web/quiz/` (target: clubstraylight.com/nasfaa-disclosure-quiz). Each:
+Static SPAs live under `web/walkthrough/` (target: blurbpress.com/nasfaa-disclose-or-not) and `web/quiz/` (target: blurbpress.com/nasfaa-disclosure-quiz). Each:
 
 - Vanilla HTML/CSS/JS, no framework, no build step (works via `file://`).
 - JS port of `Nasfaa::RuleEngine`, `BoxDraw`, and (walkthrough) the DAG walker. Plain scripts attached to `window.Nasfaa.*`.
 - Canonical YAML stays the source of truth; `build.rb` / `build.js` regenerate `rules.json` / `questions.json` / `scenarios.json` and a `data.js` bundle (`window.NASFAA_DATA` / `window.NASFAA_QUIZ_DATA`) that the HTML loads via `<script>` tag — no fetch, no modules.
 - Terminal aesthetic: monospace, dark bg, blinking `▌` cursor, faint scanlines, single-keystroke input, Unicode box-drawn frames mirroring the CLI.
 - Touch-controls fallback on coarse-pointer devices.
-- Footer shows build SHA (short form, `dev` fallback) and a shamrock link to clubstraylight.com.
+- Footer shows build SHA (short form, `dev` fallback) and a shamrock link to blurbpress.com.
 - `web/walkthrough/test.html` runs all 24 scenarios through the JS engine and reports pass/fail — same scenarios file as the Ruby specs (rule changes show up immediately).
 - Cross-engine verification confirmed: both web engines pass 24/24 scenarios against `nasfaa_scenarios.yml`.
 
@@ -127,7 +127,7 @@ Static SPAs live under `web/walkthrough/` (target: clubstraylight.com/nasfaa-dis
 Each web page includes a Node 20 `lambda.js` handler (allow-list of static files, no Express, designed for API Gateway HTTP API or Lambda Function URL). Returns the same HTML/JS/CSS/data.js bundle that the static page uses.
 
 **Open gaps:**
-- Deploy both Lambdas to AWS and wire the clubstraylight.com routes.
+- Deploy both Lambdas to AWS and wire the blurbpress.com routes.
 - Capture deploy SHA into `version.json` at deploy time so the page shows the deployed commit (not the build-time commit). Pattern is already documented in `add-build-sha` skill.
 - Consider adding a JSON evaluation endpoint (POST `/evaluate` with boolean inputs → trace JSON) for third-party integrations that don't want to embed the JS engine.
 
@@ -197,6 +197,6 @@ Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
 
 - **Marp presentation for the work**: Generate a [Marp](https://marp.app) slide deck (`docs/presentation.md`) that walks through the project: motivation, architecture (two engines + exhaustive cross-verification + 24-scenario contract), the PDF-transcription error class (Box 5 / Box 8 fixes, Box 9 PII inversion, why crossing-line diagrams are an LLM failure mode), the CLI / web ports, and lessons. Embed screenshots of the walkthrough / quiz / test harness. Single `marp` command should render to PDF and HTML for sharing. Useful for talks and for new contributors who want the 20-minute overview before diving into the YAML.
 
-- **Deploy lambdas + wire clubstraylight.com routes** *(blocked on Phase 5 deploy)*: Actually ship the two `lambda.js` handlers behind clubstraylight.com/nasfaa-disclose-or-not and clubstraylight.com/nasfaa-disclosure-quiz. Capture deploy SHA into `version.json` so the page's footer reflects the deployed commit. Add a tiny `bin/deploy` script (or GitHub Action) so redeploy after a YAML change is one command.
+- **Deploy lambdas + wire blurbpress.com routes** *(blocked on Phase 5 deploy)*: Actually ship the two `lambda.js` handlers behind blurbpress.com/nasfaa-disclose-or-not and blurbpress.com/nasfaa-disclosure-quiz. Capture deploy SHA into `version.json` so the page's footer reflects the deployed commit. Add a tiny `bin/deploy` script (or GitHub Action) so redeploy after a YAML change is one command.
 
 - **Mobile / browser test matrix**: The web pages have touch-controls fallback and `prefers-reduced-motion` overrides, but neither has been tested in a real browser on a real device. Smoke-test in Chrome / Firefox / Safari (desktop) and Safari iOS / Chrome Android. Capture screenshots into `docs/screenshots/` for the README. Likely surfaces small font-size / overflow / cursor-blink issues to fix.

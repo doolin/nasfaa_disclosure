@@ -1,4 +1,4 @@
-// lambda.js — minimal AWS Lambda handler for clubstraylight.com/nasfaa-disclose-or-not
+// lambda.js — minimal AWS Lambda handler for blurbpress.com/nasfaa-disclose-or-not
 //
 // Designed for API Gateway HTTP API or a direct Lambda Function URL.
 // Bundles the static files alongside this handler and serves them from

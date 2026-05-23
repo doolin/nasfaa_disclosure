@@ -4,7 +4,7 @@
 // Designed for: API Gateway HTTP API v2 events OR Lambda Function URLs.
 //
 // Serves the static files in this directory under the base path
-// /nasfaa-disclosure-quiz/  (e.g. clubstraylight.com/nasfaa-disclosure-quiz/).
+// /nasfaa-disclosure-quiz/  (e.g. blurbpress.com/nasfaa-disclosure-quiz/).
 // Any request whose path resolves to a file in this directory is returned;
 // any request to the bare base path returns index.html.
 //
