@@ -45,6 +45,7 @@
   /* Other named roles */
   --color-disclaimer:   #b42318;  /* "For Entertainment Purposes Only" */
   --color-shamrock:     #16a34a;  /* matches existing brand glyph */
+  --color-dev:          #c2410c;  /* dev-mode badge — saturated orange */
 
   /* Surface effects */
   --shadow-elevated:    0 1px 2px rgba(15, 23, 42, 0.06),
@@ -56,6 +57,7 @@
   --color-permit-tint:  rgba(26, 127, 55, 0.12);
   --color-deny-tint:    rgba(180, 35, 24, 0.12);
   --color-caution-tint: rgba(138, 90, 0, 0.12);
+  --color-dev-tint:     rgba(194, 65, 12, 0.10);
 }
 
 /* ---------------------------------------------------------------- *
@@ -82,6 +84,7 @@
 
   --color-disclaimer:   #b42318;
   --color-shamrock:     #16a34a;
+  --color-dev:          #c2410c;
 
   --shadow-elevated:    0 1px 2px rgba(15, 23, 42, 0.06),
                         0 4px 16px rgba(15, 23, 42, 0.08);
@@ -91,6 +94,7 @@
   --color-permit-tint:  rgba(26, 127, 55, 0.12);
   --color-deny-tint:    rgba(180, 35, 24, 0.12);
   --color-caution-tint: rgba(138, 90, 0, 0.12);
+  --color-dev-tint:     rgba(194, 65, 12, 0.10);
 }
 
 /* ---------------------------------------------------------------- *
@@ -118,6 +122,7 @@
 
   --color-disclaimer:   #ff8b7a;
   --color-shamrock:     #4ade80;
+  --color-dev:          #fb923c;
 
   --shadow-elevated:    0 1px 2px rgba(0, 0, 0, 0.40),
                         0 4px 16px rgba(0, 0, 0, 0.50);
@@ -127,6 +132,7 @@
   --color-permit-tint:  rgba(95, 209, 122, 0.14);
   --color-deny-tint:    rgba(255, 139, 122, 0.14);
   --color-caution-tint: rgba(240, 198, 116, 0.14);
+  --color-dev-tint:     rgba(251, 146, 60, 0.12);
 }
 
 /* ---------------------------------------------------------------- *
@@ -157,6 +163,7 @@
 
   --color-disclaimer:   #ff6b6b;
   --color-shamrock:     #16a34a;
+  --color-dev:          #ffa500;
 
   --shadow-elevated:    0 0 24px rgba(91, 226, 154, 0.08) inset,
                         0 4px 32px rgba(0, 0, 0, 0.5);
@@ -166,6 +173,7 @@
   --color-permit-tint:  rgba(125, 249, 210, 0.12);
   --color-deny-tint:    rgba(255, 107, 107, 0.12);
   --color-caution-tint: rgba(255, 184, 107, 0.12);
+  --color-dev-tint:     rgba(255, 165, 0, 0.14);
 }
 
 /* ---------------------------------------------------------------- *
