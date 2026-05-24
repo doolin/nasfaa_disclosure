@@ -17,6 +17,7 @@
   // which is how new entries get added stepwise.
   const PATH_LABELS = {
     fti_check: 'Contains FTI',
+    fti_to_student: 'Release to student',
   };
 
   function pathLabel(id) {
