@@ -160,9 +160,6 @@
     const out = [];
     out.push(escapeHtml(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.')));
     out.push(escapeHtml(BD.boxLine(`Answer:   ${q.expectedResult}`)));
-    if (devMode) {
-      out.push('<span class="dev">' + escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)) + '</span>');
-    }
     if (q.citation) {
       out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
     }
@@ -172,6 +169,15 @@
       out.push(`<span class="${scoreColorClass(pct)}">${scoreLine}</span>`);
     } else {
       out.push(scoreLine);
+    }
+    if (devMode) {
+      // Inline single-rule value below the user-viewable lines, separated
+      // by a blank line. (Inputs in renderQuestion use header+items because
+      // they're a list; Rule is always one value, so it stays inline.)
+      const devLines = [];
+      devLines.push(escapeHtml(BD.boxLine()));
+      devLines.push(escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)));
+      out.push('<span class="dev">' + devLines.join('\n') + '</span>');
     }
     out.push(escapeHtml(BD.boxBottom()));
     return out.join('\n');
