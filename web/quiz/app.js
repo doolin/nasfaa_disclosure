@@ -86,10 +86,7 @@
 
   function renderReveal(q) {
     const out = [];
-    out.push(BD.boxTop());
-    out.push(state.lastWasCorrect
-      ? BD.boxLine('CORRECT!')
-      : BD.boxLine('INCORRECT.'));
+    out.push(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.'));
     out.push(BD.boxLine(`Answer:   ${q.expectedResult}`));
     out.push(BD.boxLine(`Rule:     ${q.ruleId}`));
     if (q.citation) {
