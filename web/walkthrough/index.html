@@ -58,16 +58,17 @@
       </nav>
 
       <footer class="footer">
-        <a href="test.html">tests</a> ·
-        <span>source: <code>nasfaa_questions.yml</code></span> ·
-        <span>build: <code id="build-sha">dev</code></span> ·
-        <button type="button"
-                class="theme-toggle inline"
-                id="theme-toggle"
-                onclick="NasfaaTheme.cycle(); window.updateThemeLabel && window.updateThemeLabel();"
-                aria-label="Cycle color theme">theme [m]: <span id="theme-toggle-label">…</span></button>
+        <a href="test.html">tests</a>
       </footer>
     </main>
+
+    <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
+
+    <button type="button"
+            class="theme-toggle center"
+            id="theme-toggle"
+            onclick="NasfaaTheme.cycle(); window.updateThemeLabel && window.updateThemeLabel();"
+            aria-label="Cycle color theme">theme [m]: <span id="theme-toggle-label">…</span></button>
 
     <a href="https://blurbpress.com"
        class="shamrock-link"

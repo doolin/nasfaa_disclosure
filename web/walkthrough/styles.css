@@ -309,3 +309,17 @@ body {
 }
 .shamrock-link:hover { opacity: 1; }
 .shamrock-link .shamrock { color: var(--color-shamrock); }
+
+.build-footer {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+  opacity: 0.6;
+  z-index: 50;
+  font-family: inherit;
+  transition: opacity 0.15s ease-in;
+}
+.build-footer:hover { opacity: 1; }
+.build-footer code { color: var(--color-fg-muted); }
