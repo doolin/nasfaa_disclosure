@@ -113,24 +113,23 @@
     const dagPermitted = PERMIT_RESULTS.includes(node.result);
     const enginePermitted = engineTrace && PERMIT_RESULTS.includes(engineTrace.result);
 
-    let crossNote = '';
+    let verifyLine;
     if (!engineTrace) {
-      crossNote = '\n(verify: engine returned no match — investigate)';
+      verifyLine = 'Verify:   engine returned no match — investigate';
     } else if (dagPermitted !== enginePermitted) {
-      crossNote =
-        '\n(verify: DAG verdict (' + node.result + ') differs from engine ' +
-        'verdict (' + engineTrace.result + ' via ' + engineTrace.ruleId + '))';
+      verifyLine =
+        'Verify:   DAG verdict (' + node.result + ') differs from engine (' +
+        engineTrace.result + ' via ' + engineTrace.ruleId + ')';
     } else if (engineTrace.ruleId === node.rule_id) {
-      crossNote = '\n(verified: engine and DAG both -> ' + node.rule_id + ')';
+      verifyLine = 'Verified: engine and DAG both -> ' + node.rule_id;
     } else {
-      crossNote =
-        '\n(verified: same verdict (' + node.result + '); engine first-match ' +
-        '-> ' + engineTrace.ruleId + ', DAG -> ' + node.rule_id + ')';
+      verifyLine =
+        'Verified: same verdict (' + node.result + '); engine first-match -> ' +
+        engineTrace.ruleId + ', DAG -> ' + node.rule_id;
     }
 
     els.resultBox.innerHTML =
-      N.BoxDraw.renderResultBox(node, result.path, { devMode })
-      + N.BoxDraw.escapeHtml(crossNote);
+      N.BoxDraw.renderResultBox(node, result.path, { devMode, verifyLine });
     els.resultBox.className = 'box result-box ' + node.result;
     if (els.resultPromptText) els.resultPromptText.innerHTML = restartPromptHtml();
     els.resultArea.hidden = false;

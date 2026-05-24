@@ -131,6 +131,7 @@
   // border can be colored. The caller sets via innerHTML.
   function renderResultBox(node, pathIds, opts) {
     const devMode = !!(opts && opts.devMode);
+    const verifyLine = (opts && opts.verifyLine) || '';
     const resultWord = String(node.result).toUpperCase();
     const cls = resultColorClass(node.result);
     const top = escapeHtml(boxTop(resultWord))
@@ -144,8 +145,9 @@
         escapeHtml(boxLine('')),
         escapeHtml(boxLine('Rule:     ' + node.rule_id)),
         escapeHtml(boxLine('Path:     ' + (pathIds || []).join(' -> '))),
-      ].join('\n');
-      out.push('<span class="dev">' + devLines + '</span>');
+      ];
+      if (verifyLine) devLines.push(escapeHtml(boxLine(verifyLine)));
+      out.push('<span class="dev">' + devLines.join('\n') + '</span>');
     }
     out.push(escapeHtml(boxBottom()));
     return out.join('\n');
