@@ -1,14 +1,16 @@
 // box-draw.js — JS port of Nasfaa::BoxDraw.
 //
 // Plain script; attaches helpers to `window.Nasfaa.BoxDraw`.
-// Same Unicode glyphs and widths as lib/nasfaa/box_draw.rb.
+// Same Unicode glyphs as lib/nasfaa/box_draw.rb. Widths diverge:
+// the web walkthrough uses BOX_WIDTH=68 (70 cols total) for a wider
+// visual; the CLI keeps the narrower 60-col format.
 
 (function (global) {
   'use strict';
 
-  const BOX_WIDTH = 60;
-  const INNER_WIDTH = 58;
-  const TOTAL_WIDTH = 62;
+  const BOX_WIDTH = 68;
+  const INNER_WIDTH = 66;
+  const TOTAL_WIDTH = 70;
 
   const HORZ_LIGHT = '─';
   const HORZ_HEAVY = '═';
