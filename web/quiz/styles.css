@@ -120,6 +120,14 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.disclaimer-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  margin: 0;
+}
+
 /* Prompt row: sits below #screen, mirrors the walkthrough's .prompt-line. */
 .prompt-line {
   display: flex;
