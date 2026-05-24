@@ -45,7 +45,7 @@
       <section class="result-area" id="result-area" hidden>
         <pre class="box result-box" id="result-box"></pre>
         <div class="prompt-line">
-          <span class="prompt-text">Key: [r] restart &middot; [t] tests &gt; </span>
+          <span class="prompt-text" id="result-prompt-text">Key: [r] restart &gt; </span>
           <span class="cursor" aria-hidden="true">█</span>
         </div>
       </section>
@@ -63,6 +63,8 @@
     </main>
 
     <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
+
+    <div id="dev-badge" hidden>[DEV]</div>
 
     <button type="button"
             class="theme-toggle center"

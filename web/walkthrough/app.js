@@ -46,12 +46,19 @@
   const els = {
     questionBox: $('question-box'),
     promptText: $('prompt-text'),
+    resultPromptText: $('result-prompt-text'),
     pathList: $('path-list'),
     resultArea: $('result-area'),
     resultBox: $('result-box'),
     questionArea: document.querySelector('.question-area'),
     touchControls: $('touch-controls'),
+    devBadge: $('dev-badge'),
   };
+
+  // Hidden dev mode: Shift+D toggles. While on, the [t] tests key is live
+  // and advertised in the result/quit prompt; while off, [t] is a no-op
+  // and the prompt doesn't mention it. Mirrors the quiz's dev mode.
+  let devMode = false;
 
   const engine = new N.RuleEngine(data.rules.rules);
   const walker = new N.DagWalker(data.questions);
@@ -105,6 +112,7 @@
 
     els.resultBox.textContent = N.BoxDraw.renderResultBox(node, result.path) + crossNote;
     els.resultBox.className = 'box result-box ' + node.result;
+    if (els.resultPromptText) els.resultPromptText.textContent = restartPromptText();
     els.resultArea.hidden = false;
     els.questionArea.hidden = true;
     renderPath();
@@ -113,7 +121,28 @@
   function showQuit() {
     mode = 'quit';
     els.questionBox.textContent = 'Walkthrough ended. Press [r] to restart.';
-    els.promptText.textContent = 'Key: [r] restart > ';
+    els.promptText.textContent = restartPromptText();
+  }
+
+  // Result + quit prompts: append "[t] tests" only when dev mode is on.
+  function restartPromptText() {
+    return devMode
+      ? 'Key: [r] restart · [t] tests > '
+      : 'Key: [r] restart > ';
+  }
+
+  function toggleDevMode() {
+    devMode = !devMode;
+    if (els.devBadge) {
+      if (devMode) els.devBadge.removeAttribute('hidden');
+      else els.devBadge.setAttribute('hidden', '');
+    }
+    // Refresh whichever prompt is currently visible so [t] appears/disappears.
+    if (mode === 'result' && els.resultPromptText) {
+      els.resultPromptText.textContent = restartPromptText();
+    } else if (mode === 'quit') {
+      els.promptText.textContent = restartPromptText();
+    }
   }
 
   function restart() {
@@ -140,12 +169,18 @@
       }
     } else if (mode === 'result' || mode === 'quit') {
       if (k === 'r') restart();
-      else if (k === 't') window.location.href = 'test.html';
+      else if (k === 't' && devMode) window.location.href = 'test.html';
     }
   }
 
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    // Hidden dev-mode toggle (Shift+D). Checked before handleKey lowercases.
+    if (e.key === 'D' && e.shiftKey) {
+      toggleDevMode();
+      e.preventDefault();
+      return;
+    }
     if (e.key.length !== 1) return;
     handleKey(e.key);
   });
