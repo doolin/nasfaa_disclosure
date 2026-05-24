@@ -140,8 +140,9 @@
 
   let mode = 'question';
 
-  function promptKey(key, label) {
-    return `<span class="prompt-key" data-key="${key}">${label}</span>`;
+  function promptKey(key, label, extraClass) {
+    const cls = 'prompt-key' + (extraClass ? ' ' + extraClass : '');
+    return `<span class="${cls}" data-key="${key}">${label}</span>`;
   }
 
   function questionPromptHtml() {
@@ -153,9 +154,10 @@
   }
 
   // Result + quit prompts: append "[t] tests" only when dev mode is on.
+  // The [t] key is dev-only, so render it in the dev color to telegraph that.
   function restartPromptHtml() {
     const items = [promptKey('r', '[r] restart')];
-    if (devMode) items.push(promptKey('t', '[t] tests'));
+    if (devMode) items.push(promptKey('t', '[t] tests', 'dev'));
     return 'Key: ' + items.join(' · ') + ' > ';
   }
 
