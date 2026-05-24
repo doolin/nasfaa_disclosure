@@ -95,9 +95,7 @@
   }
 
   function renderResultBox(node, pathIds) {
-    const out = [boxTop()];
-    out.push(boxLine('RESULT: ' + String(node.result).toUpperCase()));
-    out.push(boxDivider());
+    const out = [boxTop(String(node.result).toUpperCase())];
     out.push(boxLine(node.message));
     out.push(boxLine(''));
     out.push(boxLine('Rule:     ' + node.rule_id));
