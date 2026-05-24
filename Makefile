@@ -52,7 +52,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build test deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
+.PHONY: build test survey deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
 
 build:
 	cd $(WALKTHROUGH_DIR) && ruby build.rb
@@ -63,6 +63,12 @@ test:
 	# TODO: walkthrough's run-tests-node.mjs and run-dag-cross-verify.mjs are
 	# broken under current Node (ESM/CJS interop). See ROADMAP "Restore
 	# walkthrough Node test runners" before wiring them back in here.
+
+# Coverage + refactor-candidate survey. Reads coverage/.resultset.json
+# (run `COVERAGE=1 bundle exec rspec` first to refresh) and walks web/
+# for untested JS modules. See .claude/skills/coverage-survey/SKILL.md.
+survey:
+	bin/coverage-survey
 
 deploy: build deploy-shared deploy-walkthrough deploy-quiz
 
