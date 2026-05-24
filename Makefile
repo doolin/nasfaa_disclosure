@@ -52,17 +52,34 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build test survey deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
+.PHONY: build test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
+
+# All front-end test files (test-*.mjs in web/*/). New tests go here as
+# they're added; the wildcard saves the Makefile from drift.
+JS_TESTS := $(wildcard web/quiz/test-*.mjs) $(wildcard web/walkthrough/test-*.mjs) $(wildcard web/shared/test-*.mjs)
 
 build:
 	cd $(WALKTHROUGH_DIR) && ruby build.rb
 	cd $(QUIZ_DIR) && node build.js
 
 test:
-	node --test $(QUIZ_DIR)/test-citation.mjs
+	node --test $(JS_TESTS)
 	# TODO: walkthrough's run-tests-node.mjs and run-dag-cross-verify.mjs are
 	# broken under current Node (ESM/CJS interop). See ROADMAP "Restore
 	# walkthrough Node test runners" before wiring them back in here.
+
+# Front-end coverage via Node 23+'s built-in --experimental-test-coverage.
+# Restricted to web/{quiz,walkthrough,shared}/*.js (runtime modules only;
+# excludes test files, build scripts, and generated data.js).
+test-coverage:
+	node --test --experimental-test-coverage \
+		--test-coverage-include='web/quiz/*.js' \
+		--test-coverage-include='web/walkthrough/*.js' \
+		--test-coverage-include='web/shared/*.js' \
+		--test-coverage-exclude='web/*/data.js' \
+		--test-coverage-exclude='web/*/build.js' \
+		--test-coverage-exclude='web/*/tests.js' \
+		$(JS_TESTS)
 
 # Coverage + refactor-candidate survey. Reads coverage/.resultset.json
 # (run `COVERAGE=1 bundle exec rspec` first to refresh) and walks web/
