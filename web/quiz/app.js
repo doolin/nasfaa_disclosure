@@ -171,22 +171,35 @@
     return out.join('\n');
   }
 
+  function scoreColorClass(pct) {
+    if (pct >= 75) return 'score-high';
+    if (pct >= 50) return 'score-mid';
+    return 'score-low';
+  }
+
+  // Returns HTML; render() does not re-escape it.
   function renderFinal() {
+    const pct = state.percent();
+    const cls = scoreColorClass(pct);
     const out = [];
-    out.push(BD.boxHeavyTop());
-    out.push(BD.boxHeavyLine(`FINAL SCORE: ${state.correct}/${state.total}`));
-    out.push(BD.boxHeavyLine(`${state.percent()}% correct`));
-    out.push(BD.boxHeavyLine(''));
-    out.push(BD.boxHeavyLine('Press [r] to play again.'));
-    out.push(BD.boxHeavyBottom());
+    out.push(escapeHtml(BD.boxHeavyTop()));
+    out.push(`<span class="${cls}">${escapeHtml(BD.boxHeavyLine(`FINAL SCORE: ${state.correct}/${state.total}`))}</span>`);
+    out.push(`<span class="${cls}">${escapeHtml(BD.boxHeavyLine(`${pct}% correct`))}</span>`);
+    out.push(escapeHtml(BD.boxHeavyLine('')));
+    out.push(escapeHtml(BD.boxHeavyLine('Press [r] to play again.')));
+    out.push(escapeHtml(BD.boxHeavyBottom()));
     return out.join('\n');
   }
 
+  // Returns HTML; render() does not re-escape it.
   function renderScoreBanner() {
     const total = state.questionCount();
     const answered = state.total;
     const bar = progressBar(state.correct, total, 16);
-    return `Score: ${state.correct}/${answered} of ${total}  ${bar}`;
+    const tail = escapeHtml(`${state.correct}/${answered} of ${total}  ${bar}`);
+    if (answered === 0) return `Score: ${tail}`;
+    const pct = Math.round((state.correct / answered) * 100);
+    return `Score: <span class="${scoreColorClass(pct)}">${tail}</span>`;
   }
 
   function renderPrompt() {
@@ -199,11 +212,11 @@
     // Parts that are already HTML (renderQuestion, renderReveal) are not
     // re-escaped; plain text parts get escaped here.
     const htmlParts = [];
-    htmlParts.push(escapeHtml(renderScoreBanner()));
+    htmlParts.push(renderScoreBanner());
     htmlParts.push('');
 
     if (state.finished) {
-      htmlParts.push(escapeHtml(renderFinal()));
+      htmlParts.push(renderFinal());
       footer = '';
     } else {
       const q = state.current();

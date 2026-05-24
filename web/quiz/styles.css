@@ -70,6 +70,10 @@ body {
 #screen .label     { font-weight: 700; }
 #screen .dev       { color: var(--color-dev); }
 
+#screen .score-low  { color: var(--color-deny); }
+#screen .score-mid  { color: var(--color-caution); }
+#screen .score-high { color: var(--color-permit); }
+
 #screen .citation-link { color: var(--color-accent); text-decoration: underline; }
 #screen .citation-link:hover { text-decoration: none; }
 
