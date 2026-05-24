@@ -166,7 +166,13 @@
     if (q.citation) {
       out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
     }
-    out.push(escapeHtml(BD.boxLine(`Score:    ${state.correct}/${state.total}`)));
+    const scoreLine = escapeHtml(BD.boxLine(`Score:    ${state.correct}/${state.total}`));
+    if (state.total > 0) {
+      const pct = Math.round((state.correct / state.total) * 100);
+      out.push(`<span class="${scoreColorClass(pct)}">${scoreLine}</span>`);
+    } else {
+      out.push(scoreLine);
+    }
     out.push(escapeHtml(BD.boxBottom()));
     return out.join('\n');
   }
