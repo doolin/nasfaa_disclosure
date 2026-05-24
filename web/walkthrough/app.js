@@ -5,7 +5,10 @@
   'use strict';
 
   const N = window.Nasfaa;
-  const ARROW = (window.NasfaaGlyphs && window.NasfaaGlyphs.ARROW_SEP) || ' → ';
+  const G = window.NasfaaGlyphs || {};
+  const ARROW = G.ARROW_SEP || ' → ';
+  const CHECK = G.CHECK || '✔';
+  const CROSS = G.CROSS || '✘';
   const data = window.NASFAA_DATA;
   if (!N || !data) {
     renderUnbuiltNotice();
@@ -106,12 +109,28 @@
     // current (unanswered) question gets appended with a trailing "?" so
     // the path display reads "answered → answered → current?". Once the
     // user answers, the "?" moves to the next current as the path grows.
+    // In result mode an outcome mark (✔ or ✘) appends after the path.
     const answered = walker.path;
     let displayed = answered;
     if (mode === 'question' && !walker.finished) {
       displayed = answered.concat([walker.currentId + '?']);
     }
-    els.pathList.textContent = displayed.length === 0 ? '(start)' : displayed.join(ARROW);
+    if (displayed.length === 0) {
+      els.pathList.textContent = '(start)';
+      return;
+    }
+    const text = displayed.join(ARROW);
+    if (mode === 'result' && walker.finished) {
+      const result = walker.currentNode().result;
+      const isDeny = result === 'deny';
+      const symbol = isDeny ? CROSS : CHECK;
+      const cls = isDeny ? 'result-deny' : 'result-permit';
+      els.pathList.innerHTML =
+        N.BoxDraw.escapeHtml(text) +
+        ' <span class="' + cls + '">' + symbol + '</span>';
+    } else {
+      els.pathList.textContent = text;
+    }
   }
 
   function showResult() {

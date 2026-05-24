@@ -17,6 +17,12 @@
     // Examples in nasfaa: path display ("A → B → C"), verify cross-note
     // ("engine and DAG both → FAFSA_R1").
     ARROW_SEP: ' → ',
+
+    // Outcome marks. The path display in the walkthrough appends one of
+    // these after the final result so the trail reads "...→ result ✔" or
+    // "...→ result ✘". Heavy variants for visual weight.
+    CHECK: '✔',
+    CROSS: '✘',
   };
 
   if (typeof module !== 'undefined' && module.exports) {
