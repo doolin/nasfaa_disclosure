@@ -25,8 +25,36 @@
   // Lives here rather than in nasfaa_questions.yml for fast iteration;
   // a future commit can lift to YAML if labels stabilize.
   const PATH_LABELS = {
-    fti_check:      { question: 'Contains FTI', yes: 'Contains FTI', no: 'No FTI' },
-    fti_to_student: { question: 'To student',   yes: 'To student',   no: 'Not to student' },
+    // Entry
+    fti_check:           { question: 'Contains FTI',                 yes: 'Contains FTI',                 no: 'No FTI' },
+
+    // FTI branch (Page 2)
+    fti_to_student:      { question: 'To student',                   yes: 'To student',                   no: 'Not to student' },
+    fti_aid_admin:       { question: 'For aid admin',                yes: 'For aid admin',                no: 'Not for aid admin' },
+    fti_school_official: { question: 'School official with LEI',     yes: 'School official with LEI',     no: 'Not a school official' },
+    fti_scholarship:     { question: 'Scholarship org with consent', yes: 'Scholarship org with consent', no: 'Not scholarship / no consent' },
+
+    // Non-FTI / FAFSA branch (Page 1, boxes 2-9)
+    nonfti_to_student:   { question: 'To student',                   yes: 'To student',                   no: 'Not to student' },
+    nonfti_fafsa_check:  { question: 'Is FAFSA data',                yes: 'FAFSA data',                   no: 'Non-FAFSA data' },
+    fafsa_contributor:   { question: 'To FAFSA contributor',         yes: 'To FAFSA contributor',         no: 'Not a contributor' },
+    fafsa_aid_admin:     { question: 'For aid admin',                yes: 'For aid admin',                no: 'Not for aid admin' },
+    fafsa_scholarship:   { question: 'Scholarship org with consent', yes: 'Scholarship org with consent', no: 'Not scholarship / no consent' },
+    fafsa_research:      { question: 'Institutional research',       yes: 'Institutional research',       no: 'Not research' },
+    fafsa_hea_consent:   { question: 'HEA consent',                  yes: 'HEA consent',                  no: 'No HEA consent' },
+    fafsa_pii:           { question: 'Contains PII',                 yes: 'Contains PII',                 no: 'No PII' },
+
+    // FERPA chain (boxes 10-19)
+    ferpa_consent:        { question: 'FERPA consent',                yes: 'FERPA consent',                no: 'No FERPA consent' },
+    ferpa_directory:      { question: 'Directory info',               yes: 'Directory info',               no: 'Not directory info' },
+    ferpa_school_official:{ question: 'School official with LEI',     yes: 'School official with LEI',     no: 'Not a school official' },
+    ferpa_judicial:       { question: 'Judicial order / subpoena',    yes: 'Judicial order / subpoena',    no: 'Not judicial' },
+    ferpa_transfer:       { question: 'School transfer',              yes: 'School transfer',              no: 'Not a transfer' },
+    ferpa_authorized_rep: { question: 'Authorized rep',               yes: 'Authorized rep',               no: 'Not authorized rep' },
+    ferpa_research_org:   { question: 'FERPA research org',           yes: 'FERPA research org',           no: 'Not research org' },
+    ferpa_accreditor:     { question: 'Accrediting agency',           yes: 'Accrediting agency',           no: 'Not accreditor' },
+    ferpa_parent:         { question: 'Parent of dependent',          yes: 'Parent of dependent',          no: 'Not parent of dependent' },
+    ferpa_otherwise:      { question: 'Other §99.31 exception',       yes: 'Other §99.31 exception',       no: 'No §99.31 exception' },
   };
 
   function pathLabel(id, answered) {
