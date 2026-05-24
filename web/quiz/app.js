@@ -34,6 +34,10 @@
     return '▓'.repeat(filled) + '░'.repeat(Math.max(width - filled, 0));
   }
 
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  }
+
   function formatInputs(inputs) {
     const keys = Object.keys(inputs);
     if (keys.length === 0) return [];
@@ -139,7 +143,9 @@
     if (promptText) promptText.textContent = renderPrompt();
     if (promptLine) promptLine.style.display = '';
 
-    screen.textContent = parts.join('\n');
+    screen.innerHTML = escapeHtml(parts.join('\n'))
+      .replace('CORRECT!', '<span class="correct">CORRECT!</span>')
+      .replace('INCORRECT.', '<span class="incorrect">INCORRECT.</span>');
     // Scroll to bottom so the cursor + prompt stay in view on small screens.
     window.scrollTo(0, document.body.scrollHeight);
   }

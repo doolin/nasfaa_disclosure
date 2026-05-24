@@ -65,6 +65,9 @@ body {
   line-height: 1.35;
 }
 
+#screen .correct   { color: var(--color-permit); font-weight: 700; }
+#screen .incorrect { color: var(--color-deny);   font-weight: 700; }
+
 .banner {
   text-align: center;
   margin-bottom: 1rem;
