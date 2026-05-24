@@ -103,7 +103,7 @@
   function formatInputs(inputs) {
     const keys = Object.keys(inputs);
     if (keys.length === 0) return [];
-    return keys.map((k) => `  ${k}: ${inputs[k]}`);
+    return keys.map((k) => `  ▸ ${k}: ${inputs[k]}`);
   }
 
   function buildBanner() {
@@ -119,34 +119,38 @@
 
   // ── Rendering ──────────────────────────────────────────────────
 
+  // Returns HTML (not plain text) so dev-only sections can be wrapped in a
+  // <span class="dev">. render() does not re-escape this output.
   function renderQuestion(q) {
     const out = [];
-    out.push(BD.boxTop(`Question ${state.questionNumber()} of ${state.questionCount()}`));
-    out.push(BD.boxLine());
+    out.push(escapeHtml(BD.boxTop(`Question ${state.questionNumber()} of ${state.questionCount()}`)));
+    out.push(escapeHtml(BD.boxLine()));
     if (q.description) {
       if (q.name) {
-        out.push(BD.boxLine(q.name));
-        out.push(BD.boxDivider());
+        out.push(escapeHtml(BD.boxLine(q.name)));
+        out.push(escapeHtml(BD.boxDivider()));
       }
-      out.push(BD.boxLine(q.description.trim()));
+      out.push(escapeHtml(BD.boxLine(q.description.trim())));
       if (devMode) {
-        out.push(BD.boxLine());
-        out.push(BD.boxLine('Inputs:'));
+        const devLines = [];
+        devLines.push(escapeHtml(BD.boxLine()));
+        devLines.push(escapeHtml(BD.boxLine('Inputs:')));
         for (const line of formatInputs(q.inputs)) {
-          out.push(BD.boxLine(line));
+          devLines.push(escapeHtml(BD.boxLine(line)));
         }
+        out.push('<span class="dev">' + devLines.join('\n') + '</span>');
       }
     } else {
       // Random mode has no description — the input bag IS the question.
-      out.push(BD.boxLine('Given the following disclosure parameters:'));
-      out.push(BD.boxLine());
+      out.push(escapeHtml(BD.boxLine('Given the following disclosure parameters:')));
+      out.push(escapeHtml(BD.boxLine()));
       for (const line of formatInputs(q.inputs)) {
-        out.push(BD.boxLine(line));
+        out.push(escapeHtml(BD.boxLine(line)));
       }
-      out.push(BD.boxLine());
-      out.push(BD.boxLine('(All other fields are false.)'));
+      out.push(escapeHtml(BD.boxLine()));
+      out.push(escapeHtml(BD.boxLine('(All other fields are false.)')));
     }
-    out.push(BD.boxBottom());
+    out.push(escapeHtml(BD.boxBottom()));
     return out.join('\n');
   }
 
@@ -157,7 +161,7 @@
     out.push(escapeHtml(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.')));
     out.push(escapeHtml(BD.boxLine(`Answer:   ${q.expectedResult}`)));
     if (devMode) {
-      out.push(escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)));
+      out.push('<span class="dev">' + escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)) + '</span>');
     }
     if (q.citation) {
       out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
@@ -192,8 +196,8 @@
   }
 
   function render() {
-    // Parts that are already HTML (renderReveal) are not re-escaped; plain
-    // text parts get escaped here.
+    // Parts that are already HTML (renderQuestion, renderReveal) are not
+    // re-escaped; plain text parts get escaped here.
     const htmlParts = [];
     htmlParts.push(escapeHtml(renderScoreBanner()));
     htmlParts.push('');
@@ -203,7 +207,7 @@
       footer = '';
     } else {
       const q = state.current();
-      htmlParts.push(escapeHtml(renderQuestion(q)));
+      htmlParts.push(renderQuestion(q));
       if (state.revealing) {
         htmlParts.push('');
         htmlParts.push(renderReveal(q));
