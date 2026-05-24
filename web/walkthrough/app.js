@@ -128,7 +128,9 @@
         '-> ' + engineTrace.ruleId + ', DAG -> ' + node.rule_id + ')';
     }
 
-    els.resultBox.textContent = N.BoxDraw.renderResultBox(node, result.path) + crossNote;
+    els.resultBox.innerHTML =
+      N.BoxDraw.renderResultBox(node, result.path, { devMode })
+      + N.BoxDraw.escapeHtml(crossNote);
     els.resultBox.className = 'box result-box ' + node.result;
     if (els.resultPromptText) els.resultPromptText.innerHTML = restartPromptHtml();
     els.resultArea.hidden = false;
@@ -154,6 +156,8 @@
     } else if (mode === 'quit') {
       els.promptText.innerHTML = restartPromptHtml();
     }
+    // Re-render the result box so Rule + Path lines show/hide with dev mode.
+    if (mode === 'result') showResult();
   }
 
   function restart() {

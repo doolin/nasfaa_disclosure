@@ -1,0 +1,12 @@
+/* dev.css — shared dev-mode marker class.
+ *
+ * Pages that have a "dev mode" (currently the quiz and walkthrough)
+ * wrap dev-only content in <span class="dev">...</span> so it stays
+ * visually distinct from normal content via the --color-dev token.
+ *
+ * Kept here (not in tokens.css, which is colors only) so pages can
+ * include it once and any descendant element flagged .dev picks up
+ * the right color.
+ */
+
+.dev { color: var(--color-dev); }

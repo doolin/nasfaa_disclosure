@@ -94,14 +94,29 @@
     return out.join('\n');
   }
 
-  function renderResultBox(node, pathIds) {
-    const out = [boxTop(String(node.result).toUpperCase())];
-    out.push(boxLine(node.message));
-    out.push(boxLine(''));
-    out.push(boxLine('Rule:     ' + node.rule_id));
-    out.push(boxLine('Citation: ' + node.citation));
-    out.push(boxLine('Path:     ' + (pathIds || []).join(' -> ')));
-    out.push(boxBottom());
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>]/g, function (c) {
+      return c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;';
+    });
+  }
+
+  // Returns HTML (not plain text) so dev-only Rule + Path lines can be
+  // wrapped in <span class="dev">. The caller sets via innerHTML.
+  function renderResultBox(node, pathIds, opts) {
+    const devMode = !!(opts && opts.devMode);
+    const out = [escapeHtml(boxTop(String(node.result).toUpperCase()))];
+    out.push(escapeHtml(boxLine(node.message)));
+    out.push(escapeHtml(boxLine('')));
+    out.push(escapeHtml(boxLine('Citation: ' + node.citation)));
+    if (devMode) {
+      const devLines = [
+        escapeHtml(boxLine('')),
+        escapeHtml(boxLine('Rule:     ' + node.rule_id)),
+        escapeHtml(boxLine('Path:     ' + (pathIds || []).join(' -> '))),
+      ].join('\n');
+      out.push('<span class="dev">' + devLines + '</span>');
+    }
+    out.push(escapeHtml(boxBottom()));
     return out.join('\n');
   }
 
@@ -121,5 +136,6 @@
     boxHeavyLine: boxHeavyLine,
     renderQuestionBox: renderQuestionBox,
     renderResultBox: renderResultBox,
+    escapeHtml: escapeHtml,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
