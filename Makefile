@@ -20,6 +20,7 @@
 #
 # Targets:
 #   make build              regenerate data.js + JSON for both pages
+#   make test               run node-side tests for both pages
 #   make deploy             deploy-shared + deploy-walkthrough + deploy-quiz
 #   make deploy-shared      sync web/shared/ (no build dependency)
 #   make deploy-walkthrough deploy just the walkthrough page
@@ -51,11 +52,17 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
+.PHONY: build test deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
 
 build:
 	cd $(WALKTHROUGH_DIR) && ruby build.rb
 	cd $(QUIZ_DIR) && node build.js
+
+test:
+	node --test $(QUIZ_DIR)/test-citation.mjs
+	# TODO: walkthrough's run-tests-node.mjs and run-dag-cross-verify.mjs are
+	# broken under current Node (ESM/CJS interop). See ROADMAP "Restore
+	# walkthrough Node test runners" before wiring them back in here.
 
 deploy: build deploy-shared deploy-walkthrough deploy-quiz
 
