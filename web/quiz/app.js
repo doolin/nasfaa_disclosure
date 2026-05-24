@@ -215,9 +215,9 @@
   }
 
   function renderPrompt() {
-    if (state.finished) return '[r] restart > ';
-    if (state.revealing) return '[Space/Enter] continue · [r] restart · [q] quit > ';
-    return '[p] permit · [d] deny · [r] restart · [q] quit > ';
+    if (state.finished) return 'Key: [r] restart > ';
+    if (state.revealing) return 'Key: [Space/Enter] continue · [r] restart · [q] quit > ';
+    return 'Key: [p] permit · [d] deny · [r] restart · [q] quit > ';
   }
 
   function render() {
