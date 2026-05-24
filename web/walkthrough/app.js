@@ -5,6 +5,7 @@
   'use strict';
 
   const N = window.Nasfaa;
+  const ARROW = (window.NasfaaGlyphs && window.NasfaaGlyphs.ARROW_SEP) || ' → ';
   const data = window.NASFAA_DATA;
   if (!N || !data) {
     renderUnbuiltNotice();
@@ -102,7 +103,7 @@
 
   function renderPath() {
     const path = walker.path;
-    els.pathList.textContent = path.length === 0 ? '(start)' : path.join(' ⟶ ');
+    els.pathList.textContent = path.length === 0 ? '(start)' : path.join(ARROW);
   }
 
   function showResult() {
@@ -121,11 +122,11 @@
         'Verify:   DAG verdict (' + node.result + ') differs from engine (' +
         engineTrace.result + ' via ' + engineTrace.ruleId + ')';
     } else if (engineTrace.ruleId === node.rule_id) {
-      verifyLine = 'Verified: engine and DAG both ⟶ ' + node.rule_id;
+      verifyLine = 'Verified: engine and DAG both' + ARROW + node.rule_id;
     } else {
       verifyLine =
-        'Verified: same verdict (' + node.result + '); engine first-match ⟶ ' +
-        engineTrace.ruleId + ', DAG ⟶ ' + node.rule_id;
+        'Verified: same verdict (' + node.result + '); engine first-match' +
+        ARROW + engineTrace.ruleId + ', DAG' + ARROW + node.rule_id;
     }
 
     els.resultBox.innerHTML =

@@ -145,7 +145,8 @@
       const devLines = [
         escapeHtml(boxLine('')),
         escapeHtml(boxLine('Rule:     ' + node.rule_id)),
-        escapeHtml(boxLine('Path:     ' + (pathIds || []).join(' ⟶ '))),
+        escapeHtml(boxLine('Path:     ' + (pathIds || []).join(
+          (global.NasfaaGlyphs && global.NasfaaGlyphs.ARROW_SEP) || ' → '))),
       ];
       if (verifyLine) devLines.push(escapeHtml(boxLine(verifyLine)));
       out.push('<span class="dev">' + devLines.join('\n') + '</span>');
