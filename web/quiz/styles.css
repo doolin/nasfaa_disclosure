@@ -68,6 +68,9 @@ body {
 #screen .correct   { color: var(--color-permit); font-weight: 700; }
 #screen .incorrect { color: var(--color-deny);   font-weight: 700; }
 
+#screen .citation-link { color: var(--color-accent); text-decoration: underline; }
+#screen .citation-link:hover { text-decoration: none; }
+
 .banner {
   text-align: center;
   margin-bottom: 1rem;

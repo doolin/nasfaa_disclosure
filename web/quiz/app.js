@@ -38,6 +38,45 @@
     return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   }
 
+  // Citation linker. Citation strings chain semicolon-separated references
+  // belonging to one of three legal bodies: HEA (U.S. Code Title 20), IRC
+  // (U.S. Code Title 26), and FERPA (34 CFR Part 99). A body name "sticks"
+  // to subsequent chunks until a new body is named, mirroring how the
+  // citations are written in nasfaa_scenarios.yml ("HEA §1090(a); §1098h").
+  const CITATION_BODIES = [
+    { name: 'HEA',          url: 'https://www.law.cornell.edu/uscode/text/20/' },
+    { name: 'IRC',          url: 'https://www.law.cornell.edu/uscode/text/26/' },
+    { name: 'FERPA 34 CFR', url: 'https://www.ecfr.gov/current/title-34/section-' },
+  ];
+  const SECTION_RE = /§(\d+[a-z]*(?:\.\d+)?)((?:\([a-zA-Z0-9]+\))*)/g;
+
+  function linkifyCitation(escapedText) {
+    let currentBody = null;
+    return escapedText.split(';').map((chunk) => {
+      const trimmed = chunk.trimStart();
+      for (const body of CITATION_BODIES) {
+        if (trimmed.startsWith(body.name)) { currentBody = body; break; }
+      }
+      if (!currentBody) return chunk;
+      return chunk.replace(SECTION_RE, (match, section) => {
+        const href = currentBody.url + section;
+        return `<a class="citation-link" href="${href}" target="_blank" rel="noopener">${match}</a>`;
+      });
+    }).join(';');
+  }
+
+  // Render a box line that needs HTML inside it (e.g. citation links).
+  // Word-wraps using the plain text length so padding stays correct after
+  // <a> tags are injected.
+  function renderCitationBoxLine(text) {
+    const lines = BD.wrapText(text, BD.INNER_WIDTH);
+    return lines.map((line) => {
+      const pad = ' '.repeat(Math.max(BD.INNER_WIDTH - line.length, 0));
+      const html = linkifyCitation(escapeHtml(line));
+      return '│ ' + html + pad + ' │';
+    }).join('\n');
+  }
+
   function formatInputs(inputs) {
     const keys = Object.keys(inputs);
     if (keys.length === 0) return [];
@@ -84,16 +123,18 @@
     return out.join('\n');
   }
 
+  // Returns HTML (not plain text) so the citation line can carry <a> tags.
+  // render() does not re-escape this output.
   function renderReveal(q) {
     const out = [];
-    out.push(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.'));
-    out.push(BD.boxLine(`Answer:   ${q.expectedResult}`));
-    out.push(BD.boxLine(`Rule:     ${q.ruleId}`));
+    out.push(escapeHtml(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.')));
+    out.push(escapeHtml(BD.boxLine(`Answer:   ${q.expectedResult}`)));
+    out.push(escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)));
     if (q.citation) {
-      out.push(BD.boxLine(`Citation: ${q.citation}`));
+      out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
     }
-    out.push(BD.boxLine(`Score:    ${state.correct}/${state.total}`));
-    out.push(BD.boxBottom());
+    out.push(escapeHtml(BD.boxLine(`Score:    ${state.correct}/${state.total}`)));
+    out.push(escapeHtml(BD.boxBottom()));
     return out.join('\n');
   }
 
@@ -122,25 +163,27 @@
   }
 
   function render() {
-    const parts = [];
-    parts.push(renderScoreBanner());
-    parts.push('');
+    // Parts that are already HTML (renderReveal) are not re-escaped; plain
+    // text parts get escaped here.
+    const htmlParts = [];
+    htmlParts.push(escapeHtml(renderScoreBanner()));
+    htmlParts.push('');
 
     if (state.finished) {
-      parts.push(renderFinal());
+      htmlParts.push(escapeHtml(renderFinal()));
       footer = '';
     } else {
       const q = state.current();
-      parts.push(renderQuestion(q));
+      htmlParts.push(escapeHtml(renderQuestion(q)));
       if (state.revealing) {
-        parts.push('');
-        parts.push(renderReveal(q));
+        htmlParts.push('');
+        htmlParts.push(renderReveal(q));
       }
     }
     if (promptText) promptText.textContent = renderPrompt();
     if (promptLine) promptLine.style.display = '';
 
-    screen.innerHTML = escapeHtml(parts.join('\n'))
+    screen.innerHTML = htmlParts.join('\n')
       .replace('CORRECT!', '<span class="correct">CORRECT!</span>')
       .replace('INCORRECT.', '<span class="incorrect">INCORRECT.</span>');
     // Scroll to bottom so the cursor + prompt stay in view on small screens.
