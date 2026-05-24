@@ -10,3 +10,9 @@
  */
 
 .dev { color: var(--color-dev); }
+
+/* Generic label emphasis — bold the "Foo:" prefix on a body line so the
+ * eye lands on the field name. Used by both quiz and walkthrough for
+ * Answer:/Citation:/Score: etc. (Lives here rather than in its own file
+ * because it's a one-liner.) */
+.label { font-weight: 700; }

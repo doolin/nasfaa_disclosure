@@ -67,8 +67,7 @@ body {
 
 #screen .correct   { color: var(--color-permit); font-weight: 700; }
 #screen .incorrect { color: var(--color-deny);   font-weight: 700; }
-#screen .label     { font-weight: 700; }
-/* .dev moved to web/shared/dev.css */
+/* .dev and .label moved to web/shared/dev.css */
 
 #screen .score-low  { color: var(--color-deny); }
 #screen .score-mid  { color: var(--color-caution); }

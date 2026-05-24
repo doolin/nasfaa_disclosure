@@ -139,12 +139,13 @@
     const out = [top];
     out.push(escapeHtml(boxLine(node.message)));
     out.push(escapeHtml(boxLine('')));
-    out.push(renderCitationBoxLine('Citation: ' + node.citation));
+    out.push(renderCitationBoxLine('Citation: ' + node.citation)
+      .replace('Citation:', '<span class="label">Citation:</span>'));
     if (devMode) {
       const devLines = [
         escapeHtml(boxLine('')),
         escapeHtml(boxLine('Rule:     ' + node.rule_id)),
-        escapeHtml(boxLine('Path:     ' + (pathIds || []).join(' -> '))),
+        escapeHtml(boxLine('Path:     ' + (pathIds || []).join(' ⟶ '))),
       ];
       if (verifyLine) devLines.push(escapeHtml(boxLine(verifyLine)));
       out.push('<span class="dev">' + devLines.join('\n') + '</span>');
