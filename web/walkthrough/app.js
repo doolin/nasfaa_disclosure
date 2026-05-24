@@ -69,7 +69,7 @@
     mode = 'question';
     const node = walker.currentNode();
     els.questionBox.textContent = N.BoxDraw.renderQuestionBox(node);
-    els.promptText.textContent = '[y/n/q] > ';
+    els.promptText.textContent = 'Key: [y] yes · [n] no · [q] quit > ';
     els.resultArea.hidden = true;
     els.questionArea.hidden = false;
     renderPath();
@@ -113,7 +113,7 @@
   function showQuit() {
     mode = 'quit';
     els.questionBox.textContent = 'Walkthrough ended. Press [r] to restart.';
-    els.promptText.textContent = '[r] restart > ';
+    els.promptText.textContent = 'Key: [r] restart > ';
   }
 
   function restart() {
