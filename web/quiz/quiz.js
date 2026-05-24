@@ -36,6 +36,7 @@
       expectedResult: scenario.expected.result,
       ruleId: scenario.expected.rule_id,
       citation: scenario.citation || null,
+      resultContext: scenario.result_context || null,
     };
   }
 

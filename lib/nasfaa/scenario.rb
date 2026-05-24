@@ -9,12 +9,13 @@ module Nasfaa
   Scenario = Struct.new(
     :id,              # Machine-readable identifier (e.g., "student_views_own_fti")
     :name,            # Human-readable title (e.g., "Student Views Own Tax Return Information")
-    :description,     # Narrative description of the real-world situation
+    :description,     # Narrative description of the situation (no answer telegraph)
     :inputs,          # Hash of boolean DisclosureData fields (Symbol keys)
     :expected_result, # Expected outcome (:permit, :deny, :permit_with_scope, :permit_with_caution)
     :expected_rule_id, # ID of the YAML rule that should fire
     :citation,        # Governing statute or regulation
     :tags,            # Array of category strings for filtering
+    :result_context,  # Optional Hash { 'flavor' => String, 'case_studies' => [{title, year, summary, url}, ...] }
     keyword_init: true
   )
 
@@ -85,7 +86,8 @@ module Nasfaa
         expected_result: raw['expected']['result'].to_sym,
         expected_rule_id: raw['expected']['rule_id'],
         citation: raw['citation'],
-        tags: raw['tags'] || []
+        tags: raw['tags'] || [],
+        result_context: raw['result_context']
       )
     end
     private_class_method :build_scenario

@@ -117,6 +117,55 @@
     return out.join('\n');
   }
 
+  function urlDomain(url) {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch (_e) {
+      return url;
+    }
+  }
+
+  // Renders the post-answer flavor paragraph + linked case studies inside
+  // the existing reveal box. Returns an array of pre-rendered box lines
+  // (mix of escaped plain text + HTML with anchors injected). The caller
+  // splices these between the citation line and the score line.
+  function renderResultContextLines(rc) {
+    if (!rc) return [];
+    const out = [];
+    out.push(escapeHtml(BD.boxLine()));
+    if (rc.flavor) {
+      out.push(escapeHtml(BD.boxLine(rc.flavor.trim())));
+    }
+    const cases = Array.isArray(rc.case_studies) ? rc.case_studies : [];
+    if (cases.length > 0) {
+      out.push(escapeHtml(BD.boxLine()));
+      out.push(
+        escapeHtml(BD.boxLine('Cases:'))
+          .replace('Cases:', '<span class="label">Cases:</span>'),
+      );
+      for (const cs of cases) {
+        const year = cs.year ? ` (${cs.year})` : '';
+        out.push(escapeHtml(BD.boxLine(`  • ${cs.title}${year}`)));
+        if (cs.summary) {
+          // Indent summary lines 4 spaces so they read as a sub-bullet.
+          const wrapped = BD.wrapText(cs.summary, BD.INNER_WIDTH - 4);
+          for (const line of wrapped) {
+            out.push(escapeHtml(BD.boxLine(`    ${line}`)));
+          }
+        }
+        if (cs.url) {
+          const domain = urlDomain(cs.url);
+          const linkBody = `↗ ${domain}`;
+          const lineText = `    ${linkBody}`;
+          const base = escapeHtml(BD.boxLine(lineText));
+          const anchor = `<a class="citation-link" href="${escapeHtml(cs.url)}" target="_blank" rel="noopener">${escapeHtml(linkBody)}</a>`;
+          out.push(base.replace(escapeHtml(linkBody), anchor));
+        }
+      }
+    }
+    return out;
+  }
+
   // Returns HTML (not plain text) so the citation line can carry <a> tags.
   // render() does not re-escape this output.
   function renderReveal(q) {
@@ -125,6 +174,10 @@
     out.push(escapeHtml(BD.boxLine(`Answer:   ${q.expectedResult}`)));
     if (q.citation) {
       out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
+    }
+    // Flavor + case studies (only present on scenario-mode questions).
+    for (const line of renderResultContextLines(q.resultContext)) {
+      out.push(line);
     }
     const scoreLine = escapeHtml(BD.boxLine(`Score:    ${state.correct}/${state.total}`));
     if (state.total > 0) {

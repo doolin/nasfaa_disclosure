@@ -68,12 +68,14 @@ test('shuffle: single-element array unchanged', () => {
 // ──────────────────────────────────────────────────────────────────────
 
 test('quizQuestionFromScenario: full scenario projects all fields', () => {
+  const rc = { flavor: 'why it matters', case_studies: [] };
   const q = quizQuestionFromScenario({
     description: 'A student requests records.',
     name: 'Self-service request',
     inputs: { includes_fti: true, disclosure_to_student: true },
     expected: { result: 'permit', rule_id: 'FTI_R1' },
     citation: 'IRC §6103(l)(13)',
+    result_context: rc,
   });
   assert.deepEqual(q, {
     description: 'A student requests records.',
@@ -82,10 +84,11 @@ test('quizQuestionFromScenario: full scenario projects all fields', () => {
     expectedResult: 'permit',
     ruleId: 'FTI_R1',
     citation: 'IRC §6103(l)(13)',
+    resultContext: rc,
   });
 });
 
-test('quizQuestionFromScenario: missing description/name/inputs/citation collapse to null/{}', () => {
+test('quizQuestionFromScenario: missing optional fields collapse to null/{}', () => {
   const q = quizQuestionFromScenario({
     expected: { result: 'deny', rule_id: 'R_X' },
   });
@@ -93,6 +96,7 @@ test('quizQuestionFromScenario: missing description/name/inputs/citation collaps
   assert.equal(q.name, null);
   assert.deepEqual(q.inputs, {});
   assert.equal(q.citation, null);
+  assert.equal(q.resultContext, null);
 });
 
 // ──────────────────────────────────────────────────────────────────────
