@@ -95,15 +95,15 @@
   }
 
   function renderResultBox(node, pathIds) {
-    const out = [boxHeavyTop()];
-    out.push(boxHeavyLine('RESULT: ' + String(node.result).toUpperCase()));
-    out.push(boxHeavyDivider());
-    out.push(boxHeavyLine(node.message));
-    out.push(boxHeavyLine(''));
-    out.push(boxHeavyLine('Rule:     ' + node.rule_id));
-    out.push(boxHeavyLine('Citation: ' + node.citation));
-    out.push(boxHeavyLine('Path:     ' + (pathIds || []).join(' -> ')));
-    out.push(boxHeavyBottom());
+    const out = [boxTop()];
+    out.push(boxLine('RESULT: ' + String(node.result).toUpperCase()));
+    out.push(boxDivider());
+    out.push(boxLine(node.message));
+    out.push(boxLine(''));
+    out.push(boxLine('Rule:     ' + node.rule_id));
+    out.push(boxLine('Citation: ' + node.citation));
+    out.push(boxLine('Path:     ' + (pathIds || []).join(' -> ')));
+    out.push(boxBottom());
     return out.join('\n');
   }
 
