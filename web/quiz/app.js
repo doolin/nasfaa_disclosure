@@ -16,6 +16,13 @@
   const promptLine = document.getElementById('prompt-line');
   const promptText = document.getElementById('prompt-text');
   const touchControls = document.getElementById('touch-controls');
+  const devBadge = document.getElementById('dev-badge');
+
+  // Dev mode: toggled by Shift+D. When on, the question card shows the raw
+  // input bag and the reveal shows the rule_id, and `j` opens a scenario
+  // jump prompt. Hidden by default — these are debugging tools that detract
+  // from the normal quiz UX.
+  let devMode = false;
 
   // ── URL params ─────────────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
@@ -122,16 +129,20 @@
         out.push(BD.boxDivider());
       }
       out.push(BD.boxLine(q.description.trim()));
-      out.push(BD.boxLine());
-      out.push(BD.boxLine('Inputs:'));
+      if (devMode) {
+        out.push(BD.boxLine());
+        out.push(BD.boxLine('Inputs:'));
+        for (const line of formatInputs(q.inputs)) {
+          out.push(BD.boxLine(line));
+        }
+      }
     } else {
+      // Random mode has no description — the input bag IS the question.
       out.push(BD.boxLine('Given the following disclosure parameters:'));
       out.push(BD.boxLine());
-    }
-    for (const line of formatInputs(q.inputs)) {
-      out.push(BD.boxLine(line));
-    }
-    if (!q.description) {
+      for (const line of formatInputs(q.inputs)) {
+        out.push(BD.boxLine(line));
+      }
       out.push(BD.boxLine());
       out.push(BD.boxLine('(All other fields are false.)'));
     }
@@ -145,7 +156,9 @@
     const out = [];
     out.push(escapeHtml(BD.boxTop(state.lastWasCorrect ? 'CORRECT!' : 'INCORRECT.')));
     out.push(escapeHtml(BD.boxLine(`Answer:   ${q.expectedResult}`)));
-    out.push(escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)));
+    if (devMode) {
+      out.push(escapeHtml(BD.boxLine(`Rule:     ${q.ruleId}`)));
+    }
     if (q.citation) {
       out.push(renderCitationBoxLine(`Citation: ${q.citation}`));
     }
@@ -236,11 +249,53 @@
     startQuiz(data);
   }
 
+  function toggleDevMode() {
+    devMode = !devMode;
+    if (devBadge) {
+      if (devMode) devBadge.removeAttribute('hidden');
+      else devBadge.setAttribute('hidden', '');
+    }
+    if (state) render();
+  }
+
+  // Jump to a scenario by 1-based index in the canonical scenarios.json order
+  // (not the current shuffled order). Rebuilds state so the chosen scenario
+  // is question 1, with the remaining scenarios in canonical order after it.
+  function handleJump() {
+    if (!devMode) return;
+    const data = window.NASFAA_QUIZ_DATA;
+    if (!data || !data.scenarios) return;
+    const scenarios = data.scenarios.scenarios;
+    const input = window.prompt(`Jump to scenario (1-${scenarios.length}):`);
+    if (input === null) return;
+    const n = parseInt(input, 10);
+    if (!Number.isFinite(n) || n < 1 || n > scenarios.length) return;
+    const reordered = scenarios.slice(n - 1).concat(scenarios.slice(0, n - 1));
+    const Quiz = window.NasfaaQuiz;
+    const newQuestions = reordered.map(Quiz.quizQuestionFromScenario);
+    state = new Quiz.QuizState(newQuestions);
+    render();
+  }
+
   function onKeyDown(ev) {
     // Don't fight browser shortcuts.
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
 
     const k = ev.key;
+
+    // Hidden dev-mode toggle (Shift+D). Checked before the plain 'D' = deny
+    // branch so Shift+D doesn't double-fire as a deny answer.
+    if (k === 'D' && ev.shiftKey) {
+      toggleDevMode();
+      ev.preventDefault();
+      return;
+    }
+    if ((k === 'j' || k === 'J') && devMode) {
+      handleJump();
+      ev.preventDefault();
+      return;
+    }
+
     if (k === 'p' || k === 'P') {
       handleAnswer('permit');
       ev.preventDefault();
