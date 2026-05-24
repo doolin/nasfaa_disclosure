@@ -74,9 +74,9 @@ scenarios:
       access to student FTI data to verify income for repayment plan
       purposes. Although the servicer works on financial aid administration,
       they have not been formally designated as a school official with
-      legitimate educational interest in the institution's FERPA policy.
-      Without LEI, the FTI disclosure is denied even though the purpose
-      is aid-related.
+      Legitimate Educational Interest (LEI) in the institution's FERPA
+      policy. Without LEI, the FTI disclosure is denied even though the
+      purpose is aid-related.
     inputs:
       includes_fti: true
       used_for_aid_admin: true
@@ -157,8 +157,8 @@ scenarios:
       package. This is the core use case for FAFSA data. Per the PDF, aid
       admin (Box 5 Yes) routes through the FERPA school official check
       (Box 12); since the aid office staff have been designated as school
-      officials with legitimate educational interest, the disclosure is
-      permitted under §99.31(a)(1).
+      officials with Legitimate Educational Interest (LEI), the disclosure
+      is permitted under §99.31(a)(1).
     inputs:
       is_fafsa_data: true
       used_for_aid_admin: true
@@ -174,7 +174,7 @@ scenarios:
     description: >
       A staff member uses FAFSA data for aid administration (Box 5 Yes) and
       forwards the data to a third party who has NOT been designated a
-      school official with legitimate educational interest in the
+      school official with Legitimate Educational Interest (LEI) in the
       institution's FERPA notification. Per the PDF, aid admin alone does
       not authorize disclosure — Box 5 Yes routes to Box 12 (LEI check),
       and without LEI or another §99.31 exception the disclosure is denied.
@@ -338,7 +338,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R2_school_official_LEI
-    citation: "FERPA 34 CFR §99.31(a)(1) — school official with legitimate educational interest"
+    citation: "FERPA 34 CFR §99.31(a)(1) — school official with Legitimate Educational Interest (LEI)"
     tags: [ferpa, school_official, permit]
 
   - id: court_subpoena_for_student_records
