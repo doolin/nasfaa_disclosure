@@ -127,7 +127,7 @@
     out.push(escapeHtml(BD.boxLine()));
     if (q.description) {
       if (q.name) {
-        out.push(escapeHtml(BD.boxLine(q.name)));
+        out.push(`<span class="scenario-name">${escapeHtml(BD.boxCenterLine(q.name))}</span>`);
         out.push(escapeHtml(BD.boxDivider()));
       }
       out.push(escapeHtml(BD.boxLine(q.description.trim())));

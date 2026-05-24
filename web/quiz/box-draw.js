@@ -73,6 +73,18 @@
     }).join('\n');
   }
 
+  // Single-line centered variant. Falls back to boxLine wrapping if the
+  // text is wider than INNER_WIDTH (centering multi-line text reads worse
+  // than left-aligned).
+  function boxCenterLine(text) {
+    const t = (text == null) ? '' : String(text);
+    if (t.length > INNER_WIDTH) return boxLine(t);
+    const total = INNER_WIDTH - t.length;
+    const left = Math.floor(total / 2);
+    const right = total - left;
+    return '│ ' + repeat(' ', left) + t + repeat(' ', right) + ' │';
+  }
+
   // ── Heavy style ────────────────────────────────────────────────
 
   function boxHeavyTop() {
@@ -104,6 +116,7 @@
     boxDivider,
     boxBottom,
     boxLine,
+    boxCenterLine,
     boxHeavyTop,
     boxHeavyDivider,
     boxHeavyBottom,

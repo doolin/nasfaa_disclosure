@@ -74,6 +74,8 @@ body {
 #screen .score-mid  { color: var(--color-caution); }
 #screen .score-high { color: var(--color-permit); }
 
+#screen .scenario-name { color: var(--color-accent); font-weight: 700; }
+
 #screen .citation-link { color: var(--color-accent); text-decoration: underline; }
 #screen .citation-link:hover { text-decoration: none; }
 
