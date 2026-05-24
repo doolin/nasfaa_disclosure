@@ -51,7 +51,6 @@
     resultArea: $('result-area'),
     resultBox: $('result-box'),
     questionArea: document.querySelector('.question-area'),
-    touchControls: $('touch-controls'),
     devBadge: $('dev-badge'),
   };
 
@@ -72,11 +71,30 @@
 
   let mode = 'question';
 
+  function promptKey(key, label) {
+    return `<span class="prompt-key" data-key="${key}">${label}</span>`;
+  }
+
+  function questionPromptHtml() {
+    return 'Key: ' + [
+      promptKey('y', '[y] yes'),
+      promptKey('n', '[n] no'),
+      promptKey('q', '[q] quit'),
+    ].join(' · ') + ' > ';
+  }
+
+  // Result + quit prompts: append "[t] tests" only when dev mode is on.
+  function restartPromptHtml() {
+    const items = [promptKey('r', '[r] restart')];
+    if (devMode) items.push(promptKey('t', '[t] tests'));
+    return 'Key: ' + items.join(' · ') + ' > ';
+  }
+
   function showCurrentQuestion() {
     mode = 'question';
     const node = walker.currentNode();
     els.questionBox.textContent = N.BoxDraw.renderQuestionBox(node);
-    els.promptText.textContent = 'Key: [y] yes · [n] no · [q] quit > ';
+    els.promptText.innerHTML = questionPromptHtml();
     els.resultArea.hidden = true;
     els.questionArea.hidden = false;
     renderPath();
@@ -112,7 +130,7 @@
 
     els.resultBox.textContent = N.BoxDraw.renderResultBox(node, result.path) + crossNote;
     els.resultBox.className = 'box result-box ' + node.result;
-    if (els.resultPromptText) els.resultPromptText.textContent = restartPromptText();
+    if (els.resultPromptText) els.resultPromptText.innerHTML = restartPromptHtml();
     els.resultArea.hidden = false;
     els.questionArea.hidden = true;
     renderPath();
@@ -121,14 +139,7 @@
   function showQuit() {
     mode = 'quit';
     els.questionBox.textContent = 'Walkthrough ended. Press [r] to restart.';
-    els.promptText.textContent = restartPromptText();
-  }
-
-  // Result + quit prompts: append "[t] tests" only when dev mode is on.
-  function restartPromptText() {
-    return devMode
-      ? 'Key: [r] restart · [t] tests > '
-      : 'Key: [r] restart > ';
+    els.promptText.innerHTML = restartPromptHtml();
   }
 
   function toggleDevMode() {
@@ -139,9 +150,9 @@
     }
     // Refresh whichever prompt is currently visible so [t] appears/disappears.
     if (mode === 'result' && els.resultPromptText) {
-      els.resultPromptText.textContent = restartPromptText();
+      els.resultPromptText.innerHTML = restartPromptHtml();
     } else if (mode === 'quit') {
-      els.promptText.textContent = restartPromptText();
+      els.promptText.innerHTML = restartPromptHtml();
     }
   }
 
@@ -185,12 +196,13 @@
     handleKey(e.key);
   });
 
-  const touchOnly = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  if (touchOnly) els.touchControls.hidden = false;
-  els.touchControls.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-key]');
-    if (!btn) return;
-    handleKey(btn.dataset.key);
+  // Inline-tappable prompt keys: click on a .prompt-key dispatches the
+  // same handler as its keystroke. Touch-friendly without pill buttons.
+  document.addEventListener('click', (ev) => {
+    const target = ev.target.closest('.prompt-key');
+    if (!target) return;
+    handleKey(target.dataset.key);
+    ev.preventDefault();
   });
 
   showCurrentQuestion();

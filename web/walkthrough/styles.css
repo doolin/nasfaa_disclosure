@@ -160,6 +160,27 @@ body {
   white-space: pre;
 }
 
+/* Inline-tappable key in the prompt line — clicking dispatches the same
+   handler as the keystroke. Subtle hover highlight; on touch devices a
+   dotted underline hints the bracketed words are interactive. */
+.prompt-key {
+  cursor: pointer;
+  padding: 0.1em 0.3em;
+  margin: 0 -0.3em;
+  border-radius: 3px;
+  transition: background-color 0.1s ease-in;
+}
+.prompt-key:hover,
+.prompt-key:active {
+  background: var(--color-accent-tint);
+}
+@media (pointer: coarse) {
+  .prompt-key {
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+  }
+}
+
 .cursor {
   display: inline-block;
   color: var(--color-accent);
@@ -174,31 +195,6 @@ body {
   50%, 100% {
     opacity: 0;
   }
-}
-
-.touch-controls {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.touch-controls button {
-  background: var(--color-accent-tint);
-  border: 1px solid var(--color-accent);
-  color: var(--color-accent);
-  font-family: var(--mono);
-  font-size: 1rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  flex: 1 1 5rem;
-  min-width: 5rem;
-}
-
-.touch-controls button:active {
-  background: var(--color-accent-tint);
-  border-color: var(--color-border-strong);
 }
 
 .footer {

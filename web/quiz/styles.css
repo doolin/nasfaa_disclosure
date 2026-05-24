@@ -145,6 +145,28 @@ body {
   white-space: pre;
 }
 
+/* Inline-tappable key in the prompt line — clicking dispatches the same
+   handler as the corresponding keystroke. Subtle hover highlight; on
+   touch devices a dotted underline hints that the bracketed words are
+   interactive. */
+.prompt-key {
+  cursor: pointer;
+  padding: 0.1em 0.3em;
+  margin: 0 -0.3em;
+  border-radius: 3px;
+  transition: background-color 0.1s ease-in;
+}
+.prompt-key:hover,
+.prompt-key:active {
+  background: var(--color-accent-tint);
+}
+@media (pointer: coarse) {
+  .prompt-key {
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+  }
+}
+
 /* Blinking block cursor — sits inline at the end of the prompt. */
 .cursor {
   display: inline-block;
@@ -156,40 +178,6 @@ body {
 @keyframes blink {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
-}
-
-/* Touch / mobile fallback. Hidden by default; app.js shows on coarse pointer. */
-#touch-controls {
-  display: none;
-  margin-top: 18px;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-#touch-controls button {
-  flex: 1 1 auto;
-  min-width: 6em;
-  padding: 10px 14px;
-  background: transparent;
-  color: var(--color-fg-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-family: var(--mono);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-#touch-controls button:hover,
-#touch-controls button:focus-visible {
-  background: var(--color-accent-tint);
-  border-color: var(--color-accent);
-  color: var(--color-fg);
-  outline: none;
-}
-
-#touch-controls button:active {
-  background: var(--color-accent-tint);
-  border-color: var(--color-border-strong);
 }
 
 @media (max-width: 720px) {
