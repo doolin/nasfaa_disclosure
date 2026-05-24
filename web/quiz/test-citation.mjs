@@ -10,6 +10,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // citation.js is a plain IIFE script that attaches NasfaaCitation to a
 // root object — works under both browser (window) and Node (module.exports).
@@ -180,4 +184,33 @@ test('linkifyCitation: multiple §refs in one chunk all get linked', () => {
   const out = linkify('HEA §1090(a) and §1098h together');
   assert.match(out, /href=".*\/20\/1090"[^>]*>HEA §1090\(a\)<\/a>/);
   assert.match(out, /href=".*\/20\/1098h"[^>]*>§1098h<\/a>/);
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// Environment-guard branch coverage
+//
+// citation.js's IIFE wrapper picks `self` when defined and falls back
+// to `this` (= module.exports under CJS), and its module-exports gate
+// only attaches to root.NasfaaCitation as a side effect under browser
+// scripts. Default Node load covers the CJS arms; this test covers
+// the browser arms by evaluating the source in the current context
+// with the original filename so V8 merges coverage into the same file.
+// ──────────────────────────────────────────────────────────────────────
+
+test('browser arm: IIFE picks `self` and falls through to root.NasfaaCitation', () => {
+  const CITATION_PATH = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..', 'shared', 'citation.js',
+  );
+  const src = readFileSync(CITATION_PATH, 'utf8');
+  const savedSelf = globalThis.self;
+  try {
+    globalThis.self = {};
+    vm.runInThisContext(src, { filename: CITATION_PATH });
+    assert.ok(globalThis.self.NasfaaCitation, 'expected attach to self');
+    assert.equal(typeof globalThis.self.NasfaaCitation.linkifyCitation, 'function');
+  } finally {
+    if (savedSelf === undefined) delete globalThis.self;
+    else globalThis.self = savedSelf;
+  }
 });
