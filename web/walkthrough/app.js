@@ -102,8 +102,16 @@
   }
 
   function renderPath() {
-    const path = walker.path;
-    els.pathList.textContent = path.length === 0 ? '(start)' : path.join(ARROW);
+    // walker.path only includes answered questions. In question mode the
+    // current (unanswered) question gets appended with a trailing "?" so
+    // the path display reads "answered → answered → current?". Once the
+    // user answers, the "?" moves to the next current as the path grows.
+    const answered = walker.path;
+    let displayed = answered;
+    if (mode === 'question' && !walker.finished) {
+      displayed = answered.concat([walker.currentId + '?']);
+    }
+    els.pathList.textContent = displayed.length === 0 ? '(start)' : displayed.join(ARROW);
   }
 
   function showResult() {
