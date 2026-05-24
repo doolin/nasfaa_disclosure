@@ -10,18 +10,41 @@
   const CHECK = G.CHECK || '✔';
   const CROSS = G.CROSS || '✘';
 
-  // Human-readable labels for path display. Question ids appear in the
-  // path as terse symbolic names (fti_check, nonfti_fafsa_check, …); the
-  // path display rewrites each id to a short noun phrase so a non-dev
-  // reader can scan the trail. Falls back to the raw id when missing,
-  // which is how new entries get added stepwise.
+  // Human-readable labels for path display. The path encodes both the
+  // question that was asked AND the answer that was given (since the path
+  // *meaning* depends on the branch taken). Each entry has three forms:
+  //
+  //   question — shown for the current (unanswered) question, with "?"
+  //              appended by renderPath (e.g. "Contains FTI?")
+  //   yes      — shown for a prior question the user answered "yes"
+  //   no       — shown for a prior question the user answered "no"
+  //
+  // Missing entries fall through to the raw question id, which is also
+  // how the dev sees what's left to label (stepwise expansion).
+  //
+  // Lives here rather than in nasfaa_questions.yml for fast iteration;
+  // a future commit can lift to YAML if labels stabilize.
   const PATH_LABELS = {
-    fti_check: 'Contains FTI',
-    fti_to_student: 'Release to student',
+    fti_check:      { question: 'Contains FTI', yes: 'Contains FTI', no: 'No FTI' },
+    fti_to_student: { question: 'To student',   yes: 'To student',   no: 'Not to student' },
   };
 
-  function pathLabel(id) {
-    return PATH_LABELS[id] || id;
+  function pathLabel(id, answered) {
+    const entry = PATH_LABELS[id];
+    if (!entry) return id;
+    if (answered === undefined) return entry.question;
+    return answered ? entry.yes : entry.no;
+  }
+
+  // Recovers the yes/no answer for an already-answered path entry by
+  // peeking at the field the question set. Multi-field questions set all
+  // their fields to the same value, so the first field is enough.
+  function answerForPathEntry(id) {
+    const node = walker.nodes[id];
+    if (!node) return undefined;
+    const field = node.field || (node.fields && node.fields[0]);
+    if (!field) return undefined;
+    return walker.inputs[field];
   }
   const data = window.NASFAA_DATA;
   if (!N || !data) {
@@ -124,7 +147,9 @@
     // the path display reads "answered → answered → current?". Once the
     // user answers, the "?" moves to the next current as the path grows.
     // In result mode an outcome mark (✔ or ✘) appends after the path.
-    const answered = walker.path.map(pathLabel);
+    const answered = walker.path.map(function (id) {
+      return pathLabel(id, answerForPathEntry(id));
+    });
     let displayed = answered;
     if (mode === 'question' && !walker.finished) {
       displayed = answered.concat([pathLabel(walker.currentId) + '?']);
