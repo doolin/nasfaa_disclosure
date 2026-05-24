@@ -123,6 +123,16 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* The .stack wraps path + question-area + result-area and sizes to its
+   widest child (the 62-char monospace box). margin: 0 auto centers the
+   whole group; "path:" and "Key:" inside it then sit flush with the
+   box's left border instead of the page edge. */
+.stack {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 .box {
   white-space: pre;
   font-family: var(--mono);
