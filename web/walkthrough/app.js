@@ -9,6 +9,19 @@
   const ARROW = G.ARROW_SEP || ' → ';
   const CHECK = G.CHECK || '✔';
   const CROSS = G.CROSS || '✘';
+
+  // Human-readable labels for path display. Question ids appear in the
+  // path as terse symbolic names (fti_check, nonfti_fafsa_check, …); the
+  // path display rewrites each id to a short noun phrase so a non-dev
+  // reader can scan the trail. Falls back to the raw id when missing,
+  // which is how new entries get added stepwise.
+  const PATH_LABELS = {
+    fti_check: 'Contains FTI',
+  };
+
+  function pathLabel(id) {
+    return PATH_LABELS[id] || id;
+  }
   const data = window.NASFAA_DATA;
   if (!N || !data) {
     renderUnbuiltNotice();
@@ -110,10 +123,10 @@
     // the path display reads "answered → answered → current?". Once the
     // user answers, the "?" moves to the next current as the path grows.
     // In result mode an outcome mark (✔ or ✘) appends after the path.
-    const answered = walker.path;
+    const answered = walker.path.map(pathLabel);
     let displayed = answered;
     if (mode === 'question' && !walker.finished) {
-      displayed = answered.concat([walker.currentId + '?']);
+      displayed = answered.concat([pathLabel(walker.currentId) + '?']);
     }
     if (displayed.length === 0) {
       els.pathList.textContent = '(start)';
