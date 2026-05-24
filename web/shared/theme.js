@@ -63,15 +63,18 @@
 
   /**
    * Rotate through light -> dark -> vt102 -> system -> light.
-   * Determines the next theme based on what's currently stored
-   * (NOT what's currently effective — that way 'system' is a
-   * reachable state in the cycle).
+   *
+   * When a theme is stored, cycle from there. When nothing is stored
+   * yet (first load, following system preference), cycle from the
+   * effective theme so the first click always produces a visible change
+   * — otherwise the first click could resolve `null -> light` while
+   * the system already renders light, looking like a no-op.
    */
   function cycle() {
     var stored = safeGet();
-    var index = CYCLE.indexOf(stored);
-    // If stored is missing or unrecognized, treat as 'system' (null).
-    if (index === -1) index = CYCLE.indexOf(null);
+    var startKey = isValidTheme(stored) ? stored : current();
+    var index = CYCLE.indexOf(startKey);
+    if (index === -1) index = 0;
     var next = CYCLE[(index + 1) % CYCLE.length];
     return set(next);
   }
