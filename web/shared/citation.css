@@ -1,0 +1,15 @@
+/* citation.css — styling for §-reference links produced by
+ * NasfaaCitation.linkifyCitation. Paired with web/shared/citation.js.
+ *
+ * Inline within prose, accent-colored, dotted-underlined; the hover
+ * removes the underline for a subtle "armed" cue without being noisy.
+ */
+
+.citation-link {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.citation-link:hover {
+  text-decoration: none;
+}

@@ -44,46 +44,10 @@
     return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   }
 
-  // Citation linker. Citation strings chain semicolon-separated references
-  // belonging to one of three legal bodies: HEA (U.S. Code Title 20), IRC
-  // (U.S. Code Title 26), and FERPA (34 CFR Part 99). A body name "sticks"
-  // to subsequent chunks until a new body is named, mirroring how the
-  // citations are written in nasfaa_scenarios.yml ("HEA §1090(a); §1098h").
-  const CITATION_BODIES = [
-    { name: 'HEA',   match: /\bHEA\b/,   url: 'https://www.law.cornell.edu/uscode/text/20/' },
-    { name: 'IRC',   match: /\bIRC\b/,   url: 'https://www.law.cornell.edu/uscode/text/26/' },
-    { name: 'FERPA', match: /\bFERPA\b/, url: 'https://www.ecfr.gov/current/title-34/section-' },
-  ];
-  // Matches an optional body prefix followed by §section(subsections), so the
-  // anchor text reads as the whole reference ("FERPA 34 CFR §99.10") rather
-  // than just the bare section ("§99.10").
-  const REF_RE = /(?:(HEA|IRC|FERPA\s+34\s+CFR)\s+)?§(\d+[a-z]*(?:\.\d+)?)((?:\([a-zA-Z0-9]+\))*)/g;
-
-  // Linkify a single escaped citation string. The initialBody seeds the body
-  // context (so a §reference that wraps onto its own line still picks up the
-  // body named on the previous line). Returns { html, finalBody }.
-  function linkifyCitation(escapedText, initialBody) {
-    let currentBody = initialBody || null;
-    const html = escapedText.split(';').map((chunk) => {
-      // Body-only chunks (e.g. "FERPA does not apply…") still need to update
-      // context for any §refs in later chunks.
-      for (const body of CITATION_BODIES) {
-        if (body.match.test(chunk)) { currentBody = body; break; }
-      }
-      return chunk.replace(REF_RE, (match, bodyText, section) => {
-        let body;
-        if (bodyText) {
-          body = CITATION_BODIES.find((b) => b.match.test(bodyText));
-          if (body) currentBody = body;
-        }
-        if (!body) body = currentBody;
-        if (!body) return match;
-        const href = body.url + section;
-        return `<a class="citation-link" href="${href}" target="_blank" rel="noopener">${match}</a>`;
-      });
-    }).join(';');
-    return { html, finalBody: currentBody };
-  }
+  // Citation linker now lives in web/shared/citation.js (loaded via
+  // <script> tag before this file). See that file for the body table,
+  // the §section regex, and the cross-line `finalBody` threading.
+  const { linkifyCitation } = window.NasfaaCitation;
 
   // Render a box line that needs HTML inside it (e.g. citation links).
   // Word-wraps using the plain text length so padding stays correct after

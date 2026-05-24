@@ -100,6 +100,26 @@
     });
   }
 
+  // Wrap a single boxLine around a citation string with <a> tags injected
+  // for each HEA/IRC/FERPA §-reference. Word-wraps using plain-text length
+  // so padding stays right after HTML markup is added. Threads body context
+  // across wrapped lines via NasfaaCitation.linkifyCitation's finalBody.
+  function renderCitationBoxLine(text) {
+    var Citation = (typeof window !== 'undefined' ? window : globalThis).NasfaaCitation;
+    if (!Citation || !Citation.linkifyCitation) {
+      // Linker not loaded — fall back to a plain (escaped) box line.
+      return escapeHtml(boxLine(text));
+    }
+    var lines = wrapText(text, INNER_WIDTH);
+    var body = null;
+    return lines.map(function (line) {
+      var pad = repeat(' ', Math.max(INNER_WIDTH - line.length, 0));
+      var linked = Citation.linkifyCitation(escapeHtml(line), body);
+      body = linked.finalBody;
+      return '│ ' + linked.html + pad + ' │';
+    }).join('\n');
+  }
+
   function resultColorClass(result) {
     if (result === 'permit') return 'result-permit';
     if (result === 'deny') return 'result-deny';
@@ -118,7 +138,7 @@
     const out = [top];
     out.push(escapeHtml(boxLine(node.message)));
     out.push(escapeHtml(boxLine('')));
-    out.push(escapeHtml(boxLine('Citation: ' + node.citation)));
+    out.push(renderCitationBoxLine('Citation: ' + node.citation));
     if (devMode) {
       const devLines = [
         escapeHtml(boxLine('')),
@@ -147,6 +167,7 @@
     boxHeavyLine: boxHeavyLine,
     renderQuestionBox: renderQuestionBox,
     renderResultBox: renderResultBox,
+    renderCitationBoxLine: renderCitationBoxLine,
     escapeHtml: escapeHtml,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

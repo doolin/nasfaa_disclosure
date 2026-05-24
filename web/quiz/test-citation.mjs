@@ -1,53 +1,25 @@
-// test-citation.mjs — Node tests for the citation linkifier in app.js.
+// test-citation.mjs — Node tests for the shared citation linkifier.
 //
-//   node web/quiz/test-citation.mjs
+//   node --test web/quiz/test-citation.mjs
 //
 // Exits 0 on all-pass, 1 on any failure. No npm dependency — uses
-// node:test and node:assert.
-//
-// CAVEAT: the implementation below is a copy of the live one in
-// web/quiz/app.js (escapeHtml, CITATION_BODIES, REF_RE, linkifyCitation).
-// See docs/ROADMAP.md "Extract quiz citation linker" — once extracted to
-// its own module, this file imports the real implementation and the
-// duplication goes away.
+// node:test and node:assert. Imports the live implementation from
+// web/shared/citation.js so the tests cover the real module, not a
+// drift-prone copy.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 
-// ──────────────────────────────────────────────────────────────────────
-// SYNCED FROM web/quiz/app.js — keep in step with the live implementation.
-// ──────────────────────────────────────────────────────────────────────
+// citation.js is a plain IIFE script that attaches NasfaaCitation to a
+// root object — works under both browser (window) and Node (module.exports).
+// Loading it via createRequire keeps the test file ESM while the module
+// stays CJS-compatible.
+const require = createRequire(import.meta.url);
+const { CITATION_BODIES, linkifyCitation } = require('../shared/citation.js');
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-}
-
-const CITATION_BODIES = [
-  { name: 'HEA',   match: /\bHEA\b/,   url: 'https://www.law.cornell.edu/uscode/text/20/' },
-  { name: 'IRC',   match: /\bIRC\b/,   url: 'https://www.law.cornell.edu/uscode/text/26/' },
-  { name: 'FERPA', match: /\bFERPA\b/, url: 'https://www.ecfr.gov/current/title-34/section-' },
-];
-const REF_RE = /(?:(HEA|IRC|FERPA\s+34\s+CFR)\s+)?§(\d+[a-z]*(?:\.\d+)?)((?:\([a-zA-Z0-9]+\))*)/g;
-
-function linkifyCitation(escapedText, initialBody) {
-  let currentBody = initialBody || null;
-  const html = escapedText.split(';').map((chunk) => {
-    for (const body of CITATION_BODIES) {
-      if (body.match.test(chunk)) { currentBody = body; break; }
-    }
-    return chunk.replace(REF_RE, (match, bodyText, section) => {
-      let body;
-      if (bodyText) {
-        body = CITATION_BODIES.find((b) => b.match.test(bodyText));
-        if (body) currentBody = body;
-      }
-      if (!body) body = currentBody;
-      if (!body) return match;
-      const href = body.url + section;
-      return `<a class="citation-link" href="${href}" target="_blank" rel="noopener">${match}</a>`;
-    });
-  }).join(';');
-  return { html, finalBody: currentBody };
 }
 
 // Convenience for tests: just return the html.
