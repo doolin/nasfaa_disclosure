@@ -30,12 +30,14 @@
       <button type="button" id="btn-quit">[Q]uit</button>
     </div>
 
-    <footer class="build-footer">Build: <code id="build-sha">dev</code> &middot; <button
-        type="button"
-        class="theme-toggle inline"
-        onclick="NasfaaTheme.cycle(); document.getElementById('theme-label').textContent = NasfaaTheme.current();"
-        aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button></footer>
+    <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
   </main>
+
+  <button
+      type="button"
+      class="theme-toggle center"
+      onclick="NasfaaTheme.cycle(); document.getElementById('theme-label').textContent = NasfaaTheme.current();"
+      aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button>
 
   <a href="https://blurbpress.com"
      class="shamrock-link"

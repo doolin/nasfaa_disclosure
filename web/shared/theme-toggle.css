@@ -53,6 +53,13 @@
   margin: 0 0.25rem;
 }
 
+/* Centered variant — fixed at bottom-center, between the build footer
+   (bottom-left) and the shamrock link (bottom-right). */
+.theme-toggle.center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 /* Optional theme-name badge — pages may render the current theme name
    inside the button via JS: <span class="theme-toggle__label">vt102</span>.
    Hidden by default unless explicitly added. */
