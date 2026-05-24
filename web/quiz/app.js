@@ -201,7 +201,10 @@
 
     screen.innerHTML = htmlParts.join('\n')
       .replace('CORRECT!', '<span class="correct">CORRECT!</span>')
-      .replace('INCORRECT.', '<span class="incorrect">INCORRECT.</span>');
+      .replace('INCORRECT.', '<span class="incorrect">INCORRECT.</span>')
+      .replace(/\bAnswer:/g,   '<span class="label">Answer:</span>')
+      .replace(/\bCitation:/g, '<span class="label">Citation:</span>')
+      .replace(/\bScore:/g,    '<span class="label">Score:</span>');
     // Scroll to bottom so the cursor + prompt stay in view on small screens.
     window.scrollTo(0, document.body.scrollHeight);
   }
