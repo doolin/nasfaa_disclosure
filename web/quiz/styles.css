@@ -64,8 +64,48 @@ body {
   line-height: 1.35;
 }
 
-/* Blinking block cursor — sits inline at the end of the content. */
-.blinking-cursor {
+.banner {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  margin-bottom: 0.5rem;
+}
+
+.disclaimer {
+  text-align: center;
+  color: var(--color-disclaimer);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Prompt row: sits below #screen, mirrors the walkthrough's .prompt-line. */
+.prompt-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 0.5rem;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.prompt-text {
+  color: var(--color-accent);
+  white-space: pre;
+}
+
+/* Blinking block cursor — sits inline at the end of the prompt. */
+.cursor {
   display: inline-block;
   color: var(--color-accent);
   margin-left: 2px;
@@ -119,7 +159,7 @@ body {
 
 /* Respect users who prefer no motion — kill the blink. */
 @media (prefers-reduced-motion: reduce) {
-  .blinking-cursor { animation: none; opacity: 1; }
+  .cursor { animation: none; opacity: 1; }
 }
 
 .shamrock-link {

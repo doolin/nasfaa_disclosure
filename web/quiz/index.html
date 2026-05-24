@@ -11,13 +11,22 @@
 <body>
   <main id="terminal" aria-label="Quiz terminal">
     <div class="scanlines" aria-hidden="true"></div>
+    <header class="banner">
+      <div class="title">NASFAA DISCLOSURE QUIZ</div>
+      <div class="disclaimer">For Entertainment Purposes Only</div>
+      <div class="subtitle" id="subtitle"></div>
+    </header>
     <pre id="screen" role="log" aria-live="polite">Loading…</pre>
-    <span id="cursor" class="blinking-cursor" aria-hidden="true">▌</span>
+    <div id="prompt-line" class="prompt-line">
+      <span id="prompt-text" class="prompt-text"></span>
+      <span id="cursor" class="cursor" aria-hidden="true">▌</span>
+    </div>
 
     <div id="touch-controls" aria-hidden="true">
       <button type="button" id="btn-permit">[P]ermit</button>
       <button type="button" id="btn-deny">[D]eny</button>
       <button type="button" id="btn-advance">[Space] Next</button>
+      <button type="button" id="btn-restart">[R]estart</button>
       <button type="button" id="btn-quit">[Q]uit</button>
     </div>
 
