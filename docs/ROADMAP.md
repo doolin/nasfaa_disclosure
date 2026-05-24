@@ -218,6 +218,8 @@ The four blockers listed at the top of this document. Each has its own working n
 
 **Acceptance:** a non-developer reading any result card can summarize the outcome in one sentence without consulting the rule_id.
 
+**Also fixed by this gate:** long rule IDs overflow the box border in the quiz reveal card. Example: `FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction` (66 chars) blows past the 58-char inner width and bleeds the right `│`. The box-draw `wrap_text` (Ruby and JS ports both) intentionally lets single words overflow rather than truncating, so this won't go away until rule IDs stop being the user-facing label. Once `label:` lands and the reveal renders the human label instead of the rule_id, the overflow disappears for free.
+
 ### PDF text matching
 
 See [§ PDF text fidelity audit](#additional-ideas-worth-considering) under Additional Ideas. Audit `pdf_text:` on every question node + every result node `message:` field against the canonical PDF; either bring them to verbatim parity or add a `--pdf-text`-style toggle on the web pages. Already partially done in the CLI (`bin/nasfaa walkthrough --pdf-text` populates `pdf_text:`). The web pages need their own verbatim-mode toggle and a drift check that flags divergence in CI.
@@ -245,6 +247,8 @@ Phase 1.5 (Rule Engine + Audit Trail + Verification) ✅
 ---
 
 ## Additional Ideas Worth Considering
+
+- **Revisit `permit_with_caution` (and `permit_with_scope`) semantics**: Both currently collapse to a plain "permit" in the quiz's `isCorrect` and render with the same color/styling as outright permits in the walkthrough/quiz. Open questions: should the quiz treat caution/scope as a distinct correct answer (e.g. a third button, or a "you got the permit but missed the caveat" partial-credit)? Does the reveal copy adequately surface the caveat that triggered the caution? Are there rules currently emitting `permit_with_caution` that should be a hard `deny` (or vice versa) under a stricter read of the PDF? Audit the firing rules, the message text on each, and the user-facing presentation as one bundled pass.
 
 - **Citation fields on question nodes**: Add a `citation:` field to question nodes in `nasfaa_questions.yml` (currently only result nodes carry citations). Enables the walkthrough and evaluate modes to surface the regulatory authority for each question, not just the final result. Regulatory text is publicly available — e.g., the FERPA exceptions gating Box 10 are at https://www.ecfr.gov/current/title-34/subtitle-A/part-99/subpart-D/section-99.31 — so citations can link directly to eCFR rather than paywalled summary documents.
 
