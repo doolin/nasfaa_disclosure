@@ -100,11 +100,22 @@
     });
   }
 
+  function resultColorClass(result) {
+    if (result === 'permit') return 'result-permit';
+    if (result === 'deny') return 'result-deny';
+    return 'result-caution'; // permit_with_caution / permit_with_scope
+  }
+
   // Returns HTML (not plain text) so dev-only Rule + Path lines can be
-  // wrapped in <span class="dev">. The caller sets via innerHTML.
+  // wrapped in <span class="dev"> and the result-type word in the top
+  // border can be colored. The caller sets via innerHTML.
   function renderResultBox(node, pathIds, opts) {
     const devMode = !!(opts && opts.devMode);
-    const out = [escapeHtml(boxTop(String(node.result).toUpperCase()))];
+    const resultWord = String(node.result).toUpperCase();
+    const cls = resultColorClass(node.result);
+    const top = escapeHtml(boxTop(resultWord))
+      .replace(resultWord, '<span class="' + cls + '">' + resultWord + '</span>');
+    const out = [top];
     out.push(escapeHtml(boxLine(node.message)));
     out.push(escapeHtml(boxLine('')));
     out.push(escapeHtml(boxLine('Citation: ' + node.citation)));

@@ -134,18 +134,12 @@ body {
   overflow-x: auto;
 }
 
-.result-box.permit {
-  color: var(--color-permit);
-}
-
-.result-box.deny {
-  color: var(--color-deny);
-}
-
-.result-box.permit_with_caution,
-.result-box.permit_with_scope {
-  color: var(--color-caution);
-}
+/* Result type word in the top border is colored by result class; the box
+   borders themselves stay neutral (--color-fg via the inherited .box rule)
+   to match the quiz's border treatment. */
+.result-permit  { color: var(--color-permit);  font-weight: 700; }
+.result-deny    { color: var(--color-deny);    font-weight: 700; }
+.result-caution { color: var(--color-caution); font-weight: 700; }
 
 .prompt-line {
   display: flex;
