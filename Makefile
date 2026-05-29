@@ -56,7 +56,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build text-verify test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey time-analysis deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -97,6 +97,12 @@ test-coverage:
 # for untested JS modules. See .claude/skills/coverage-survey/SKILL.md.
 survey:
 	bin/coverage-survey
+
+# Regenerate docs/time-spent.md from git history.  Re-run any time the
+# session table or churn numbers are stale; see the section at the
+# bottom of the generated file for the heuristic + its limitations.
+time-analysis:
+	bin/time-analysis > docs/time-spent.md
 
 deploy: build deploy-shared deploy-walkthrough deploy-quiz deploy-about
 

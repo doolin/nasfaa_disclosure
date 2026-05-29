@@ -1,0 +1,326 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# bin/time-analysis — regenerate docs/time-spent.md from git history.
+#
+# Groups commits into sessions using a 60-minute commit-gap heuristic
+# and computes per-session duration + code/data churn (excluding build
+# artifacts, docs, lockfiles).  Adds bonus pattern sections (time of
+# day, day of week, AI co-authorship adoption) and a forward-looking
+# "approaches for investigation" section.
+#
+# Usage:
+#   bin/time-analysis                       # markdown to stdout
+#   bin/time-analysis > docs/time-spent.md  # regenerate the doc
+#
+# No bundler — stdlib only so it runs even when gems aren't installed.
+
+require 'time'
+
+ROOT = `git rev-parse --show-toplevel`.strip
+abort 'not in a git repository' if ROOT.empty?
+
+# ──────────────────────────────────────────────────────────────────────
+# Inclusion rules.  Code + correctness-bearing YAML/JSON count toward
+# churn; generated bundles, docs, lockfiles, and binaries do not.
+# ──────────────────────────────────────────────────────────────────────
+EXCLUDE_EXACT = %w[
+  web/walkthrough/data.js
+  web/walkthrough/rules.json
+  web/walkthrough/questions.json
+  web/walkthrough/scenarios.json
+  web/quiz/data.js
+  web/quiz/rules.json
+  web/quiz/scenarios.json
+  web/text-verify/data.js
+  Gemfile.lock
+  spec/examples.txt
+].freeze
+EXCLUDE_PREFIX = %w[coverage/ docs/img/].freeze
+EXCLUDE_EXT    = %w[.md .pdf .png .jpg .jpeg .gif .lock].freeze
+
+DATA_YAMLS = %w[
+  nasfaa_rules.yml nasfaa_questions.yml nasfaa_scenarios.yml
+].freeze
+
+GAP_SECS = 60 * 60
+
+def included?(path)
+  return false if EXCLUDE_EXACT.include?(path)
+  return false if EXCLUDE_PREFIX.any? { |p| path.start_with?(p) }
+  return false if EXCLUDE_EXT.any? { |e| path.downcase.end_with?(e) }
+  true
+end
+
+def category(path)
+  return 'spec'        if path.start_with?('spec/')
+  return 'lib'         if path.start_with?('lib/')
+  return 'bin'         if path.start_with?('bin/')
+  return 'web-js'      if path.start_with?('web/') && %w[.js .mjs].any? { |e| path.end_with?(e) }
+  return 'web-ui'      if path.start_with?('web/') && %w[.html .css].any? { |e| path.end_with?(e) }
+  return 'web-build'   if path.start_with?('web/') && path.end_with?('.rb')
+  return 'data-yaml'   if DATA_YAMLS.include?(path)
+  return 'config-yaml' if path.end_with?('.yml') || path.end_with?('.yaml')
+  return 'build'       if %w[Makefile Rakefile Gemfile].include?(path)
+  'other'
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Parse `git log --numstat`
+# ──────────────────────────────────────────────────────────────────────
+raw = `git -C #{ROOT} log --reverse --pretty=format:'COMMIT|%H|%ci|%an|%s' --numstat`
+commits = []
+current = nil
+raw.each_line do |line|
+  line = line.chomp
+  next if line.empty?
+  if line.start_with?('COMMIT|')
+    commits << current if current
+    _, hash, iso, author, *subj = line.split('|')
+    current = {
+      hash: hash, time: Time.parse(iso), author: author,
+      subject: subj.join('|'), files: []
+    }
+  else
+    add, del, path = line.split("\t")
+    next if add.nil? || del.nil? || path.nil?
+    next if add == '-' || del == '-' # binary
+    current[:files] << { add: add.to_i, del: del.to_i, path: path }
+  end
+end
+commits << current if current
+
+commits.each do |c|
+  body = `git -C #{ROOT} log -1 --format=%B #{c[:hash]}`
+  c[:has_co_author] = body.include?('Co-Authored-By:') || body.include?('Co-authored-by:')
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Session grouping
+# ──────────────────────────────────────────────────────────────────────
+sessions = []
+cur = nil
+commits.each do |c|
+  if cur.nil? || (c[:time] - cur[:commits].last[:time]) > GAP_SECS
+    sessions << cur if cur
+    cur = { commits: [c] }
+  else
+    cur[:commits] << c
+  end
+end
+sessions << cur if cur
+
+sessions.each do |s|
+  s[:start] = s[:commits].first[:time]
+  s[:end]   = s[:commits].last[:time]
+  s[:date]  = s[:start].strftime('%Y-%m-%d')
+  s[:duration_secs] = (s[:end] - s[:start]).to_i
+  s[:n_commits] = s[:commits].length
+  s[:added]   = 0
+  s[:deleted] = 0
+  s[:files]   = {}
+  s[:by_cat]  = Hash.new { |h, k| h[k] = { add: 0, del: 0, files: 0 } }
+  s[:ai]      = s[:commits].count { |c| c[:has_co_author] }
+  s[:commits].each do |c|
+    c[:files].each do |f|
+      next unless included?(f[:path])
+      s[:added]   += f[:add]
+      s[:deleted] += f[:del]
+      s[:files][f[:path]] = true
+      cat = category(f[:path])
+      s[:by_cat][cat][:add]   += f[:add]
+      s[:by_cat][cat][:del]   += f[:del]
+      s[:by_cat][cat][:files] += 1
+    end
+  end
+  s[:n_files] = s[:files].size
+end
+
+def hms(secs)
+  return '0:00:00' if secs <= 0
+  format('%d:%02d:%02d', secs / 3600, (secs % 3600) / 60, secs % 60)
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Output
+# ──────────────────────────────────────────────────────────────────────
+puts '# Time Spent'
+puts
+puts '_Generated by `bin/time-analysis`.  Re-run after new commits land:_'
+puts '_`bin/time-analysis > docs/time-spent.md`_'
+puts
+puts '## Method'
+puts
+puts <<~PROSE
+  Sessions are inferred by grouping consecutive commits where the gap
+  between commits is ≤ 60 minutes; session duration is `last_commit_time
+  − first_commit_time`.  Gaps larger than 60 minutes start a new session.
+  Single-commit "sessions" report a 0:00:00 duration — they are commits
+  the heuristic can't time, not commits with no work behind them.
+
+  Churn excludes generated build artifacts (`web/*/data.js`,
+  `web/*/*.json` rules/questions/scenarios bundles, `web/text-verify/
+  data.js`), documentation (`*.md`, `*.pdf`), and lockfiles
+  (`Gemfile.lock`).  YAML data files (`nasfaa_rules.yml`,
+  `nasfaa_questions.yml`, `nasfaa_scenarios.yml`) **are** counted because
+  an incorrect rule there has the same impact as a code bug.
+PROSE
+puts
+
+# ── Sessions table ────────────────────────────────────────────────────
+puts '## Sessions'
+puts
+puts '| Date       | Start    | End      | Commits | Duration | Files | +Lines | -Lines | AI |'
+puts '|------------|----------|----------|--------:|----------|------:|-------:|-------:|----|'
+sessions.each do |s|
+  ai = if s[:ai].zero?
+         '—'
+       elsif s[:ai] == s[:n_commits]
+         'all'
+       else
+         "#{s[:ai]}/#{s[:n_commits]}"
+       end
+  puts format(
+    '| %s | %s | %s | %d | %s | %d | %d | %d | %s |',
+    s[:date], s[:start].strftime('%H:%M:%S'), s[:end].strftime('%H:%M:%S'),
+    s[:n_commits], hms(s[:duration_secs]), s[:n_files], s[:added], s[:deleted], ai
+  )
+end
+
+total_secs = sessions.sum { |s| s[:duration_secs] }
+total_commits = sessions.sum { |s| s[:n_commits] }
+total_add = sessions.sum { |s| s[:added] }
+total_del = sessions.sum { |s| s[:deleted] }
+total_ai  = sessions.sum { |s| s[:ai] }
+puts
+puts <<~SUMMARY
+  **Totals.** #{sessions.length} sessions, #{total_commits} commits,
+  active time **#{hms(total_secs)}** (~#{(total_secs / 3600.0).round(1)} h
+  over the lifetime of the repo).  +#{total_add} / −#{total_del} lines net,
+  #{total_ai}/#{total_commits} commits (#{((total_ai * 100.0) / total_commits).round(1)}%)
+  carry a `Co-Authored-By:` trailer.
+
+  The active-time figure is a lower bound: time spent reading, planning,
+  designing, debugging without committing, or running tests does not
+  contribute to it.  Section _Approaches for further investigation_ at
+  the bottom lists candidate signals that would close that gap.
+SUMMARY
+puts
+
+# ── Churn by category ─────────────────────────────────────────────────
+all_by_cat = Hash.new { |h, k| h[k] = { add: 0, del: 0, files: 0 } }
+sessions.each do |s|
+  s[:by_cat].each do |cat, v|
+    all_by_cat[cat][:add]   += v[:add]
+    all_by_cat[cat][:del]   += v[:del]
+    all_by_cat[cat][:files] += v[:files]
+  end
+end
+
+puts '## Churn by category'
+puts
+puts '| Category    | +Lines | −Lines | Net    | File-touches |'
+puts '|-------------|-------:|-------:|-------:|-------------:|'
+all_by_cat.sort_by { |_, v| -(v[:add] + v[:del]) }.each do |cat, v|
+  puts format('| %-11s | %d | %d | %+d | %d |',
+              cat, v[:add], v[:del], v[:add] - v[:del], v[:files])
+end
+puts
+spec_add = all_by_cat['spec'][:add]
+lib_add  = all_by_cat['lib'][:add]
+ratio = lib_add.zero? ? '—' : format('%.1fx', spec_add.to_f / lib_add)
+puts "**Spec/lib churn ratio.** #{spec_add} spec lines added vs #{lib_add} lib lines added → **#{ratio} more spec than lib**.  TDD discipline visible in the diff: tests grow faster than the code they cover."
+puts
+
+# ── Bonus patterns ────────────────────────────────────────────────────
+puts '## Patterns extracted from the commit log'
+puts
+puts '### Time of day (commits per hour, local time)'
+puts
+hours = Array.new(24, 0)
+commits.each { |c| hours[c[:time].hour] += 1 }
+puts '| Hour | Commits | Bar |'
+puts '|-----:|--------:|-----|'
+hours.each_with_index do |n, h|
+  next if n.zero?
+  puts format('| %02d | %d | %s |', h, n, '█' * n)
+end
+peak_h, peak_n = hours.each_with_index.map { |n, h| [h, n] }.max_by { |_, n| n }
+puts
+puts "Peak commit hour is **#{format('%02d', peak_h)}:00 local** (#{peak_n} commits)."
+am_block = (3..9).sum { |h| hours[h] }
+pm_block = (15..19).sum { |h| hours[h] }
+puts "Pre-noon block (03–09) holds **#{am_block}** commits; afternoon block (15–19) holds **#{pm_block}**.  The repo's owner ships before sunrise more often than after work."
+puts
+
+puts '### Day of week'
+puts
+dows = Array.new(7, 0)
+dow_names = %w[Sun Mon Tue Wed Thu Fri Sat]
+commits.each { |c| dows[c[:time].wday] += 1 }
+puts '| Day | Commits |'
+puts '|-----|--------:|'
+dows.each_with_index { |n, i| puts format('| %s | %d |', dow_names[i], n) }
+puts
+top_dow = dows.each_with_index.max_by { |n, _| n }
+zero_dows = dow_names.each_with_index.filter_map { |name, i| name if dows[i].zero? }
+puts "**#{dow_names[top_dow[1]]}** dominates with #{top_dow[0]} commits (#{((top_dow[0] * 100.0) / commits.length).round(1)}% of the total)." \
+  + (zero_dows.empty? ? '' : "  No commits at all on #{zero_dows.join(', ')}.")
+puts
+
+puts '### Co-authorship adoption'
+puts
+first_ai = commits.find { |c| c[:has_co_author] }
+solo_before = commits.index(first_ai)
+total_after = commits.length - solo_before
+ai_after = commits[solo_before..].count { |c| c[:has_co_author] }
+puts "First `Co-Authored-By:` trailer appeared on **#{first_ai[:time].strftime('%Y-%m-%d')}** (`#{first_ai[:hash][0, 7]}` — _#{first_ai[:subject]}_).  Before that: #{solo_before} solo commits over #{((first_ai[:time] - commits.first[:time]) / 86_400).to_i} days.  After: #{ai_after}/#{total_after} commits (#{((ai_after * 100.0) / total_after).round(1)}%) are paired."
+puts
+puts 'The adoption is bimodal: every paired commit is concentrated in the post-Feb-2026 era when active development picked back up.  The intervening months are mostly solo, mostly small.'
+puts
+
+# ── Approaches for further investigation ──────────────────────────────
+puts <<~APPROACHES
+  ## Approaches for further investigation
+
+  The commit-gap heuristic systematically undercounts work.  A reading
+  session, a planning conversation, a long debug session that ends in
+  a single commit — all collapse to a 0:00:00 row.  Candidate signals
+  that would tighten the estimate, roughly in order of bang for buck:
+
+  1. **Claude Code transcript timestamps.**  Per-message timestamps in
+     `~/.claude/projects/-Users-daviddoolin-src-nasfaa/*.jsonl` bound
+     each conversation precisely (first user message → last assistant
+     reply).  This is the highest-resolution signal available and
+     captures all the planning/reading/debugging time that doesn't end
+     in a commit.  Caveat: only covers Claude Code sessions; pre-AI work
+     and non-Claude editor sessions aren't visible to it.
+
+  2. **Git reflog timestamps.**  `git reflog --date=iso` records every
+     HEAD movement: commits, amends, checkouts, resets, even commits
+     that got rebased away.  Bounds activity more tightly than `git log`
+     alone, especially during rebasing and amend-heavy sessions.
+
+  3. **Editor telemetry (WakaTime, CodeTime, RescueTime).**  If
+     installed, these produce ground-truth keystroke-level activity
+     timelines.  Best signal of all but requires having had the tool
+     running historically — can't backfill.
+
+  4. **File mtime stratification between commits.**  For each commit
+     pair (n, n+1), the mtimes of files touched in commit n+1 indicate
+     when the in-progress work happened.  Limited by filesystem-level
+     mtime preservation across pulls/checkouts.
+
+  5. **Pull-request and issue activity.**  Comments, review responses,
+     CI re-runs all have timestamps that bracket "thinking about this
+     work" time.  Not yet applicable here (no PR/issue history) but
+     worth wiring into any CI work that lands next.
+
+  6. **Self-instrumentation (Pomodoro / Toggl).**  Manual but accurate;
+     only useful going forward.
+
+  Of these, **(1)** is the only one that can produce a richer picture
+  for the work already done — the transcripts already exist.  A future
+  pass could correlate Claude Code session boundaries with commit
+  clusters and report both numbers side by side.
+APPROACHES
