@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Text Verification — NASFAA Decision Tree</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/theme-toggle.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="terminal" aria-label="Text verification">
+
+    <header class="banner">
+      <div class="title">TEXT VERIFICATION</div>
+      <div class="subtitle">Compare nasfaa_questions.yml against the printed PDF; tick off as verified</div>
+      <div class="muted">State persists in browser localStorage. Non-deployable, local-only.</div>
+    </header>
+
+    <section class="toolbar">
+      <div class="counts" id="counts">—</div>
+      <div class="filters">
+        <label><input type="radio" name="filter" value="unverified" checked> unverified</label>
+        <label><input type="radio" name="filter" value="verified"> verified</label>
+        <label><input type="radio" name="filter" value="all"> all</label>
+      </div>
+      <div class="actions">
+        <button type="button" id="export-btn">Export JSON</button>
+        <button type="button" id="reset-btn">Reset all</button>
+      </div>
+    </section>
+
+    <section class="page-block">
+      <h2>Page 1 — Non-FTI Branch (FAFSA / FERPA / HEA)</h2>
+
+      <h3>Questions</h3>
+      <div class="table-scroll">
+        <table class="verify-table">
+          <thead>
+            <tr>
+              <th class="col-box">Box</th>
+              <th class="col-id">ID</th>
+              <th class="col-text">Walkthrough text</th>
+              <th class="col-pdf">PDF text (claimed)</th>
+              <th class="col-notes">Notes</th>
+              <th class="col-check">Verified</th>
+            </tr>
+          </thead>
+          <tbody id="p1-q-body"></tbody>
+        </table>
+      </div>
+
+      <h3>Results</h3>
+      <div class="table-scroll">
+        <table class="verify-table">
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th class="col-rule">Rule ID</th>
+              <th class="col-result">Result</th>
+              <th class="col-msg">Message</th>
+              <th class="col-cite">Citation</th>
+              <th class="col-notes">Notes</th>
+              <th class="col-check">Verified</th>
+            </tr>
+          </thead>
+          <tbody id="p1-r-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page-block">
+      <h2>Page 2 — FTI Branch (IRC §6103)</h2>
+
+      <h3>Questions</h3>
+      <div class="table-scroll">
+        <table class="verify-table">
+          <thead>
+            <tr>
+              <th class="col-box">Box</th>
+              <th class="col-id">ID</th>
+              <th class="col-text">Walkthrough text</th>
+              <th class="col-pdf">PDF text (claimed)</th>
+              <th class="col-notes">Notes</th>
+              <th class="col-check">Verified</th>
+            </tr>
+          </thead>
+          <tbody id="p2-q-body"></tbody>
+        </table>
+      </div>
+
+      <h3>Results</h3>
+      <div class="table-scroll">
+        <table class="verify-table">
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th class="col-rule">Rule ID</th>
+              <th class="col-result">Result</th>
+              <th class="col-msg">Message</th>
+              <th class="col-cite">Citation</th>
+              <th class="col-notes">Notes</th>
+              <th class="col-check">Verified</th>
+            </tr>
+          </thead>
+          <tbody id="p2-r-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <button
+      type="button"
+      class="theme-toggle center"
+      onclick="NasfaaTheme.cycle(); document.getElementById('theme-label').textContent = NasfaaTheme.current();"
+      aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button>
+
+  <script src="../shared/theme.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

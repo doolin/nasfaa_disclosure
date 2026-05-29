@@ -56,7 +56,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -65,6 +65,13 @@ JS_TESTS := $(wildcard web/quiz/test-*.mjs) $(wildcard web/walkthrough/test-*.mj
 build:
 	cd $(WALKTHROUGH_DIR) && ruby build.rb
 	cd $(QUIZ_DIR) && node build.js
+
+# Local-only text-verification page (web/text-verify/).  NOT in the
+# deploy aggregate — this is a working tool for cross-checking the
+# YAML question text against the printed PDF.  Re-run after editing
+# nasfaa_questions.yml; verification state lives in localStorage.
+text-verify:
+	ruby web/text-verify/build.rb
 
 test:
 	node --test $(JS_TESTS)

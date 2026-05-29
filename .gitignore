@@ -57,3 +57,4 @@ web/walkthrough/scenarios.json
 web/quiz/data.js
 web/quiz/rules.json
 web/quiz/scenarios.json
+web/text-verify/data.js
