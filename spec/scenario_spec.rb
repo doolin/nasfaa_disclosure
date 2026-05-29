@@ -95,6 +95,25 @@ RSpec.describe 'Scenario Library' do
         expect(s.expected_result).to eq(:deny)
       end
     end
+
+    it '.reset! clears the cached scenarios so the next .all reloads from YAML' do
+      Nasfaa::Scenarios.all
+      Nasfaa::Scenarios.reset!
+      expect(Nasfaa::Scenarios.instance_variable_get(:@all)).to be_nil
+      expect(Nasfaa::Scenarios.all.length).to be > 0
+    end
+  end
+
+  describe '.build_scenario' do
+    it 'tolerates a missing description (safe-nav else branch)' do
+      raw = {
+        'id' => 'no_desc', 'name' => 'No Description',
+        'inputs' => {}, 'expected' => { 'result' => 'permit', 'rule_id' => 'R' },
+        'citation' => 'C', 'tags' => []
+      }
+      scenario = Nasfaa::Scenarios.send(:build_scenario, raw)
+      expect(scenario.description).to be_nil
+    end
   end
 
   describe 'result type coverage' do

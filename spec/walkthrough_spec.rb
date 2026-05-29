@@ -2,6 +2,7 @@
 
 require 'rspec'
 require 'stringio'
+require 'tempfile'
 require_relative 'spec_helper'
 
 RSpec.describe Nasfaa::Walkthrough do
@@ -544,6 +545,15 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.rule_id).to eq('FTI_R1_student')
       # 'x' is not echoed as a standalone character on its own line
       expect(output.lines.map(&:strip)).not_to include('x')
+    end
+
+    it 'raises Unknown node when @start points to a node id missing from the DAG' do
+      Tempfile.create(['questions', '.yml']) do |f|
+        f.write({ 'start' => 'orphan', 'nodes' => {} }.to_yaml)
+        f.flush
+        walkthrough = described_class.new(input: StringIO.new, output: StringIO.new, questions_path: f.path)
+        expect { walkthrough.run }.to raise_error(RuntimeError, 'Unknown node: orphan')
+      end
     end
 
     it 'raises Unexpected end of input when getch returns nil (exhausted input)' do

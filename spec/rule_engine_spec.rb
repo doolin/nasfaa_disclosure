@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rspec'
+require 'tempfile'
 require_relative 'spec_helper'
 
 RSpec.describe Nasfaa::RuleEngine do
@@ -174,6 +175,23 @@ RSpec.describe Nasfaa::RuleEngine do
     it 'has a catch-all for non-FTI' do
       nonfti_default = engine.rules.find { |r| r['id'] == 'NONFTI_DENY_default' }
       expect(nonfti_default['when_all']).to eq(['!includes_fti'])
+    end
+  end
+
+  describe '#evaluate fall-through' do
+    # The shipped nasfaa_rules.yml has FTI/NONFTI catch-alls so evaluate never
+    # returns nil in production.  Loading a stripped-down rules file proves the
+    # fall-through path still returns nil if a future rules edit drops both
+    # catch-alls.
+    it 'returns nil when no rule matches' do
+      Tempfile.create(['rules', '.yml']) do |f|
+        f.write({ 'rules' => [
+          { 'id' => 'NEVER_MATCHES', 'when_all' => ['nonexistent_field'], 'result' => 'permit' }
+        ] }.to_yaml)
+        f.flush
+        narrow_engine = described_class.new(f.path)
+        expect(narrow_engine.evaluate(Nasfaa::DisclosureData.new)).to be_nil
+      end
     end
   end
 end

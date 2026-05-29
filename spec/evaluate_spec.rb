@@ -283,4 +283,17 @@ RSpec.describe Nasfaa::Evaluate do
       expect(output).not_to include('WARNING: DAG returned')
     end
   end
+
+  # ------------------------------------------------------------------
+  # Walkthrough error pass-through — non-EOF RuntimeError is not swallowed
+  # ------------------------------------------------------------------
+  describe 'walkthrough error pass-through' do
+    it 're-raises a non-EOF RuntimeError from the walkthrough untouched' do
+      fake = instance_double(Nasfaa::Walkthrough)
+      allow(Nasfaa::Walkthrough).to receive(:new).and_return(fake)
+      allow(fake).to receive(:run).and_raise(RuntimeError, 'something else')
+      evaluator = described_class.new('y', output: StringIO.new)
+      expect { evaluator.run }.to raise_error(RuntimeError, 'something else')
+    end
+  end
 end
