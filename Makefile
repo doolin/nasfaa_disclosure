@@ -8,6 +8,7 @@
 #   s3://blurbpress.com/nasfaa/shared/            (canonical theme + tokens, served from web/shared/)
 #   s3://blurbpress.com/nasfaa/disclose-or-not/   (served from web/walkthrough/)
 #   s3://blurbpress.com/nasfaa/disclosure-quiz/   (served from web/quiz/)
+#   s3://blurbpress.com/nasfaa/about/             (served from web/about/ — outline writeup, unlinked)
 #
 # The descriptive leaf names (disclose-or-not, disclosure-quiz) are
 # user-visible URLs chosen for search and human friendliness; the local
@@ -21,10 +22,11 @@
 # Targets:
 #   make build              regenerate data.js + JSON for both pages
 #   make test               run node-side tests for both pages
-#   make deploy             deploy-shared + deploy-walkthrough + deploy-quiz
+#   make deploy             deploy-shared + deploy-walkthrough + deploy-quiz + deploy-about
 #   make deploy-shared      sync web/shared/ (no build dependency)
 #   make deploy-walkthrough deploy just the walkthrough page
 #   make deploy-quiz        deploy just the quiz page
+#   make deploy-about       deploy just the about page (no build dependency)
 #   make dry                show what `make deploy` would upload, change nothing
 #   make verify             curl the deployed pages and check HTTP 200
 #   make clean              remove generated data.js / *.json
@@ -35,10 +37,12 @@ PROFILE  := blurbpress_deploy
 WALKTHROUGH_SUBDIR := nasfaa/disclose-or-not
 QUIZ_SUBDIR        := nasfaa/disclosure-quiz
 SHARED_SUBDIR      := nasfaa/shared
+ABOUT_SUBDIR       := nasfaa/about
 
 WALKTHROUGH_DIR := web/walkthrough
 QUIZ_DIR        := web/quiz
 SHARED_DIR      := web/shared
+ABOUT_DIR       := web/about
 
 # Files in each page directory that are source-only and must NOT ship.
 # *.rb / *.mjs / verify_* are diagnostic; README.md is internal.
@@ -52,7 +56,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz dry verify clean
+.PHONY: build test test-coverage survey deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -87,7 +91,7 @@ test-coverage:
 survey:
 	bin/coverage-survey
 
-deploy: build deploy-shared deploy-walkthrough deploy-quiz
+deploy: build deploy-shared deploy-walkthrough deploy-quiz deploy-about
 
 deploy-shared:
 	aws s3 sync $(SHARED_DIR)/ "s3://$(BUCKET)/$(SHARED_SUBDIR)/" \
@@ -101,6 +105,10 @@ deploy-quiz: build
 	aws s3 sync $(QUIZ_DIR)/ "s3://$(BUCKET)/$(QUIZ_SUBDIR)/" \
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES)
 
+deploy-about:
+	aws s3 sync $(ABOUT_DIR)/ "s3://$(BUCKET)/$(ABOUT_SUBDIR)/" \
+		$(SYNC_FLAGS) $(COMMON_EXCLUDES)
+
 dry: build
 	@echo "=== shared -> s3://$(BUCKET)/$(SHARED_SUBDIR)/ ==="
 	aws s3 sync $(SHARED_DIR)/ "s3://$(BUCKET)/$(SHARED_SUBDIR)/" $(SYNC_FLAGS) --dryrun
@@ -111,6 +119,10 @@ dry: build
 	@echo
 	@echo "=== quiz -> s3://$(BUCKET)/$(QUIZ_SUBDIR)/ ==="
 	aws s3 sync $(QUIZ_DIR)/ "s3://$(BUCKET)/$(QUIZ_SUBDIR)/" \
+		$(SYNC_FLAGS) $(COMMON_EXCLUDES) --dryrun
+	@echo
+	@echo "=== about -> s3://$(BUCKET)/$(ABOUT_SUBDIR)/ ==="
+	aws s3 sync $(ABOUT_DIR)/ "s3://$(BUCKET)/$(ABOUT_SUBDIR)/" \
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES) --dryrun
 
 verify:
@@ -136,6 +148,13 @@ verify:
 	  "https://$(BUCKET)/$(SHARED_SUBDIR)/tokens.css" \
 	  "https://$(BUCKET)/$(SHARED_SUBDIR)/theme.js" \
 	  "https://$(BUCKET)/$(SHARED_SUBDIR)/theme-toggle.css"; do \
+	  code=$$(curl -s -o /dev/null -w "%{http_code}" "$$url"); \
+	  printf "  %-70s %s\n" "$$url" "$$code"; \
+	done
+	@echo "--- about ---"
+	@for url in \
+	  "https://$(BUCKET)/$(ABOUT_SUBDIR)/" \
+	  "https://$(BUCKET)/$(ABOUT_SUBDIR)/index.html"; do \
 	  code=$$(curl -s -o /dev/null -w "%{http_code}" "$$url"); \
 	  printf "  %-70s %s\n" "$$url" "$$code"; \
 	done

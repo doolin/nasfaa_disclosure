@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>About — NASFAA Disclosure Decision Tree</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/theme-toggle.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="terminal" aria-label="About page">
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="banner">
+      <div class="title">ABOUT</div>
+      <div class="disclaimer">For Entertainment Purposes Only</div>
+      <div class="subtitle">NASFAA Data Sharing Decision Tree — methodology, engineering, and sources</div>
+    </header>
+
+    <article class="outline">
+
+      <section>
+        <h2>1. What this is</h2>
+        <p class="intent">One-paragraph description of the two interactive pages (walkthrough + quiz) and what question they answer.</p>
+      </section>
+
+      <section>
+        <h2>2. Why it exists</h2>
+        <p class="intent">Motivation: the NASFAA PDF is authoritative but linear; an interactive tree + scenario quiz makes the rules navigable for aid administrators, registrars, and student-success staff.</p>
+      </section>
+
+      <section>
+        <h2>3. How it works</h2>
+        <ul>
+          <li><strong>Walkthrough</strong> — yes/no traversal of the decision DAG, one question at a time, ending at a permit/deny terminal with citation.</li>
+          <li><strong>Quiz</strong> — 24 real-world scenarios; user predicts permit/deny; reveal shows the firing rule, citation, contextual flavor, and case studies.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. Methodology</h2>
+        <ul>
+          <li><strong>4.1 Rule extraction from the canonical PDF</strong> — how each box in the NASFAA decision tree became an entry in <code>nasfaa_rules.yml</code>.</li>
+          <li><strong>4.2 YAML as single source of truth</strong> — rules + question DAG + scenarios all live in YAML; the engine, CLI, and web pages read from there.</li>
+          <li><strong>4.3 Dual-engine cross-verification</strong> — a declarative <code>RuleEngine</code> and an imperative <code>DecisionTree</code> implement the same logic two different ways; an exhaustive spec verifies they agree on every input combination.</li>
+          <li><strong>4.4 Exhaustive scenario library</strong> — 24 named scenarios cover every rule in the tree; each is checked against both engines on every CI run.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Engineering notes</h2>
+        <ul>
+          <li><strong>5.1 Frontend tooling choices</strong> — why Make over Rake/just/npm; why <code>node:test</code> + <code>--experimental-test-coverage</code> over Vitest; why no TypeScript port.</li>
+          <li><strong>5.2 Coverage survey tool</strong> — <code>bin/coverage-survey</code> reads SimpleCov resultsets and walks the JS tree, flagging weak coverage + duplicate utilities in one report.</li>
+          <li><strong>5.3 Quiz case-study research</strong> — parallel research subagents (one per regulatory area) drafted case-study summaries with strict WebFetch URL verification; main thread did the editorial pass + rewrites.</li>
+          <li><strong>5.4 Test coverage philosophy</strong> — what "100%" buys (regression protection on every code path), what it doesn't (correctness against the PDF), and why both engines exist.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Sources &amp; primary authorities</h2>
+        <ul>
+          <li>NASFAA Data Sharing Decision Tree (PDF) — the canonical source the rules were extracted from.</li>
+          <li>IRC §6103(l)(13) — Federal Tax Information disclosure for student financial aid.</li>
+          <li>FERPA — 20 USC §1232g; 34 CFR Part 99.</li>
+          <li>HEA §483 — FAFSA / FUTURE Act consent and use restrictions.</li>
+          <li>DCL GEN-25-08 and related Dear Colleague Letters cited in the quiz reveals.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. Limitations &amp; disclaimer</h2>
+        <p class="intent">Explicit statement that this is not legal advice, that the rule set reflects a point-in-time reading, and that institutions should verify against current regulations before acting.</p>
+      </section>
+
+      <section>
+        <h2>8. Authors, contributing, reporting errors</h2>
+        <p class="intent">Who built it, the GitHub repository, how to file issues against specific rules or scenarios.</p>
+      </section>
+
+      <section>
+        <h2>9. Versioning &amp; last reviewed</h2>
+        <p class="intent">Build SHA in the footer; eventual rule-set version + per-rule <code>last_reviewed</code> dates (see ROADMAP "Rule-set versioning + last-reviewed date").</p>
+      </section>
+
+    </article>
+
+    <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
+  </main>
+
+  <button
+      type="button"
+      class="theme-toggle center"
+      onclick="NasfaaTheme.cycle(); document.getElementById('theme-label').textContent = NasfaaTheme.current();"
+      aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button>
+
+  <a href="https://blurbpress.com"
+     class="shamrock-link"
+     aria-label="Blurbpress"><span class="shamrock">&#9752;</span> blurbpress.com</a>
+
+  <script src="../shared/theme.js"></script>
+</body>
+</html>

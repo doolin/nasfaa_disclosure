@@ -1,0 +1,128 @@
+/* styles.css — terminal aesthetic for the NASFAA about / writeup page.
+ *
+ * Mirrors web/quiz/styles.css chrome (terminal frame, scanlines, banner,
+ * fixed-position footer + theme toggle + shamrock).  Differs in the body:
+ * the quiz renders into a <pre>; the about page is semantic prose
+ * (<h2> / <p> / <ul>) so it reads as a document while still living
+ * inside the terminal frame.
+ */
+
+:root {
+  --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100%;
+}
+
+body {
+  padding: 16px 12px 48px;
+  overflow-x: auto;
+}
+
+#terminal {
+  position: relative;
+  max-width: 78ch;
+  margin: 0 auto;
+  padding: 16px 22px 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-elevated);
+  background: var(--color-bg-elevated);
+}
+
+.scanlines {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: var(--scanlines-opacity);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-fg-subtle) 0px,
+    var(--color-fg-subtle) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+.banner { text-align: center; margin-bottom: 1.5rem; }
+.title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.subtitle { margin-bottom: 0.5rem; }
+.disclaimer {
+  text-align: center;
+  color: var(--color-disclaimer);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.outline section { margin-bottom: 1.5rem; }
+.outline h2 {
+  color: var(--color-accent);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.02em;
+}
+.outline p, .outline ul { margin: 0.25rem 0; }
+.outline ul { padding-left: 1.5rem; }
+.outline li { margin-bottom: 0.35rem; }
+.outline .intent { color: var(--color-fg-muted); font-style: italic; }
+.outline code {
+  font-family: inherit;
+  color: var(--color-accent);
+  background: var(--color-accent-tint);
+  padding: 0 0.25em;
+  border-radius: 2px;
+}
+
+@media (max-width: 720px) {
+  body { font-size: 12px; padding: 8px 4px 32px; }
+  #terminal { padding: 12px 12px 24px; border-radius: 4px; }
+}
+
+.shamrock-link {
+  position: fixed;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+  text-decoration: none;
+  opacity: 0.6;
+  z-index: 50;
+  font-family: inherit;
+  transition: opacity 0.15s ease-in;
+}
+.shamrock-link:hover { opacity: 1; }
+.shamrock-link .shamrock { color: var(--color-shamrock); }
+
+.build-footer {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+  opacity: 0.6;
+  z-index: 50;
+  font-family: inherit;
+  transition: opacity 0.15s ease-in;
+}
+.build-footer:hover { opacity: 1; }
+.build-footer code { color: var(--color-fg-muted); }
