@@ -23,6 +23,11 @@
   // from the normal quiz UX.
   let devMode = false;
 
+  // Reveal-box case studies are collapsed by default so the box stays
+  // above the fold; [c] (keystroke or click) toggles them in place. Reset
+  // to collapsed on every new reveal — see handleAnswer/handleAdvance.
+  let casesExpanded = false;
+
   // ── URL params ─────────────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   const mode = (params.get('mode') || 'scenario').toLowerCase();
@@ -139,27 +144,37 @@
     const cases = Array.isArray(rc.case_studies) ? rc.case_studies : [];
     if (cases.length > 0) {
       out.push(escapeHtml(BD.boxLine()));
+      // Clickable summary line. The whole line carries data-key="c" so a tap
+      // toggles expansion (see the #screen click listener in bootstrap); the
+      // [c] keystroke does the same. Collapsed-by-default keeps the box short.
+      const marker = casesExpanded ? '▾' : '▸';
+      const hint = casesExpanded ? '[c] hide' : '[c] show';
+      const summaryText = `${marker} Cases (${cases.length})   ${hint}`;
       out.push(
-        escapeHtml(BD.boxLine('Cases:'))
-          .replace('Cases:', '<span class="label">Cases:</span>'),
+        escapeHtml(BD.boxLine(summaryText)).replace(
+          escapeHtml(summaryText),
+          `<span class="prompt-key" data-key="c">${escapeHtml(summaryText)}</span>`,
+        ),
       );
-      for (const cs of cases) {
-        const year = cs.year ? ` (${cs.year})` : '';
-        out.push(escapeHtml(BD.boxLine(`  • ${cs.title}${year}`)));
-        if (cs.summary) {
-          // Indent summary lines 4 spaces so they read as a sub-bullet.
-          const wrapped = BD.wrapText(cs.summary, BD.INNER_WIDTH - 4);
-          for (const line of wrapped) {
-            out.push(escapeHtml(BD.boxLine(`    ${line}`)));
+      if (casesExpanded) {
+        for (const cs of cases) {
+          const year = cs.year ? ` (${cs.year})` : '';
+          out.push(escapeHtml(BD.boxLine(`  • ${cs.title}${year}`)));
+          if (cs.summary) {
+            // Indent summary lines 4 spaces so they read as a sub-bullet.
+            const wrapped = BD.wrapText(cs.summary, BD.INNER_WIDTH - 4);
+            for (const line of wrapped) {
+              out.push(escapeHtml(BD.boxLine(`    ${line}`)));
+            }
           }
-        }
-        if (cs.url) {
-          const domain = urlDomain(cs.url);
-          const linkBody = `↗ ${domain}`;
-          const lineText = `    ${linkBody}`;
-          const base = escapeHtml(BD.boxLine(lineText));
-          const anchor = `<a class="citation-link" href="${escapeHtml(cs.url)}" target="_blank" rel="noopener">${escapeHtml(linkBody)}</a>`;
-          out.push(base.replace(escapeHtml(linkBody), anchor));
+          if (cs.url) {
+            const domain = urlDomain(cs.url);
+            const linkBody = `↗ ${domain}`;
+            const lineText = `    ${linkBody}`;
+            const base = escapeHtml(BD.boxLine(lineText));
+            const anchor = `<a class="citation-link" href="${escapeHtml(cs.url)}" target="_blank" rel="noopener">${escapeHtml(linkBody)}</a>`;
+            out.push(base.replace(escapeHtml(linkBody), anchor));
+          }
         }
       }
     }
@@ -242,11 +257,12 @@
     if (state.finished) {
       keys = [promptKey('r', '[r] restart')];
     } else if (state.revealing) {
-      keys = [
-        promptKey('advance', '[Space/Enter] continue'),
-        promptKey('r', '[r] restart'),
-        promptKey('q', '[q] quit'),
-      ];
+      keys = [promptKey('advance', '[Space/Enter] continue')];
+      if (currentHasCases()) {
+        keys.push(promptKey('c', casesExpanded ? '[c] hide cases' : '[c] cases'));
+      }
+      keys.push(promptKey('r', '[r] restart'));
+      keys.push(promptKey('q', '[q] quit'));
     } else {
       keys = [
         promptKey('p', '[p] permit'),
@@ -258,7 +274,13 @@
     return 'Key: ' + keys.join(' · ') + ' > ';
   }
 
-  function render() {
+  // scrollMode controls where the viewport lands after a re-render:
+  //   undefined → bottom (default: a fresh reveal/question appears at the
+  //               foot of the page, so we follow it down)
+  //   'cases'   → the "Cases" summary line tops the viewport, so toggling
+  //               expansion reveals the cases below it instead of scrolling
+  //               past them to the score line at the bottom.
+  function render(scrollMode) {
     // Parts that are already HTML (renderQuestion, renderReveal) are not
     // re-escaped; plain text parts get escaped here.
     const htmlParts = [];
@@ -285,15 +307,35 @@
       .replace(/\bAnswer:/g,   '<span class="label">Answer:</span>')
       .replace(/\bCitation:/g, '<span class="label">Citation:</span>')
       .replace(/\bScore:/g,    '<span class="label">Score:</span>');
+    if (scrollMode === 'cases') {
+      // Keep the freshly-toggled cases in view: top-align the summary line
+      // rather than scrolling to the bottom (which would push the cases off
+      // the top of the viewport — see handleCases).
+      const summary = screen.querySelector('.prompt-key[data-key="c"]');
+      if (summary && summary.scrollIntoView) {
+        summary.scrollIntoView({ block: 'start' });
+        return;
+      }
+    }
     // Scroll to bottom so the cursor + prompt stay in view on small screens.
     window.scrollTo(0, document.body.scrollHeight);
   }
 
   // ── Input handling ─────────────────────────────────────────────
 
+  // True when the reveal for the current question carries case studies, i.e.
+  // when the [c] toggle is meaningful. Used by both renderPrompt and handleCases.
+  function currentHasCases() {
+    if (!state || !state.revealing) return false;
+    const q = state.current();
+    const rc = q && q.resultContext;
+    return !!(rc && Array.isArray(rc.case_studies) && rc.case_studies.length > 0);
+  }
+
   function handleAnswer(choice) {
     if (state.finished) return;
     if (state.revealing) return;       // Space/Enter handles advance separately
+    casesExpanded = false;             // new reveal starts collapsed
     state.answer(choice);
     render();
   }
@@ -301,8 +343,15 @@
   function handleAdvance() {
     if (state.finished) return;
     if (!state.revealing) return;
+    casesExpanded = false;             // next reveal starts collapsed
     state.advance();
     render();
+  }
+
+  function handleCases() {
+    if (!currentHasCases()) return;
+    casesExpanded = !casesExpanded;
+    render('cases');
   }
 
   function handleQuit() {
@@ -341,6 +390,7 @@
     const Quiz = window.NasfaaQuiz;
     const newQuestions = reordered.map(Quiz.quizQuestionFromScenario);
     state = new Quiz.QuizState(newQuestions);
+    casesExpanded = false;
     render();
   }
 
@@ -378,6 +428,9 @@
     } else if (k === ' ' || k === 'Enter' || k === 'Spacebar') {
       handleAdvance();
       ev.preventDefault();
+    } else if (k === 'c' || k === 'C') {
+      handleCases();
+      ev.preventDefault();
     } else if (k === 'm' || k === 'M') {
       if (window.NasfaaTheme) {
         window.NasfaaTheme.cycle();
@@ -403,6 +456,7 @@
       count: Number.isFinite(countParam) ? countParam : undefined,
     });
     state = new QuizState(questions);
+    casesExpanded = false;
     const subtitleEl = document.getElementById('subtitle');
     if (subtitleEl) subtitleEl.textContent = buildBanner();
     render();
@@ -459,7 +513,19 @@
         else if (key === 'd') handleAnswer('deny');
         else if (key === 'r') handleRestart();
         else if (key === 'q') handleQuit();
+        else if (key === 'c') handleCases();
         else if (key === 'advance') handleAdvance();
+        ev.preventDefault();
+      });
+    }
+
+    // The in-box "▸ Cases (N)" summary is also a .prompt-key (data-key="c"),
+    // so a tap on it toggles expansion just like the prompt-line chip.
+    if (screen) {
+      screen.addEventListener('click', (ev) => {
+        const target = ev.target.closest('.prompt-key');
+        if (!target || target.dataset.key !== 'c') return;
+        handleCases();
         ev.preventDefault();
       });
     }
