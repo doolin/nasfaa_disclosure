@@ -257,9 +257,13 @@
     if (state.finished) {
       keys = [promptKey('r', '[r] restart')];
     } else if (state.revealing) {
-      keys = [promptKey('advance', '[Space/Enter] continue')];
+      // ↵ is the Return-key glyph; kept short so the reveal prompt + [c] cases
+      // chip fits one line inside the frame (Return advances — see onKeyDown).
+      keys = [promptKey('advance', '[Space/↵] continue')];
       if (currentHasCases()) {
-        keys.push(promptKey('c', casesExpanded ? '[c] hide cases' : '[c] cases'));
+        // Constant label — the in-box ▾/▸ marker conveys expanded/collapsed
+        // state, so this stays short to keep the prompt within the frame.
+        keys.push(promptKey('c', '[c] cases'));
       }
       keys.push(promptKey('r', '[r] restart'));
       keys.push(promptKey('q', '[q] quit'));
@@ -271,7 +275,9 @@
         promptKey('q', '[q] quit'),
       ];
     }
-    return 'Key: ' + keys.join(' · ') + ' > ';
+    // Trailing no-break space ( ) glues the cursor to the ">" so the
+    // blinking block never wraps onto its own line when the prompt wraps.
+    return 'Key: ' + keys.join(' · ') + ' > ';
   }
 
   // scrollMode controls where the viewport lands after a re-render:

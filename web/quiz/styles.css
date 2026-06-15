@@ -128,11 +128,10 @@ body {
 
 /* Prompt row: sits below #screen, mirrors the walkthrough's .prompt-line. */
 .prompt-line {
-  display: flex;
-  align-items: center;
-  gap: 0;
+  display: block;
   margin: 0.5rem auto 0;
   width: fit-content;
+  max-width: 100%;          /* never exceed the terminal frame */
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1.35;
@@ -140,7 +139,7 @@ body {
 
 .prompt-text {
   color: var(--color-accent);
-  white-space: pre;
+  white-space: pre-wrap;    /* wrap long prompts at the · separators */
 }
 
 /* Inline-tappable key in the prompt line — clicking dispatches the same
@@ -153,6 +152,7 @@ body {
   margin: 0 -0.3em;
   border-radius: 3px;
   transition: background-color 0.1s ease-in;
+  white-space: nowrap;      /* keep each [k] label intact when the line wraps */
 }
 .prompt-key:hover,
 .prompt-key:active {
