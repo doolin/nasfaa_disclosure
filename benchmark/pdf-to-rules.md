@@ -197,3 +197,8 @@ enumerates). Score = fraction of input vectors whose outcome matches the
 key. A perfect score requires the ordered rule set to be behaviourally
 identical, not merely similar. Mismatches are reported as the input
 vectors that diverge, which localise the offending rule or its ordering.
+
+Run the scorer with `bin/benchmark-rules <candidate.yml>` (or
+`make benchmark CANDIDATE=<candidate.yml>`). For the step-by-step
+procedure of administering this benchmark to an agent, see
+[`onboarding.md`](onboarding.md).

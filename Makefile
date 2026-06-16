@@ -56,7 +56,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build text-verify test test-coverage survey time-analysis timeline deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey time-analysis timeline benchmark deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -110,6 +110,13 @@ time-analysis:
 # to pbcopy and paste into the README, or eyeball after new commits land.
 timeline:
 	bin/timeline
+
+# Score a candidate rules file against the canonical key by behavioural
+# equivalence over the 36,864 input vectors.  See benchmark/pdf-to-rules.md
+# (the agent prompt) and benchmark/onboarding.md (operator runbook).
+#   make benchmark CANDIDATE=benchmark/candidates/your-agent.yml
+benchmark:
+	bin/benchmark-rules $(CANDIDATE)
 
 deploy: build deploy-shared deploy-walkthrough deploy-quiz deploy-about
 

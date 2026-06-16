@@ -1,0 +1,142 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# bin/benchmark-rules — score a candidate rules file against the canonical
+# nasfaa_rules.yml by BEHAVIOURAL EQUIVALENCE.
+#
+# Both rule sets are run through Nasfaa::RuleEngine over every valid input
+# combination (the same 12 core fields x 9 independent configs = 36,864
+# vectors that spec/exhaustive_verification_spec.rb enumerates) and the
+# exact result symbol is compared per vector.  Score = fraction matching.
+#
+# This is the scorer for benchmark/pdf-to-rules.md.  See
+# benchmark/onboarding.md for the step-by-step operator runbook.
+#
+# Usage:
+#   bin/benchmark-rules <candidate.yml>            # score against the key
+#   bin/benchmark-rules <candidate.yml> --key <p>  # compare two arbitrary files
+#   bin/benchmark-rules <candidate.yml> --limit 50 # show up to 50 mismatches
+#
+# Exit status: 0 if the candidate matches the key on every vector, else 1
+# (so it can gate CI).  No bundler — loads the gem's lib directly.
+
+require 'yaml'
+
+ROOT = `git rev-parse --show-toplevel`.strip
+abort 'not in a git repository' if ROOT.empty?
+$LOAD_PATH.unshift File.join(ROOT, 'lib')
+require 'nasfaa/trace'
+require 'nasfaa/disclosure_data'
+require 'nasfaa/rule_engine'
+
+# ── Args ───────────────────────────────────────────────────────────────
+candidate = nil
+key_path  = File.join(ROOT, 'nasfaa_rules.yml')
+limit     = 20
+args = ARGV.dup
+until args.empty?
+  arg = args.shift
+  case arg
+  when '--key'   then key_path = args.shift
+  when '--limit' then limit = args.shift.to_i
+  else candidate = arg
+  end
+end
+
+abort "usage: bin/benchmark-rules <candidate.yml> [--key <path>] [--limit N]" unless candidate
+abort "candidate not found: #{candidate}" unless File.file?(candidate)
+abort "key not found: #{key_path}"         unless File.file?(key_path)
+
+def load_engine(path, label)
+  Nasfaa::RuleEngine.new(path)
+rescue Psych::SyntaxError => e
+  abort "#{label} is not valid YAML: #{e.message}"
+rescue KeyError
+  abort "#{label} has no top-level `rules:` list: #{path}"
+end
+
+key_engine  = load_engine(key_path, 'key')
+cand_engine = load_engine(candidate, 'candidate')
+
+# ── Input space — MIRRORS spec/exhaustive_verification_spec.rb ──────────
+# Keep these in sync with that spec; it is the source of truth for the
+# enumeration.  12 core fields (2^12) x 9 independent configs = 36,864.
+CORE_FIELDS = %i[
+  includes_fti disclosure_to_student is_fafsa_data
+  disclosure_to_contributor_parent_or_spouse used_for_aid_admin
+  disclosure_to_scholarship_org explicit_written_consent
+  research_promote_attendance hea_written_consent
+  contains_pii ferpa_written_consent to_school_official_legitimate_interest
+].freeze
+
+INDEPENDENT_FIELDS = %i[
+  directory_info_and_not_opted_out
+  due_to_judicial_order_or_subpoena_or_financial_aid
+  to_other_school_enrollment_transfer
+  to_authorized_representatives
+  to_research_org_ferpa
+  to_accrediting_agency
+  parent_of_dependent_student
+  otherwise_permitted_under_99_31
+].freeze
+
+INDEPENDENT_CONFIGS = [{}, *INDEPENDENT_FIELDS.map { |f| { f => true } }].freeze
+
+def result_for(engine, data)
+  trace = engine.evaluate(data)
+  trace ? trace.result : :no_match
+end
+
+# ── Compare ────────────────────────────────────────────────────────────
+count = 0
+mismatches = []
+(0...(1 << CORE_FIELDS.length)).each do |bits|
+  core = CORE_FIELDS.each_with_index.with_object({}) do |(field, i), hash|
+    hash[field] = (bits >> i) & 1 == 1
+  end
+  INDEPENDENT_CONFIGS.each do |indep|
+    inputs = core.merge(indep)
+    data = Nasfaa::DisclosureData.new(inputs)
+    key_trace  = key_engine.evaluate(data)
+    cand_trace = cand_engine.evaluate(data)
+    key_result  = key_trace  ? key_trace.result  : :no_match
+    cand_result = cand_trace ? cand_trace.result : :no_match
+    count += 1
+    next if key_result == cand_result
+
+    mismatches << {
+      true_inputs: inputs.select { |_, v| v }.keys,
+      expected: key_result,  expected_rule: key_trace&.rule_id || '(none)',
+      got: cand_result,      got_rule: cand_trace&.rule_id || '(none)'
+    }
+  end
+end
+
+# ── Report ─────────────────────────────────────────────────────────────
+matches = count - mismatches.length
+pct = (matches * 100.0 / count).round(2)
+
+puts "Candidate : #{candidate}"
+puts "Key       : #{key_path}"
+puts "Vectors   : #{count}"
+puts "Matches   : #{matches}"
+puts "Mismatches: #{mismatches.length}"
+puts "Score     : #{pct}%"
+puts
+
+if mismatches.empty?
+  puts 'PASS — behaviourally identical to the key on every input vector.'
+  exit 0
+end
+
+puts "FAIL — first #{[limit, mismatches.length].min} of #{mismatches.length} diverging vectors:"
+puts
+mismatches.first(limit).each do |m|
+  truthy = m[:true_inputs].empty? ? '(all false)' : m[:true_inputs].join(', ')
+  puts "  true inputs : #{truthy}"
+  puts "  expected    : #{m[:expected]} (#{m[:expected_rule]})"
+  puts "  candidate   : #{m[:got]} (#{m[:got_rule]})"
+  puts
+end
+puts "Each line localises the offending candidate rule (or its ordering)."
+exit 1
