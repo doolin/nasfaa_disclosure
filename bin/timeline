@@ -1,0 +1,301 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# bin/timeline — regenerate the per-phase development timeline from git.
+#
+# Classifies every commit into a development PHASE (a theme/aspect of the
+# work) and emits a README-ready "## Timeline" table with per-phase stats:
+# date span, commit count, active hours (60-min commit-gap heuristic),
+# code/data churn, and AI co-authorship share.
+#
+# Classification is SEMANTIC, so it can't be purely mechanical.  This tool
+# uses an ordered ruleset over the commit subject + date, plus an explicit
+# OVERRIDES table for documented judgment calls.  Anything that matches no
+# rule is reported as "unclassified" rather than force-fit into a bucket —
+# when new commits land, re-read the unclassified list and extend the rules
+# or OVERRIDES.  (Sibling of bin/time-analysis; same churn inclusion rules.)
+#
+# Usage:
+#   bin/timeline           # markdown to stdout
+#   bin/timeline | pbcopy  # paste into the README "## Timeline" section
+#
+# No bundler — stdlib only so it runs even when gems aren't installed.
+
+require 'time'
+
+ROOT = `git rev-parse --show-toplevel`.strip
+abort 'not in a git repository' if ROOT.empty?
+
+# ──────────────────────────────────────────────────────────────────────
+# Churn inclusion rules — identical to bin/time-analysis.  Code +
+# correctness-bearing YAML count; generated bundles, docs, lockfiles,
+# and binaries do not.
+# ──────────────────────────────────────────────────────────────────────
+EXCLUDE_EXACT = %w[
+  web/walkthrough/data.js web/walkthrough/rules.json
+  web/walkthrough/questions.json web/walkthrough/scenarios.json
+  web/quiz/data.js web/quiz/rules.json web/quiz/scenarios.json
+  web/text-verify/data.js Gemfile.lock spec/examples.txt
+].freeze
+EXCLUDE_PREFIX = %w[coverage/ docs/img/].freeze
+EXCLUDE_EXT    = %w[.md .pdf .png .jpg .jpeg .gif .lock].freeze
+
+def included?(path)
+  return false if EXCLUDE_EXACT.include?(path)
+  return false if EXCLUDE_PREFIX.any? { |p| path.start_with?(p) }
+  return false if EXCLUDE_EXT.any? { |e| path.downcase.end_with?(e) }
+  true
+end
+
+GAP_SECS = 60 * 60
+
+# ──────────────────────────────────────────────────────────────────────
+# Phase taxonomy (hybrid): the ROADMAP's numbered phases plus
+# empirically-derived thematic phases for cross-cutting work the roadmap
+# doesn't name.  Order here is irrelevant — output rows sort by each
+# phase's first-commit date.
+# ──────────────────────────────────────────────────────────────────────
+PHASES = {
+  phase0: {
+    label: 'Phase 0 — Initial implementation',
+    scope: 'Cursor-era predicates, decision logic, first YAML, FERPA/FTI work',
+    note:  'Pre-gem; no AI co-author trailers in this era'
+  },
+  docs: {
+    label: 'Docs / writeup',
+    scope: 'README, ROADMAP, AGENTS.md, transition/box plans, about outline, time-spent',
+    note:  'Spans the whole project; overlaps every other phase'
+  },
+  phase1: {
+    label: 'Phase 1 — Gem packaging',
+    scope: 'Restructure the flat project into a Ruby gem',
+    note:  'Includes .claude/ gitignore + Gemfile.lock housekeeping'
+  },
+  phase15: {
+    label: 'Phase 1.5 — Rule engine / verification',
+    scope: 'RuleEngine, Trace audit trail, exhaustive 36,864-combo verification, scenario library',
+    note:  'Single-day burst'
+  },
+  phase2: {
+    label: 'Phase 2 — Interactive CLI',
+    scope: 'walkthrough, quiz, evaluate modes',
+    note:  'Largest additive churn relative to commit count'
+  },
+  phase25: {
+    label: 'Phase 2.5 — CLI polish',
+    scope: 'box-draw, color palettes, single-key input, --pdf-text, rich evaluate, banners',
+    note:  '—'
+  },
+  correctness: {
+    label: 'Correctness fixes',
+    scope: 'Box 4/5/7/8/9 transitions + Box 9 PII inversion; YAML↔PDF alignment',
+    note:  'Thematic; deliberately spread across the calendar (overlaps several phases)'
+  },
+  refactor: {
+    label: 'Refactor / quality',
+    scope: 'rubocop/AbcSize cleanup, QuizQuestion struct extraction/decoupling',
+    note:  'Two commits >60 min apart, so active-h reads ~0 (degenerate sessions)'
+  },
+  web: {
+    label: 'Phase 4/5 — Web + hosting',
+    scope: 'Static SPAs, shared tokens/theme, S3/blurbpress deploy, gitignored build artifacts',
+    note:  'Highest churn of any phase; includes the since-deleted Lambda handlers'
+  },
+  webux: {
+    label: 'Web UX convergence',
+    scope: 'style/scheme unification, quiz reveal + case-study rewrite, path labels, citation linking, dev mode, prompt fixes',
+    note:  'Largest by commit count; mostly small hand-edits (low AI %)'
+  },
+  tooling: {
+    label: 'Dev tooling',
+    scope: 'coverage-survey, JS test suites, text-verify, time-analysis, Ruby-coverage restore',
+    note:  'Almost purely additive (test/tool files)'
+  }
+}.freeze
+
+# Documented judgment calls: commit (short-hash prefix) → phase.  These are
+# commits the ordered ruleset would mis-route or can't reach.  See the
+# "Classification notes" the tool prints for the rationale.
+OVERRIDES = {
+  '204badb' => :correctness, # Box 9 PII fix — first Claude-era commit, predates the gem restructure
+  '41353b5' => :correctness, # Box 7 transition fix (committed as a fix; premise later found wrong)
+  '79cf9e6' => :correctness, # Box 4 routing fix (also adds pdf_text, but the fix is the point)
+  'cd57dd2' => :phase1       # .claude/ gitignore + Gemfile.lock — gem housekeeping, no keyword
+}.freeze
+
+def classify(subject, date)
+  OVERRIDES.each { |prefix, phase| return phase if @hash.start_with?(prefix) }
+
+  # 2025 / pre-gem era: docs if it's clearly documentation, else Phase 0.
+  if date < '2026-01-01'
+    return subject =~ /readme|screenshot|time[- ]spent/i ? :docs : :phase0
+  end
+
+  return :tooling if subject =~ /coverage-survey|test-coverage|experimental-test-coverage|test-box-draw|node tests|\.js tests|branch gaps|100% line|restore ruby coverage|time-analysis|text-verify|\bbin\//i
+  return :docs     if subject =~ /\b(readme|roadmap|agents\.md|about|writeup|time[- ]spent|ideas?|appendix|investigation|plan|future-work|release gate|retrospective)\b/i
+  return :correctness if subject =~ /\bbox\s?\d+\b/i && subject =~ /\b(fix|transition|invert|inversion|rout(?:e|ing)|terminate|bypass|gate|swap)\b/i
+  return :refactor if subject =~ /rubocop|abcsize|decouple|extract\s+\w+\s+struct/i
+
+  # Roadmap-numbered phases — keyword/tag-driven, early era only.
+  if date <= '2026-03-16'
+    return :phase15 if subject =~ /\(phase 1\.5/i || subject =~ /rule engine|audit trail|exhaustive verification|scenario library/i
+    return :phase1  if subject =~ /\(phase 1\)/i  || subject =~ /ruby gem/i
+    return :phase2  if subject =~ /\(phase 2[ )]/i || subject =~ /walkthrough mode|quiz mode|evaluate mode/i
+    return :phase25 if subject =~ /\(phase 2\.5\)/i
+    return :phase25 if date >= '2026-02-23' # CLI-polish window through 2026-03-16
+  end
+
+  return :web   if date >= '2026-05-22' && date <= '2026-05-23' # web + hosting window
+  return :webux if date >= '2026-05-24'
+
+  :unclassified
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Parse `git log --numstat` (same shape as bin/time-analysis)
+# ──────────────────────────────────────────────────────────────────────
+raw = `git -C #{ROOT} log --reverse --pretty=format:'COMMIT|%H|%ci|%an|%s' --numstat`
+commits = []
+current = nil
+raw.each_line do |line|
+  line = line.chomp
+  next if line.empty?
+  if line.start_with?('COMMIT|')
+    commits << current if current
+    _, hash, iso, author, *subj = line.split('|')
+    current = { hash: hash, time: Time.parse(iso), author: author, subject: subj.join('|'), files: [] }
+  else
+    add, del, path = line.split("\t")
+    next if add.nil? || del.nil? || path.nil?
+    next if add == '-' || del == '-' # binary
+    current[:files] << { add: add.to_i, del: del.to_i, path: path }
+  end
+end
+commits << current if current
+
+# Co-authorship in one pass: a non-empty Co-Authored-By trailer = AI-paired.
+co = {}
+`git -C #{ROOT} log --pretty=format:'%H|%(trailers:key=Co-Authored-By,valueonly)'`.each_line do |l|
+  h, v = l.chomp.split('|', 2)
+  co[h] = !v.to_s.strip.empty?
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Classify
+# ──────────────────────────────────────────────────────────────────────
+commits.each do |c|
+  @hash = c[:hash][0, 7]
+  c[:date]  = c[:time].strftime('%F')
+  c[:phase] = classify(c[:subject], c[:date])
+  c[:ai]    = co[c[:hash]] ? 1 : 0
+  c[:added]   = c[:files].select { |f| included?(f[:path]) }.sum { |f| f[:add] }
+  c[:deleted] = c[:files].select { |f| included?(f[:path]) }.sum { |f| f[:del] }
+end
+
+unclassified = commits.select { |c| c[:phase] == :unclassified }
+
+# Active hours via 60-min commit-gap sessionization WITHIN a phase's commits.
+def active_hours(phase_commits)
+  sorted = phase_commits.sort_by { |c| c[:time] }
+  secs = 0
+  session_start = nil
+  prev = nil
+  sorted.each do |c|
+    if prev.nil? || (c[:time] - prev[:time]) > GAP_SECS
+      secs += (prev[:time] - session_start).to_i if session_start
+      session_start = c[:time]
+    end
+    prev = c
+  end
+  secs += (prev[:time] - session_start).to_i if session_start
+  (secs / 3600.0).round(2)
+end
+
+# ──────────────────────────────────────────────────────────────────────
+# Aggregate per phase, ordered by first-commit date
+# ──────────────────────────────────────────────────────────────────────
+rows = PHASES.keys.filter_map do |key|
+  cs = commits.select { |c| c[:phase] == key }
+  next if cs.empty?
+  first = cs.min_by { |c| c[:time] }
+  last  = cs.max_by { |c| c[:time] }
+  {
+    key: key,
+    first: first[:time],
+    dates: first[:date] == last[:date] ? first[:date] : "#{first[:date]} → #{last[:date]}",
+    commits: cs.length,
+    hours: active_hours(cs),
+    added: cs.sum { |c| c[:added] },
+    deleted: cs.sum { |c| c[:deleted] },
+    ai: cs.sum { |c| c[:ai] }
+  }
+end.sort_by { |r| r[:first] }
+
+# ──────────────────────────────────────────────────────────────────────
+# Output
+# ──────────────────────────────────────────────────────────────────────
+total = commits.length
+total_ai = commits.sum { |c| c[:ai] }
+span_days = ((commits.max_by { |c| c[:time] }[:time] - commits.min_by { |c| c[:time] }[:time]) / 86_400).to_i
+
+puts '## Timeline'
+puts
+puts '_Generated by `bin/timeline`. Re-run after new commits land; any commit_'
+puts '_matching no rule is listed under "Classification notes" as unclassified._'
+puts
+puts <<~INTRO
+  Every commit is classified into a development phase by its subject line
+  (with an explicit override table for documented judgment calls). Phases
+  are THEMATIC and overlap in calendar time — correctness fixes and docs
+  in particular run alongside the feature phases. Active hours use a
+  60-minute commit-gap session heuristic applied within each phase and are
+  a **lower bound** (reading, planning, and debugging that doesn't end in a
+  commit aren't counted). Churn counts code + correctness-bearing YAML and
+  excludes generated bundles, docs, and lockfiles (same rule as
+  `bin/time-analysis`).
+INTRO
+puts
+puts '| Phase | Scope | Dates | Commits | Active h | Churn (+/−) | AI % | Notes |'
+puts '|-------|-------|-------|--------:|---------:|-------------|-----:|-------|'
+rows.each do |r|
+  meta = PHASES[r[:key]]
+  ai_pct = ((r[:ai] * 100.0) / r[:commits]).round
+  puts format('| %s | %s | %s | %d | %.2f | +%d / −%d | %d%% | %s |',
+              meta[:label], meta[:scope], r[:dates], r[:commits], r[:hours],
+              r[:added], r[:deleted], ai_pct, meta[:note])
+end
+tot_add = rows.sum { |r| r[:added] }
+tot_del = rows.sum { |r| r[:deleted] }
+per_phase_hours = rows.sum { |r| r[:hours] }.round(2)
+repo_hours = active_hours(commits) # whole-repo sessionization (matches bin/time-analysis)
+puts format('| **Totals** | whole repo | %s → %s (%d d) | **%d** | **%.2f** | **+%d / −%d** | **%d%%** | %d phases |',
+            commits.min_by { |c| c[:time] }[:date], commits.max_by { |c| c[:time] }[:date],
+            span_days, total, repo_hours, tot_add, tot_del,
+            ((total_ai * 100.0) / total).round, rows.length)
+puts
+puts <<~HOURNOTE
+  The Totals "Active h" (#{format('%.2f', repo_hours)} h) is whole-repo
+  sessionization. The per-phase figures sum to only #{format('%.2f', per_phase_hours)} h:
+  sessionizing *within* a phase drops the time between consecutive commits
+  that belong to different phases, so interleaved thematic phases
+  (correctness, docs, tooling) lose their share of those gaps. Read each
+  phase's hours as a floor, and the Totals row as the repo-wide floor.
+HOURNOTE
+puts
+puts '### Classification notes'
+puts
+puts 'Documented judgment calls (commit → phase), encoded as overrides in `bin/timeline`:'
+puts
+OVERRIDES.each do |prefix, phase|
+  c = commits.find { |x| x[:hash].start_with?(prefix) }
+  next unless c
+  puts "- `#{prefix}` → **#{PHASES[phase][:label]}** — _#{c[:subject]}_"
+end
+puts
+if unclassified.empty?
+  puts 'All commits are classified — no unclassified commits.'
+else
+  puts "**#{unclassified.length} unclassified commit(s)** — extend the ruleset or OVERRIDES:"
+  puts
+  unclassified.each { |c| puts "- `#{c[:hash][0, 7]}` (#{c[:date]}) — _#{c[:subject]}_" }
+end

@@ -56,7 +56,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build text-verify test test-coverage survey time-analysis deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey time-analysis timeline deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -103,6 +103,13 @@ survey:
 # bottom of the generated file for the heuristic + its limitations.
 time-analysis:
 	bin/time-analysis > docs/time-spent.md
+
+# Print the per-phase development timeline (README "## Timeline" table) to
+# stdout.  Classifies every commit into a thematic phase via an ordered
+# ruleset + override table; flags anything unmatched as unclassified.  Pipe
+# to pbcopy and paste into the README, or eyeball after new commits land.
+timeline:
+	bin/timeline
 
 deploy: build deploy-shared deploy-walkthrough deploy-quiz deploy-about
 
