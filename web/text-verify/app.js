@@ -150,11 +150,13 @@
     if (verifyId) {
       entryFor(verifyId).verified = t.checked;
       saveState();
+      // Leave the row in place — toggling "verified" marks it green via
+      // the row class, it does not hide it.  The filter only re-applies
+      // on an explicit filter change (or reload), so you can tick a row
+      // off without it vanishing out from under you.
       const row = t.closest('tr');
       if (row) row.classList.toggle('verified', t.checked);
-      const filter = document.querySelector('input[name="filter"]:checked').value;
-      if (filter !== 'all') render();
-      else updateCounts();
+      updateCounts();
     }
   });
 

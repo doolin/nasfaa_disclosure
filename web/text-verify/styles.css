@@ -105,8 +105,12 @@ body { padding: 16px 12px 48px; }
   white-space: pre-wrap;
 }
 .verify-table tbody tr:hover { background: var(--color-accent-tint); }
-.verify-table tbody tr.verified { opacity: 0.55; }
+/* Verified rows stay fully visible — marked, not hidden.  A green left
+ * rule plus the green checkbox (below) reads as "done ✓". */
 .verify-table tbody tr.verified td { background: var(--color-bg); }
+.verify-table tbody tr.verified td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--color-permit);
+}
 
 /* Column widths — explicit percentage allocation so free-text
  * columns share the available space evenly.  Notes gets the same
@@ -148,7 +152,7 @@ body { padding: 16px 12px 48px; }
 .result-permit_with_caution { color: var(--color-caution); }
 .result-deny                { color: var(--color-deny); }
 
-.col-check input { transform: scale(1.2); cursor: pointer; }
+.col-check input { transform: scale(1.2); cursor: pointer; accent-color: var(--color-permit); }
 
 .empty {
   color: var(--color-fg-muted);
