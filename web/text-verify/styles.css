@@ -141,10 +141,20 @@ body { padding: 16px 12px 48px; }
   resize: vertical;
 }
 
+/* Identifiers run long (rule ids reach ~68 chars, e.g. FERPA_R6_
+ * research_org_predictive_tests_admin_aid_improve_instruction).  They're
+ * single underscore-joined tokens, so pre-wrap can't break them and they
+ * overflow the fixed-width column.  Break anywhere, and shrink the
+ * monospace a notch so more fits per line.  (col-id is the Questions
+ * tables' sole identifier; col-rule is the Results tables'.) */
+.col-id,
+.col-rule { overflow-wrap: anywhere; }
+
 .col-id code,
 .col-rule code {
   color: var(--color-accent);
   font-family: inherit;
+  font-size: 11px;
 }
 
 .result-permit              { color: var(--color-permit); }

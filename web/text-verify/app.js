@@ -86,7 +86,6 @@
     const entry = entryFor(id);
     const cls = entry.verified ? 'verified' : '';
     return `<tr class="${cls}" data-id="${escapeHtml(id)}">
-      <td class="col-id"><code>${escapeHtml(id)}</code></td>
       <td class="col-rule"><code>${escapeHtml(node.rule_id || '')}</code></td>
       <td class="col-result result-${escapeHtml(node.result || '')}">${escapeHtml(node.result || '')}</td>
       <td class="col-msg">${escapeHtml(node.message || '')}</td>
@@ -131,7 +130,7 @@
     }
 
     const emptyQ = '<tr><td colspan="6" class="empty">— none —</td></tr>';
-    const emptyR = '<tr><td colspan="7" class="empty">— none —</td></tr>';
+    const emptyR = '<tr><td colspan="6" class="empty">— none —</td></tr>';
     document.getElementById('p1-q-body').innerHTML = buckets['p1-q-body'].join('') || emptyQ;
     document.getElementById('p1-r-body').innerHTML = buckets['p1-r-body'].join('') || emptyR;
     document.getElementById('p2-q-body').innerHTML = buckets['p2-q-body'].join('') || emptyQ;
