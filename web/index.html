@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NASFAA Data Sharing Decision Tree</title>
+  <!-- Shared assets resolve to nasfaa/shared/ on the bucket and web/shared/
+       locally because this page lives at the namespace root in both. -->
+  <link rel="stylesheet" href="shared/tokens.css">
+  <link rel="stylesheet" href="shared/theme-toggle.css">
+  <style>
+    /* Landing-page chrome.  Mirrors the terminal frame / banner / footer
+       vocabulary of web/about/styles.css; the body is a short list of
+       links rather than a document or a <pre>. */
+    :root { --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      font-family: var(--mono);
+      font-size: 14px; line-height: 1.45;
+      min-height: 100%;
+    }
+    body { padding: 16px 12px 48px; }
+
+    #terminal {
+      position: relative;
+      max-width: 64ch;
+      margin: 0 auto;
+      padding: 16px 22px 32px;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      box-shadow: var(--shadow-elevated);
+      background: var(--color-bg-elevated);
+    }
+    .scanlines {
+      pointer-events: none;
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      opacity: var(--scanlines-opacity);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        var(--color-fg-subtle) 0px, var(--color-fg-subtle) 1px,
+        transparent 1px, transparent 3px);
+      mix-blend-mode: overlay;
+    }
+
+    .banner { text-align: center; margin-bottom: 1.75rem; }
+    .title {
+      font-weight: 700; font-size: 1.15rem;
+      color: var(--color-accent);
+      letter-spacing: 0.05em; margin-bottom: 0.5rem;
+    }
+    .disclaimer {
+      color: var(--color-disclaimer);
+      font-size: 0.8rem; letter-spacing: 0.05em; margin-bottom: 0.6rem;
+    }
+    .subtitle { color: var(--color-fg-muted); }
+
+    nav.links { display: flex; flex-direction: column; gap: 0.75rem; }
+    a.link-card {
+      display: block;
+      text-decoration: none;
+      color: var(--color-fg);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      background: var(--color-bg);
+      transition: border-color 0.15s ease-in, background 0.15s ease-in;
+    }
+    a.link-card:hover,
+    a.link-card:focus-visible {
+      border-color: var(--color-accent);
+      background: var(--color-accent-tint);
+      outline: none;
+    }
+    a.link-card .card-title {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+    a.link-card .card-title::before { content: "› "; }
+    a.link-card .card-desc {
+      color: var(--color-fg-muted);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Intro prose ("What is this?") below the link cards. */
+    main section { margin-top: 1.75rem; }
+    main section h2 {
+      color: var(--color-accent);
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.02em; margin: 0 0 0.5rem;
+    }
+    main section p { margin: 0.5rem 0; }
+    main section ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+    main section li { margin-bottom: 0.3rem; }
+    main section a { color: var(--color-accent); }
+
+    @media (max-width: 720px) {
+      body { font-size: 12px; padding: 8px 4px 32px; }
+      #terminal { padding: 12px 12px 24px; border-radius: 4px; }
+    }
+
+    /* Footer chrome — identical mechanism to the other pages. */
+    .shamrock-link {
+      position: fixed; bottom: 0.75rem; right: 0.75rem;
+      font-size: 0.75rem; color: var(--color-fg-muted);
+      text-decoration: none; opacity: 0.6; z-index: 50;
+      font-family: inherit; transition: opacity 0.15s ease-in;
+    }
+    .shamrock-link:hover { opacity: 1; }
+    .shamrock-link .shamrock { color: var(--color-shamrock); }
+
+    .build-footer {
+      position: fixed; bottom: 0.75rem; left: 0.75rem;
+      font-size: 0.75rem; color: var(--color-fg-muted);
+      opacity: 0.6; z-index: 50;
+      font-family: inherit; transition: opacity 0.15s ease-in;
+    }
+    .build-footer:hover { opacity: 1; }
+    .build-footer code { color: var(--color-fg-muted); }
+  </style>
+</head>
+<body>
+  <main id="terminal" aria-label="NASFAA Data Sharing Decision Tree — home">
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="banner">
+      <div class="title">NASFAA DATA SHARING DECISION TREE</div>
+      <div class="disclaimer">For Entertainment Purposes Only</div>
+      <div class="subtitle">Is a given disclosure permitted? Pick a tool.</div>
+    </header>
+
+    <nav class="links" aria-label="Pages">
+      <a class="link-card" href="disclose-or-not/">
+        <div class="card-title">Disclose or Not — walkthrough</div>
+        <div class="card-desc">Answer one yes/no question at a time, traversing the decision tree to a permit/deny outcome with its citation.</div>
+      </a>
+      <a class="link-card" href="disclosure-quiz/">
+        <div class="card-title">Disclosure Quiz</div>
+        <div class="card-desc">Predict the outcome of real-world scenarios, then reveal the firing rule, citation, and case studies.</div>
+      </a>
+      <a class="link-card" href="about/">
+        <div class="card-title">About</div>
+        <div class="card-desc">Methodology, engineering notes, and the primary sources the rules were extracted from.</div>
+      </a>
+    </nav>
+
+    <section>
+      <h2>What is this?</h2>
+      <p>
+        Some time in mid-2025 I came across a really cool PDF file distributed
+        by the National Association of Student Financial Aid Administrators: The <a
+        href="https://www.nasfaa.org/uploads/documents/NASFAA_Data_Sharing_Decision_Tree.pdf">
+        NASFAA Data Sharing Decision Tree</a>. It's a graph which enables a financial aid administrator
+        to quickly determine whether financial aid data can be released to a person or
+        entity. The graph encodes rules defined in the Higher Education Act (HEA),
+        the Family Educational Rights and Privacy Act (FERPA), and the Privacy Act.
+      </p>
+      <p>
+        Being a software engineer by trade, and a computer programmer by avocation, it
+        seemed natural and obvious to feed the PDF file into a Large Language Model (ChatGPT)
+        to see if it could derive the rule set for the graph presented in the PDF.
+      </p>
+      <p>
+        To make what turned into a long (and growing) story short: It could not.
+      </p>
+      <p>However, LLM <i>could</i> do a lot with the PDF:</p>
+      <ul>
+        <li>Parse out the text with around 95% accuracy;</li>
+        <li>Determine about 75% of the rule transitions correctly;</li>
+        <li>Create a disclosure walkthrough;</li>
+        <li>Create a disclosure quiz, test your knowledge!</li>
+        <li>Build both terminal applications and web applications for disclosure and quiz;</li>
+        <li>Track development time.</li>
+      </ul>
+      <p>
+        That's pretty good!
+      </p>
+    </section>
+
+    <section>
+      Licence public domain, open source file an issue.
+    </section>
+
+    <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
+  </main>
+
+  <button
+      type="button"
+      class="theme-toggle center"
+      onclick="NasfaaTheme.cycle(); window.updateThemeLabel && window.updateThemeLabel();"
+      aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button>
+
+  <a href="https://blurbpress.com"
+     class="shamrock-link"
+     aria-label="Blurbpress"><span class="shamrock">&#9752;</span> blurbpress.com</a>
+
+  <script src="shared/theme.js"></script>
+  <script src="index.data.js"></script>
+  <script>
+    // Footer build SHA (short form; falls back to the static "dev" if the
+    // generated index.data.js is missing — e.g. a fresh clone before build).
+    (function () {
+      var build = window.NASFAA_INDEX && window.NASFAA_INDEX.build;
+      var shaEl = document.getElementById('build-sha');
+      if (shaEl && build && build.sha) shaEl.textContent = build.sha.slice(0, 7);
+
+      // Render the effective theme name into the toggle, and let [m] cycle —
+      // theme state itself persists across all pages via shared theme.js
+      // (localStorage 'nasfaa-theme' on the common blurbpress.com origin).
+      window.updateThemeLabel = function () {
+        var label = document.getElementById('theme-label');
+        if (label && window.NasfaaTheme) label.textContent = window.NasfaaTheme.current();
+      };
+      window.updateThemeLabel();
+
+      document.addEventListener('keydown', function (ev) {
+        if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+        if (ev.key === 'm' || ev.key === 'M') {
+          if (window.NasfaaTheme) { window.NasfaaTheme.cycle(); window.updateThemeLabel(); }
+          ev.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

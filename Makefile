@@ -5,10 +5,11 @@
 # S3 bucket using the blurbpress_deploy profile.
 #
 # Layout on the bucket:
+#   s3://blurbpress.com/nasfaa/                   (landing page, served from web/index.html)
 #   s3://blurbpress.com/nasfaa/shared/            (canonical theme + tokens, served from web/shared/)
 #   s3://blurbpress.com/nasfaa/disclose-or-not/   (served from web/walkthrough/)
 #   s3://blurbpress.com/nasfaa/disclosure-quiz/   (served from web/quiz/)
-#   s3://blurbpress.com/nasfaa/about/             (served from web/about/ — outline writeup, unlinked)
+#   s3://blurbpress.com/nasfaa/about/             (served from web/about/ — outline writeup)
 #
 # The descriptive leaf names (disclose-or-not, disclosure-quiz) are
 # user-visible URLs chosen for search and human friendliness; the local
@@ -22,7 +23,8 @@
 # Targets:
 #   make build              regenerate data.js + JSON for both pages
 #   make test               run node-side tests for both pages
-#   make deploy             deploy-shared + deploy-walkthrough + deploy-quiz + deploy-about
+#   make deploy             deploy-index + shared + walkthrough + quiz + about
+#   make deploy-index       cp web/index.html landing page to the nasfaa/ root
 #   make deploy-shared      sync web/shared/ (no build dependency)
 #   make deploy-walkthrough deploy just the walkthrough page
 #   make deploy-quiz        deploy just the quiz page
@@ -56,7 +58,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build text-verify test test-coverage survey time-analysis timeline benchmark deploy deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey time-analysis timeline benchmark deploy deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -65,6 +67,7 @@ JS_TESTS := $(wildcard web/quiz/test-*.mjs) $(wildcard web/walkthrough/test-*.mj
 build:
 	cd $(WALKTHROUGH_DIR) && ruby build.rb
 	cd $(QUIZ_DIR) && node build.js
+	ruby web/build-index.rb
 
 # Local-only text-verification page (web/text-verify/).  NOT in the
 # deploy aggregate — this is a working tool for cross-checking the
@@ -118,7 +121,18 @@ timeline:
 benchmark:
 	bin/benchmark-rules $(CANDIDATE)
 
-deploy: build deploy-shared deploy-walkthrough deploy-quiz deploy-about
+deploy: build deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about
+
+# Landing page -> the nasfaa/ namespace ROOT.  Per-file `cp` (NOT
+# `sync --delete`) on purpose: the sibling subdirs (shared/,
+# disclose-or-not/, disclosure-quiz/, about/) live under the same nasfaa/
+# prefix, and a `sync --delete` rooted here would delete them all.  `cp`
+# touches only the two named keys.
+deploy-index: build
+	aws s3 cp web/index.html "s3://$(BUCKET)/nasfaa/index.html" \
+		--cache-control no-store --profile $(PROFILE)
+	aws s3 cp web/index.data.js "s3://$(BUCKET)/nasfaa/index.data.js" \
+		--cache-control no-store --profile $(PROFILE)
 
 deploy-shared:
 	aws s3 sync $(SHARED_DIR)/ "s3://$(BUCKET)/$(SHARED_SUBDIR)/" \
@@ -137,6 +151,12 @@ deploy-about:
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES)
 
 dry: build
+	@echo "=== index -> s3://$(BUCKET)/nasfaa/ (cp, no --delete) ==="
+	aws s3 cp web/index.html "s3://$(BUCKET)/nasfaa/index.html" \
+		--cache-control no-store --profile $(PROFILE) --dryrun
+	aws s3 cp web/index.data.js "s3://$(BUCKET)/nasfaa/index.data.js" \
+		--cache-control no-store --profile $(PROFILE) --dryrun
+	@echo
 	@echo "=== shared -> s3://$(BUCKET)/$(SHARED_SUBDIR)/ ==="
 	aws s3 sync $(SHARED_DIR)/ "s3://$(BUCKET)/$(SHARED_SUBDIR)/" $(SYNC_FLAGS) --dryrun
 	@echo
@@ -153,6 +173,14 @@ dry: build
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES) --dryrun
 
 verify:
+	@echo "--- index (landing) ---"
+	@for url in \
+	  "https://$(BUCKET)/nasfaa/" \
+	  "https://$(BUCKET)/nasfaa/index.html" \
+	  "https://$(BUCKET)/nasfaa/index.data.js"; do \
+	  code=$$(curl -s -o /dev/null -w "%{http_code}" "$$url"); \
+	  printf "  %-70s %s\n" "$$url" "$$code"; \
+	done
 	@echo "--- walkthrough ---"
 	@for url in \
 	  "https://$(BUCKET)/$(WALKTHROUGH_SUBDIR)/" \
@@ -189,3 +217,4 @@ verify:
 clean:
 	rm -f $(WALKTHROUGH_DIR)/data.js $(WALKTHROUGH_DIR)/rules.json $(WALKTHROUGH_DIR)/questions.json $(WALKTHROUGH_DIR)/scenarios.json
 	rm -f $(QUIZ_DIR)/data.js $(QUIZ_DIR)/rules.json $(QUIZ_DIR)/scenarios.json
+	rm -f web/index.data.js

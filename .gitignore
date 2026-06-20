@@ -58,3 +58,4 @@ web/quiz/data.js
 web/quiz/rules.json
 web/quiz/scenarios.json
 web/text-verify/data.js
+web/index.data.js
