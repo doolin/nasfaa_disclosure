@@ -10,6 +10,7 @@
 #   s3://blurbpress.com/nasfaa/disclose-or-not/   (served from web/walkthrough/)
 #   s3://blurbpress.com/nasfaa/disclosure-quiz/   (served from web/quiz/)
 #   s3://blurbpress.com/nasfaa/about/             (served from web/about/ — outline writeup)
+#   s3://blurbpress.com/nasfaa/timeline/          (served from web/timeline/ — development timeline)
 #
 # The descriptive leaf names (disclose-or-not, disclosure-quiz) are
 # user-visible URLs chosen for search and human friendliness; the local
@@ -23,12 +24,13 @@
 # Targets:
 #   make build              regenerate data.js + JSON for both pages
 #   make test               run node-side tests for both pages
-#   make deploy             deploy-index + shared + walkthrough + quiz + about
+#   make deploy             deploy-index + shared + walkthrough + quiz + about + timeline
 #   make deploy-index       cp web/index.html landing page to the nasfaa/ root
 #   make deploy-shared      sync web/shared/ (no build dependency)
 #   make deploy-walkthrough deploy just the walkthrough page
 #   make deploy-quiz        deploy just the quiz page
 #   make deploy-about       deploy just the about page (no build dependency)
+#   make deploy-timeline    deploy just the timeline page (no build dependency)
 #   make dry                show what `make deploy` would upload, change nothing
 #   make verify             curl the deployed pages and check HTTP 200
 #   make clean              remove generated data.js / *.json
@@ -40,11 +42,13 @@ WALKTHROUGH_SUBDIR := nasfaa/disclose-or-not
 QUIZ_SUBDIR        := nasfaa/disclosure-quiz
 SHARED_SUBDIR      := nasfaa/shared
 ABOUT_SUBDIR       := nasfaa/about
+TIMELINE_SUBDIR    := nasfaa/timeline
 
 WALKTHROUGH_DIR := web/walkthrough
 QUIZ_DIR        := web/quiz
 SHARED_DIR      := web/shared
 ABOUT_DIR       := web/about
+TIMELINE_DIR    := web/timeline
 
 # Files in each page directory that are source-only and must NOT ship.
 # *.rb / *.mjs / verify_* are diagnostic; README.md is internal.
@@ -58,7 +62,7 @@ COMMON_EXCLUDES := \
 
 SYNC_FLAGS := --delete --cache-control no-store --profile $(PROFILE)
 
-.PHONY: build text-verify test test-coverage survey time-analysis timeline benchmark deploy deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about dry verify clean
+.PHONY: build text-verify test test-coverage survey time-analysis timeline benchmark deploy deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about deploy-timeline dry verify clean
 
 # All front-end test files (test-*.mjs in web/*/). New tests go here as
 # they're added; the wildcard saves the Makefile from drift.
@@ -121,7 +125,7 @@ timeline:
 benchmark:
 	bin/benchmark-rules $(CANDIDATE)
 
-deploy: build deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about
+deploy: build deploy-index deploy-shared deploy-walkthrough deploy-quiz deploy-about deploy-timeline
 
 # Landing page -> the nasfaa/ namespace ROOT.  Per-file `cp` (NOT
 # `sync --delete`) on purpose: the sibling subdirs (shared/,
@@ -150,6 +154,10 @@ deploy-about:
 	aws s3 sync $(ABOUT_DIR)/ "s3://$(BUCKET)/$(ABOUT_SUBDIR)/" \
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES)
 
+deploy-timeline:
+	aws s3 sync $(TIMELINE_DIR)/ "s3://$(BUCKET)/$(TIMELINE_SUBDIR)/" \
+		$(SYNC_FLAGS) $(COMMON_EXCLUDES)
+
 dry: build
 	@echo "=== index -> s3://$(BUCKET)/nasfaa/ (cp, no --delete) ==="
 	aws s3 cp web/index.html "s3://$(BUCKET)/nasfaa/index.html" \
@@ -170,6 +178,10 @@ dry: build
 	@echo
 	@echo "=== about -> s3://$(BUCKET)/$(ABOUT_SUBDIR)/ ==="
 	aws s3 sync $(ABOUT_DIR)/ "s3://$(BUCKET)/$(ABOUT_SUBDIR)/" \
+		$(SYNC_FLAGS) $(COMMON_EXCLUDES) --dryrun
+	@echo
+	@echo "=== timeline -> s3://$(BUCKET)/$(TIMELINE_SUBDIR)/ ==="
+	aws s3 sync $(TIMELINE_DIR)/ "s3://$(BUCKET)/$(TIMELINE_SUBDIR)/" \
 		$(SYNC_FLAGS) $(COMMON_EXCLUDES) --dryrun
 
 verify:
@@ -210,6 +222,13 @@ verify:
 	@for url in \
 	  "https://$(BUCKET)/$(ABOUT_SUBDIR)/" \
 	  "https://$(BUCKET)/$(ABOUT_SUBDIR)/index.html"; do \
+	  code=$$(curl -s -o /dev/null -w "%{http_code}" "$$url"); \
+	  printf "  %-70s %s\n" "$$url" "$$code"; \
+	done
+	@echo "--- timeline ---"
+	@for url in \
+	  "https://$(BUCKET)/$(TIMELINE_SUBDIR)/" \
+	  "https://$(BUCKET)/$(TIMELINE_SUBDIR)/index.html"; do \
 	  code=$$(curl -s -o /dev/null -w "%{http_code}" "$$url"); \
 	  printf "  %-70s %s\n" "$$url" "$$code"; \
 	done

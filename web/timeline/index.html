@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Development Timeline — NASFAA Disclosure Decision Tree</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/theme-toggle.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="terminal" aria-label="Development timeline">
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="banner">
+      <div class="title">DEVELOPMENT TIMELINE</div>
+      <div class="subtitle">How the work unfolded — and how it was measured</div>
+    </header>
+
+    <article>
+
+      <section>
+        <p>
+          This project started as an experiment: how far could generative-AI
+          tooling get on a real, correctness-sensitive task — turning a NASFAA
+          flowchart PDF into a verified decision engine? Measuring the
+          <em>shape</em> of that effort — what was built, when, how much
+          human-active time it took, and how much carried an AI co-author — is
+          in large part the point of the whole thing. This page is that record,
+          and it is deliberately explicit about how every number is defined and
+          what is still uncertain.
+        </p>
+        <p class="muted">
+          Every figure is derived from <code>git log</code> by
+          <code>bin/timeline</code> (phase table) and <code>bin/time-analysis</code>
+          (the repo-wide hours oracle). The table is a snapshot; regenerate it
+          with <code>make timeline</code> after new commits land.
+        </p>
+      </section>
+
+      <section>
+        <h2>Phases</h2>
+        <p class="muted">
+          Phases are <strong>thematic</strong> and overlap in calendar time —
+          correctness fixes, docs, and tooling run alongside the feature phases.
+          Read each phase's active hours as a floor (see Definitions).
+        </p>
+        <div class="table-scroll">
+          <table class="timeline-table">
+            <thead>
+              <tr>
+                <th class="col-phase">Phase</th>
+                <th class="col-scope">Scope</th>
+                <th class="col-dates">Dates</th>
+                <th class="col-commits">Commits</th>
+                <th class="col-hours">Active h</th>
+                <th class="col-churn">Churn (+/−)</th>
+                <th class="col-ai">AI %</th>
+                <th class="col-notes">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-phase">Phase 0 — Initial implementation</td>
+                <td class="col-scope">Cursor-era predicates, decision logic, first YAML, FERPA/FTI work</td>
+                <td class="col-dates">2025-08-26 → 2025-09-14</td>
+                <td class="col-commits">14</td>
+                <td class="col-hours">4.30</td>
+                <td class="col-churn">+2708 / −1286</td>
+                <td class="col-ai">0%</td>
+                <td class="col-notes">Pre-gem; no AI co-author trailers in this era</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Docs / writeup</td>
+                <td class="col-scope">README, ROADMAP, AGENTS.md, transition/box plans, about outline, time-spent</td>
+                <td class="col-dates">2025-09-13 → 2026-06-16</td>
+                <td class="col-commits">23</td>
+                <td class="col-hours">1.91</td>
+                <td class="col-churn">+278 / −8</td>
+                <td class="col-ai">65%</td>
+                <td class="col-notes">Spans the whole project; overlaps every other phase</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Correctness fixes</td>
+                <td class="col-scope">Box 4/5/7/8/9 transitions + Box 9 PII inversion; YAML↔PDF alignment</td>
+                <td class="col-dates">2026-02-21 → 2026-05-22</td>
+                <td class="col-commits">5</td>
+                <td class="col-hours">0.68</td>
+                <td class="col-churn">+503 / −342</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Thematic; deliberately spread across the calendar</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Phase 1 — Gem packaging</td>
+                <td class="col-scope">Restructure the flat project into a Ruby gem</td>
+                <td class="col-dates">2026-02-21</td>
+                <td class="col-commits">2</td>
+                <td class="col-hours">0.45</td>
+                <td class="col-churn">+432 / −459</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Includes .claude/ gitignore + Gemfile.lock housekeeping</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Phase 1.5 — Rule engine / verification</td>
+                <td class="col-scope">RuleEngine, Trace audit trail, exhaustive 36,864-combo verification, scenario library</td>
+                <td class="col-dates">2026-02-22</td>
+                <td class="col-commits">4</td>
+                <td class="col-hours">0.41</td>
+                <td class="col-churn">+1108 / −42</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Single-day burst</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Phase 2 — Interactive CLI</td>
+                <td class="col-scope">walkthrough, quiz, evaluate modes</td>
+                <td class="col-dates">2026-02-22</td>
+                <td class="col-commits">3</td>
+                <td class="col-hours">1.01</td>
+                <td class="col-churn">+1573 / −8</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Largest additive churn relative to commit count</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Phase 2.5 — CLI polish</td>
+                <td class="col-scope">box-draw, color palettes, single-key input, --pdf-text, rich evaluate, banners</td>
+                <td class="col-dates">2026-02-23 → 2026-03-16</td>
+                <td class="col-commits">14</td>
+                <td class="col-hours">2.81</td>
+                <td class="col-churn">+2010 / −230</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">—</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Refactor / quality</td>
+                <td class="col-scope">rubocop/AbcSize cleanup, QuizQuestion struct extraction/decoupling</td>
+                <td class="col-dates">2026-04-12 → 2026-05-22</td>
+                <td class="col-commits">2</td>
+                <td class="col-hours">0.00</td>
+                <td class="col-churn">+224 / −99</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Two commits &gt;60 min apart, so active-h reads ~0 (degenerate sessions)</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Phase 4/5 — Web + hosting</td>
+                <td class="col-scope">Static SPAs, shared tokens/theme, S3/blurbpress deploy, gitignored build artifacts</td>
+                <td class="col-dates">2026-05-22 → 2026-05-23</td>
+                <td class="col-commits">12</td>
+                <td class="col-hours">1.68</td>
+                <td class="col-churn">+4118 / −1380</td>
+                <td class="col-ai">100%</td>
+                <td class="col-notes">Highest churn of any phase; includes the since-deleted Lambda handlers</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Web UX convergence</td>
+                <td class="col-scope">style/scheme unification, quiz reveal + case-study rewrite, path labels, citation linking, dev mode, prompt fixes</td>
+                <td class="col-dates">2026-05-24 → 2026-06-21</td>
+                <td class="col-commits">53</td>
+                <td class="col-hours">4.39</td>
+                <td class="col-churn">+2379 / −838</td>
+                <td class="col-ai">23%</td>
+                <td class="col-notes">Largest by commit count; mostly small hand-edits (low AI %)</td>
+              </tr>
+              <tr>
+                <td class="col-phase">Dev tooling</td>
+                <td class="col-scope">coverage-survey, JS test suites, text-verify, time-analysis, Ruby-coverage restore</td>
+                <td class="col-dates">2026-05-24 → 2026-06-21</td>
+                <td class="col-commits">19</td>
+                <td class="col-hours">2.26</td>
+                <td class="col-churn">+4034 / −32</td>
+                <td class="col-ai">95%</td>
+                <td class="col-notes">Almost purely additive (test/tool files)</td>
+              </tr>
+              <tr class="totals">
+                <td class="col-phase">Totals</td>
+                <td class="col-scope">whole repo</td>
+                <td class="col-dates">2025-08-26 → 2026-06-21 (298 d)</td>
+                <td class="col-commits">151</td>
+                <td class="col-hours">24.95</td>
+                <td class="col-churn">+19367 / −4724</td>
+                <td class="col-ai">58%</td>
+                <td class="col-notes">11 phases</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">
+          The Totals active hours (24.95 h) is whole-repo sessionization. The
+          per-phase figures sum to only 19.90 h, because sessionizing
+          <em>within</em> a phase drops the time between consecutive commits
+          that belong to different phases. Both are floors; the Totals row is
+          the repo-wide floor.
+        </p>
+      </section>
+
+      <section>
+        <h2>Definitions</h2>
+        <dl class="defs">
+          <dt>Commit</dt>
+          <dd>The atomic unit of measurement. Every figure here is derived from
+            <code>git log</code>; one commit is one row of raw data.</dd>
+
+          <dt>Phase</dt>
+          <dd>A thematic grouping of commits by which aspect of the work they
+            advance (initial implementation, rule engine, CLI, web, tooling, …).
+            Thematic, not chronological — phases overlap in calendar time.</dd>
+
+          <dt>Classification</dt>
+          <dd>Each commit is assigned to exactly one phase by an ordered,
+            first-match ruleset over its subject line, plus an override table
+            for documented judgment calls. A commit matching no rule is reported
+            as <code>unclassified</code> and never force-fit. Currently: 0
+            unclassified.</dd>
+
+          <dt>Active hours</dt>
+          <dd>Within-session wall-clock time: commits are grouped into sessions,
+            each session's duration is (last commit − first commit), and active
+            hours is the sum. A <strong>lower bound</strong> on real effort —
+            time that doesn't end in a commit is invisible.</dd>
+
+          <dt>Session (60-minute gap)</dt>
+          <dd>A run of commits where each is ≤ 60 minutes after the previous. A
+            gap &gt; 60 minutes starts a new session. A commit with no neighbour
+            within 60 minutes is a singleton session contributing ≈ 0 h.</dd>
+
+          <dt>Churn (+/−)</dt>
+          <dd>Lines added / removed, counting source code and
+            correctness-bearing YAML, and excluding generated bundles
+            (<code>web/*/data.js</code>, <code>*.json</code>), docs
+            (<code>*.md</code>, <code>*.pdf</code>), and lockfiles.</dd>
+
+          <dt>AI %</dt>
+          <dd>The fraction of a phase's commits carrying a Claude/AI
+            <code>Co-Authored-By</code> trailer. It is the only machine-readable
+            signal of AI involvement — it sees trailers, nothing else.</dd>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Decisions</h2>
+        <dl class="defs">
+          <dt>Thematic phases over chronological buckets</dt>
+          <dd>The work was not linear: correctness fixes, docs, and tooling run
+            alongside every feature phase. Calendar buckets would scatter one
+            conceptual effort across many; thematic phases keep "the rule
+            engine" or "the web pages" as single readable units — at the cost of
+            overlapping date ranges.</dd>
+
+          <dt>Active hours reported as a floor</dt>
+          <dd>A commit marks when work was <em>saved</em>, not when it started.
+            Reading the PDF, planning routing, and debugging that doesn't end in
+            a commit are uncounted. Rather than guess a multiplier, every hours
+            figure is labelled a lower bound.</dd>
+
+          <dt>60-minute session gap</dt>
+          <dd>Long enough to bridge normal think/edit pauses, short enough that
+            an overnight or multi-day gap isn't counted as continuous work. It
+            is a knob, not a law — a different gap changes every hours figure.</dd>
+
+          <dt>Whole-repo total ≠ sum of phase hours</dt>
+          <dd>Sessionizing within a phase drops the gap between two consecutive
+            commits that belong to different phases. So the per-phase sum
+            (19.90 h) is below the whole-repo sessionization (24.95 h). The
+            Totals row, computed across all commits, is the repo-wide floor.</dd>
+
+          <dt>Churn excludes generated/derived files</dt>
+          <dd>Generated bundles, docs, and lockfiles inflate line counts without
+            representing authored logic. Correctness-bearing YAML (rules,
+            questions, scenarios) <em>is</em> counted as code, because editing it
+            is a correctness change, not data entry.</dd>
+
+          <dt>AI % from co-author trailers</dt>
+          <dd>The only objective, after-the-fact signal available. Known blind
+            spot: the pre-gem Cursor era (Phase 0) predates the trailer
+            convention, so it reads 0% despite being heavily AI-assisted. The
+            metric measures <em>attributed</em> authorship, not <em>actual</em>
+            assistance.</dd>
+
+          <dt>Override table for judgment calls</dt>
+          <dd>A few commits whose subject lines would misroute under the ruleset
+            are pinned to the correct phase by hash, documented in
+            <code>bin/timeline</code>. This keeps the classification
+            deterministic and auditable rather than hand-massaged.</dd>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Open questions</h2>
+        <p class="muted">These are unresolved — listed so the numbers aren't read as more precise than they are.</p>
+        <ol class="questions">
+          <li>What multiplier turns "active hours" (a floor) into real elapsed
+            effort? Reading, planning, and dead-end debugging are uncounted, so
+            the true figure is unknown — only bounded below.</li>
+          <li>The "Refactor / quality" phase reads 0.00 h because its two commits
+            are &gt; 60 min apart (two singleton sessions). Isolated or
+            widely-spaced commits are systematically undercounted — how should
+            they be valued?</li>
+          <li>AI % undercounts early AI use (Phase 0 = 0% but was Cursor-driven).
+            Can AI involvement before the trailer convention be reconstructed at
+            all?</li>
+          <li>Phase assignment is per-commit and thematic; with overlapping
+            phases, some commits could defensibly belong to two. How much does
+            the boundary choice move the numbers?</li>
+          <li>The 60-minute session gap is arbitrary. What gap best matches
+            actual working sessions, and how sensitive are the totals to it?</li>
+          <li>A commit is a coarse proxy for effort — a one-line fix and a
+            500-line feature each count as one. Should effort be weighted (by
+            churn? by review time?) rather than counted?</li>
+          <li>None of this captures AI <em>cost</em>: tokens, retries, or
+            discarded output. A full accounting of AI-assisted development would
+            include the work that never landed.</li>
+        </ol>
+      </section>
+
+    </article>
+
+    <footer class="build-footer">Build: <code id="build-sha">dev</code></footer>
+  </main>
+
+  <button
+      type="button"
+      class="theme-toggle center"
+      onclick="NasfaaTheme.cycle(); window.updateThemeLabel && window.updateThemeLabel();"
+      aria-label="Cycle color theme">theme [m]: <span id="theme-label" class="theme-toggle__label">light</span></button>
+
+  <a href="https://blurbpress.com"
+     class="shamrock-link"
+     aria-label="Blurbpress"><span class="shamrock">&#9752;</span> blurbpress.com</a>
+
+  <script src="../shared/theme.js"></script>
+  <script>
+    // Theme persists across all pages via shared theme.js (localStorage on the
+    // common origin); render the active name and let [m] cycle.
+    (function () {
+      window.updateThemeLabel = function () {
+        var label = document.getElementById('theme-label');
+        if (label && window.NasfaaTheme) label.textContent = window.NasfaaTheme.current();
+      };
+      window.updateThemeLabel();
+      document.addEventListener('keydown', function (ev) {
+        if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+        if (ev.key === 'm' || ev.key === 'M') {
+          if (window.NasfaaTheme) { window.NasfaaTheme.cycle(); window.updateThemeLabel(); }
+          ev.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

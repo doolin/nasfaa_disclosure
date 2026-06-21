@@ -146,12 +146,12 @@ excludes generated bundles, docs, and lockfiles (same rule as
 | Phase 2.5 — CLI polish | box-draw, color palettes, single-key input, --pdf-text, rich evaluate, banners | 2026-02-23 → 2026-03-16 | 14 | 2.81 | +2010 / −230 | 100% | — |
 | Refactor / quality | rubocop/AbcSize cleanup, QuizQuestion struct extraction/decoupling | 2026-04-12 → 2026-05-22 | 2 | 0.00 | +224 / −99 | 100% | Two commits >60 min apart, so active-h reads ~0 (degenerate sessions) |
 | Phase 4/5 — Web + hosting | Static SPAs, shared tokens/theme, S3/blurbpress deploy, gitignored build artifacts | 2026-05-22 → 2026-05-23 | 12 | 1.68 | +4118 / −1380 | 100% | Highest churn of any phase; includes the since-deleted Lambda handlers |
-| Web UX convergence | style/scheme unification, quiz reveal + case-study rewrite, path labels, citation linking, dev mode, prompt fixes | 2026-05-24 → 2026-06-15 | 49 | 3.88 | +1900 / −660 | 16% | Largest by commit count; mostly small hand-edits (low AI %) |
-| Dev tooling | coverage-survey, JS test suites, text-verify, time-analysis, Ruby-coverage restore | 2026-05-24 → 2026-05-29 | 13 | 1.54 | +3510 / −8 | 92% | Almost purely additive (test/tool files) |
-| **Totals** | whole repo | 2025-08-26 → 2026-06-16 (293 d) | **141** | **22.70** | **+18364 / −4522** | **55%** | 11 phases |
+| Web UX convergence | style/scheme unification, quiz reveal + case-study rewrite, path labels, citation linking, dev mode, prompt fixes | 2026-05-24 → 2026-06-21 | 53 | 4.39 | +2379 / −838 | 23% | Largest by commit count; mostly small hand-edits (low AI %) |
+| Dev tooling | coverage-survey, JS test suites, text-verify, time-analysis, Ruby-coverage restore | 2026-05-24 → 2026-06-21 | 19 | 2.26 | +4034 / −32 | 95% | Almost purely additive (test/tool files) |
+| **Totals** | whole repo | 2025-08-26 → 2026-06-21 (298 d) | **151** | **24.95** | **+19367 / −4724** | **58%** | 11 phases |
 
-The Totals "Active h" (22.70 h) is whole-repo sessionization. The
-per-phase figures sum to only 18.67 h: sessionizing *within* a phase
+The Totals "Active h" (24.95 h) is whole-repo sessionization. The
+per-phase figures sum to only 19.90 h: sessionizing *within* a phase
 drops the time between consecutive commits that belong to different
 phases, so interleaved thematic phases (correctness, docs, tooling) lose
 their share of those gaps. Read each phase's hours as a floor, and the
