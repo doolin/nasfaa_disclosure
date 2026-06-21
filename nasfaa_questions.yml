@@ -12,7 +12,7 @@
 #
 # The DAG faithfully mirrors the PDF's two-page layout:
 #   Entry point: 1 shared question (Box 1, both pages)
-#   Page 2: FTI branch (IRC §6103) — 4 questions, 5 results
+#   Page 2: FTI branch (IRC 6103) — 4 questions, 5 results
 #   Page 1: Non-FTI branch — 18 questions, 16 results (Box 5 Yes → Box 12, Box 8 No deny)
 #
 # Total: 23 question nodes, 21 result nodes
@@ -38,7 +38,7 @@ nodes:
   # ============================================================
   # FTI BRANCH — Page 2 of the PDF
   #
-  # Federal Tax Information is subject to IRC §6103 restrictions.
+  # Federal Tax Information is subject to IRC 6103 restrictions.
   # Only four narrow exceptions permit disclosure of FTI.
   # ============================================================
 
@@ -88,35 +88,35 @@ nodes:
     result: permit
     rule_id: FTI_R1_student
     message: "The student may always access their own records, including FTI."
-    citation: "IRC §6103(l)(13)"
+    citation: "IRC 6103(l)(13)"
 
   result_FTI_R2_aid_admin_school_official:
     type: result
     result: permit
     rule_id: FTI_R2_aid_admin_school_official
     message: "FTI may be shared with a school official who has legitimate educational interest for aid administration."
-    citation: "IRC §6103(l)(13)(B); FERPA 34 CFR §99.31(a)(1)"
+    citation: "IRC 6103(l)(13)(B); FERPA 34 CFR 99.31(a)(1)"
 
   result_FTI_R2b_aid_admin_deny:
     type: result
     result: deny
     rule_id: FTI_R2b_aid_admin_deny
     message: "The recipient has not been designated as a school official with legitimate educational interest. FTI may not be released."
-    citation: "IRC §6103(l)(13)"
+    citation: "IRC 6103(l)(13)"
 
   result_FTI_R3_scholarship_with_consent:
     type: result
     result: permit
     rule_id: FTI_R3_scholarship_with_consent
     message: "FTI may be shared with a scholarship organization when the student has provided explicit written consent."
-    citation: "IRC §6103(l)(13)(D)"
+    citation: "IRC 6103(l)(13)(D)"
 
   result_FTI_DENY_default:
     type: result
     result: deny
     rule_id: FTI_DENY_default
     message: "No applicable exception permits the release of Federal Tax Information in this situation."
-    citation: "IRC §6103"
+    citation: "IRC 6103"
 
   # ============================================================
   # NON-FTI BRANCH — Page 1 of the PDF
@@ -161,7 +161,7 @@ nodes:
     box: "5 (Page 1)"
     text: "Will the data be used for financial aid administration?"
     pdf_text: "Will the information be used for the application, award, and/or administration of financial aid, per ED's definition?"
-    help: "Aid admin alone does not authorize disclosure — the recipient must also be a school official with legitimate educational interest (Box 12) or another §99.31 exception must apply."
+    help: "Aid admin alone does not authorize disclosure — the recipient must also be a school official with legitimate educational interest (Box 12) or another 99.31 exception must apply."
     field: used_for_aid_admin
     on_yes: ferpa_school_official
     on_no: fafsa_scholarship
@@ -170,7 +170,7 @@ nodes:
     type: question
     box: "6 (Page 1)"
     text: "Is the disclosure to a scholarship, tribal, or other assistance organization with the student's explicit written consent?"
-    pdf_text: "Is the disclosure to a scholarship granting organization, tribal organization, or other organization assisting the applicant in applying for and receiving federal, state, local, or tribal financial assistance for any component of the applicant's cost of attendance, and has the student provided explicit written consent? §1090(a)(3)(B)"
+    pdf_text: "Is the disclosure to a scholarship granting organization, tribal organization, or other organization assisting the applicant in applying for and receiving federal, state, local, or tribal financial assistance for any component of the applicant's cost of attendance, and has the student provided explicit written consent? 1090(a)(3)(B)"
     fields:
       - disclosure_to_scholarship_org
       - explicit_written_consent
@@ -181,7 +181,7 @@ nodes:
     type: question
     box: "7 (Page 1)"
     text: "Is the data being used for institutional research promoting college attendance, persistence, or completion?"
-    pdf_text: "Is the disclosure for research by or on behalf of the institution to promote college attendance, persistence, and completion? §1090(a)(3)(C)"
+    pdf_text: "Is the disclosure for research by or on behalf of the institution to promote college attendance, persistence, and completion? 1090(a)(3)(C)"
     field: research_promote_attendance
     on_yes: fafsa_pii
     on_no: fafsa_hea_consent
@@ -189,8 +189,8 @@ nodes:
   fafsa_hea_consent:
     type: question
     box: "8 (Page 1)"
-    text: "Has the student provided HEA written consent under §1090(a)(3)(C)?"
-    pdf_text: "Has the student provided written consent for disclosure under the Higher Education Act (HEA)? §1090(a)(3)(C)"
+    text: "Has the student provided HEA written consent under 1090(a)(3)(C)?"
+    pdf_text: "Has the student provided written consent for disclosure under the Higher Education Act (HEA)? 1090(a)(3)(C)"
     help: "This is the general Higher Education Act consent for FAFSA data disclosure, broader than FERPA consent."
     field: hea_written_consent
     on_yes: result_FAFSA_R6_HEA_written_consent
@@ -296,7 +296,7 @@ nodes:
   ferpa_otherwise:
     type: question
     box: "19"
-    text: "Is the disclosure otherwise permitted under FERPA §99.31 (e.g., health/safety emergency, sex offender registry)?"
+    text: "Is the disclosure otherwise permitted under FERPA 99.31 (e.g., health/safety emergency, sex offender registry)?"
     pdf_text: "Is the disclosure otherwise permitted under 99.31?"
     field: otherwise_permitted_under_99_31
     on_yes: result_FERPA_R9_otherwise_permitted_99_31
@@ -309,28 +309,28 @@ nodes:
     result: permit
     rule_id: FAFSA_R1_to_student
     message: "The student has the right to inspect their own education records."
-    citation: "FERPA 34 CFR §99.10"
+    citation: "FERPA 34 CFR 99.10"
 
   result_FAFSA_R4_scholarship_with_consent:
     type: result
     result: permit
     rule_id: FAFSA_R4_scholarship_with_consent
     message: "FAFSA data may be shared with a scholarship organization when the student has provided explicit written consent."
-    citation: "HEA §1098h(b)"
+    citation: "HEA 1098h(b)"
 
   result_FAFSA_R6_HEA_written_consent:
     type: result
     result: permit
     rule_id: FAFSA_R6_HEA_written_consent
     message: "The student has provided HEA written consent for FAFSA data disclosure."
-    citation: "HEA §1090(a)(3)(C)"
+    citation: "HEA 1090(a)(3)(C)"
 
   result_FAFSA_R6b_no_hea_consent_review_deny:
     type: result
     result: deny
     rule_id: FAFSA_R6b_no_hea_consent_review_deny
-    message: "Disclosure Not Permitted. Review §99.31(a)(9)(ii) and consult legal counsel if this is a subpoena, court order, or other law enforcement request."
-    citation: "HEA §1090(a)(3)(C); FERPA 34 CFR §99.31(a)(9)(ii)"
+    message: "Disclosure Not Permitted. Review 99.31(a)(9)(ii) and consult legal counsel if this is a subpoena, court order, or other law enforcement request."
+    citation: "HEA 1090(a)(3)(C); FERPA 34 CFR 99.31(a)(9)(ii)"
 
   result_FAFSA_R7_no_pii:
     type: result
@@ -344,70 +344,70 @@ nodes:
     result: permit
     rule_id: FERPA_R0_written_consent
     message: "The student has provided valid FERPA written consent."
-    citation: "FERPA 34 CFR §99.30"
+    citation: "FERPA 34 CFR 99.30"
 
   result_FERPA_R1_directory_info:
     type: result
     result: permit
     rule_id: FERPA_R1_directory_info
     message: "The data is directory information and the student has not opted out."
-    citation: "FERPA 34 CFR §99.31(a)(11); §99.37"
+    citation: "FERPA 34 CFR 99.31(a)(11); 99.37"
 
   result_FERPA_R2_school_official_LEI:
     type: result
     result: permit
     rule_id: FERPA_R2_school_official_LEI
     message: "The recipient is a school official with legitimate educational interest."
-    citation: "FERPA 34 CFR §99.31(a)(1)"
+    citation: "FERPA 34 CFR 99.31(a)(1)"
 
   result_FERPA_R3_judicial_or_finaid_related:
     type: result
     result: permit_with_caution
     rule_id: FERPA_R3_judicial_or_finaid_related
-    message: "Consult legal counsel regarding notification requirements under §99.31(a)(9)(ii) before responding to the subpoena or order."
-    citation: "FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i)"
+    message: "Consult legal counsel regarding notification requirements under 99.31(a)(9)(ii) before responding to the subpoena or order."
+    citation: "FERPA 34 CFR 99.31(a)(9); 99.31(a)(4)(i)"
 
   result_FERPA_R4_other_school_enrollment:
     type: result
     result: permit
     rule_id: FERPA_R4_other_school_enrollment
     message: "Records may be sent to officials at another school for enrollment or transfer purposes."
-    citation: "FERPA 34 CFR §99.31(a)(2)"
+    citation: "FERPA 34 CFR 99.31(a)(2)"
 
   result_FERPA_R5_authorized_representatives:
     type: result
     result: permit
     rule_id: FERPA_R5_authorized_representatives
     message: "Records may be shared with authorized representatives for audit or evaluation purposes."
-    citation: "FERPA 34 CFR §99.31(a)(3); §99.35"
+    citation: "FERPA 34 CFR 99.31(a)(3); 99.35"
 
   result_FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction:
     type: result
     result: permit
     rule_id: FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction
     message: "Records may be shared with research organizations under the FERPA research exception."
-    citation: "FERPA 34 CFR §99.31(a)(6)"
+    citation: "FERPA 34 CFR 99.31(a)(6)"
 
   result_FERPA_R7_accrediting_agency:
     type: result
     result: permit
     rule_id: FERPA_R7_accrediting_agency
     message: "Records may be shared with accrediting organizations."
-    citation: "FERPA 34 CFR §99.31(a)(7)"
+    citation: "FERPA 34 CFR 99.31(a)(7)"
 
   result_FERPA_R8_parent_of_dependent_student:
     type: result
     result: permit
     rule_id: FERPA_R8_parent_of_dependent_student
     message: "Records may be shared with parents of IRS-dependent students."
-    citation: "FERPA 34 CFR §99.31(a)(8)"
+    citation: "FERPA 34 CFR 99.31(a)(8)"
 
   result_FERPA_R9_otherwise_permitted_99_31:
     type: result
     result: permit
     rule_id: FERPA_R9_otherwise_permitted_99_31
-    message: "Disclosure is permitted under another FERPA §99.31 exception."
-    citation: "FERPA 34 CFR §99.31"
+    message: "Disclosure is permitted under another FERPA 99.31 exception."
+    citation: "FERPA 34 CFR 99.31"
 
   result_NONFTI_DENY_default:
     type: result

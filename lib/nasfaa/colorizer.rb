@@ -17,7 +17,7 @@ module Nasfaa
   #   puts c.permit("PERMITTED")   # bold cyan
   #   puts c.deny("DENIED")        # bold yellow
   #   puts c.bold("Box 1")
-  #   puts c.dim("IRC §6103")
+  #   puts c.dim("IRC 6103")
   class Colorizer
     MODES = %i[none light dark rainbow].freeze
 

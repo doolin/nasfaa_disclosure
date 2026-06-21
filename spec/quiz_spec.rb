@@ -267,7 +267,7 @@ RSpec.describe Nasfaa::Quiz do
           inputs: { disclosure_to_student: true },
           expected_result: :permit,
           rule_id: 'CUSTOM_R1',
-          citation: 'Test Citation §1'
+          citation: 'Test Citation 1'
         ),
         Nasfaa::QuizQuestion.new(
           description: nil,
@@ -323,7 +323,7 @@ RSpec.describe Nasfaa::Quiz do
     it 'displays rule_id and citation from injected questions' do
       _, _, output, = run_injected_quiz(%w[permit deny], questions: custom_questions)
       expect(output).to include('CUSTOM_R1')
-      expect(output).to include('Test Citation §1')
+      expect(output).to include('Test Citation 1')
       expect(output).to include('CUSTOM_R2')
     end
 

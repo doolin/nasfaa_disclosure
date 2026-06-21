@@ -33,7 +33,7 @@ scenarios:
   # ===================================================================
   # FTI BRANCH (Page 2 of the NASFAA Decision Tree)
   #
-  # Federal Tax Information (FTI) is subject to IRC §6103 restrictions.
+  # Federal Tax Information (FTI) is subject to IRC 6103 restrictions.
   # FTI includes any tax return data obtained through the IRS Data
   # Retrieval Tool or direct data exchange. These are the strictest
   # rules in the tree — only four narrow exceptions permit disclosure.
@@ -53,7 +53,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FTI_R1_student
-    citation: "IRC §6103(l)(13); disclosure to the data subject is always permitted"
+    citation: "IRC 6103(l)(13); disclosure to the data subject is always permitted"
     tags: [fti, student, permit, basic]
     result_context:
       flavor: >
@@ -74,7 +74,7 @@ scenarios:
           url: "https://fsapartners.ed.gov/knowledge-center/library/dear-colleague-letters/2025-09-30/guidance-use-federal-tax-information-fti-free-application-federal-student-aid-fafsar-data-and-non-fafsa-data"
         - title: "FSA EA: Access and Use of FTI for Federal Student Aid Programs"
           year: 2023
-          summary: "FSA's canonical FTI implementation announcement confirms institutions may disclose ISIR information, including FTI, to a requesting student consistent with HEA §494."
+          summary: "FSA's canonical FTI implementation announcement confirms institutions may disclose ISIR information, including FTI, to a requesting student consistent with HEA 494."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2023-05-12/access-and-use-federal-tax-information-fti-federal-student-aid-programs-beginning-2024-25-fafsa-processing-cycle-updated-september-17-2025"
 
   - id: aid_director_reviews_fti_for_packaging
@@ -92,7 +92,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FTI_R2_aid_admin_school_official
-    citation: "IRC §6103(l)(13)(B); FERPA 34 CFR §99.31(a)(1) — school official with LEI"
+    citation: "IRC 6103(l)(13)(B); FERPA 34 CFR 99.31(a)(1) — school official with LEI"
     tags: [fti, aid_admin, school_official, permit]
     result_context:
       flavor: >
@@ -132,7 +132,7 @@ scenarios:
     expected:
       result: deny
       rule_id: FTI_R2b_aid_admin_deny
-    citation: "IRC §6103(l)(13) — aid administration alone is insufficient without LEI"
+    citation: "IRC 6103(l)(13) — aid administration alone is insufficient without LEI"
     tags: [fti, aid_admin, deny]
     result_context:
       flavor: >
@@ -146,16 +146,16 @@ scenarios:
         a contractor additionally requires the institution to confirm
         the contractor implements CUI//SP-TAX-compliant security
         controls (aligned with NIST SP 800-171). Violations expose both
-        contractor and institution to felony liability under IRC §7213
+        contractor and institution to felony liability under IRC 7213
         (up to $5,000 and five years' imprisonment) regardless of intent.
       case_studies:
         - title: "FSA EA on FTI: Third-Party Servicer Penalties and Safeguard Obligations"
           year: 2023
-          summary: "FSA's FTI announcement explicitly states that criminal and civil penalties under IRC §§7213, 7213A, and 7431 for unauthorized FTI disclosure may apply to an institution's third-party servicer or state contractor."
+          summary: "FSA's FTI announcement explicitly states that criminal and civil penalties under IRC 7213, 7213A, and 7431 for unauthorized FTI disclosure may apply to an institution's third-party servicer or state contractor."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2023-05-12/access-and-use-federal-tax-information-fti-federal-student-aid-programs-beginning-2024-25-fafsa-processing-cycle-updated-september-17-2025"
-        - title: "IRC §7213: Felony Penalties for Unauthorized FTI Disclosure"
+        - title: "IRC 7213: Felony Penalties for Unauthorized FTI Disclosure"
           year: null
-          summary: "Willful unauthorized disclosure of return information is a felony — up to $5,000 fine and/or 5 years imprisonment — and non-federal recipients who re-disclose face personal civil liability under §7431(a)(2)."
+          summary: "Willful unauthorized disclosure of return information is a felony — up to $5,000 fine and/or 5 years imprisonment — and non-federal recipients who re-disclose face personal civil liability under 7431(a)(2)."
           url: "https://www.law.cornell.edu/uscode/text/26/7213"
 
   - id: tribal_scholarship_with_consent
@@ -173,12 +173,12 @@ scenarios:
     expected:
       result: permit
       rule_id: FTI_R3_scholarship_with_consent
-    citation: "IRC §6103(l)(13)(D) — scholarship/grant organization with explicit consent"
+    citation: "IRC 6103(l)(13)(D) — scholarship/grant organization with explicit consent"
     tags: [fti, scholarship, consent, permit]
     result_context:
       flavor: >
         Tribal scholarship programs occupy a unique niche in the FTI
-        framework: IRC §6103(l)(13)(D) explicitly names Tribal assistance
+        framework: IRC 6103(l)(13)(D) explicitly names Tribal assistance
         organizations as eligible FTI recipients, placing them on equal
         footing with state grant agencies — but only when the student has
         signed a written consent naming the specific organization. Aid
@@ -191,7 +191,7 @@ scenarios:
       case_studies:
         - title: "FSA EA on FTI: Tribal Scholarship Redisclosure With Written Consent"
           year: 2023
-          summary: "FSA confirms that under IRC §6103(l)(13)(D), institutions may redisclose FTI to a scholarship organization — including a Tribal organization — when the applicant has signed explicit written consent designating that organization for cost-of-attendance assistance."
+          summary: "FSA confirms that under IRC 6103(l)(13)(D), institutions may redisclose FTI to a scholarship organization — including a Tribal organization — when the applicant has signed explicit written consent designating that organization for cost-of-attendance assistance."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2023-05-12/access-and-use-federal-tax-information-fti-federal-student-aid-programs-beginning-2024-25-fafsa-processing-cycle-updated-september-17-2025"
         - title: "DCL GEN-25-08: Designated Scholarship Organizations vs. Per-Student Consent"
           year: 2025
@@ -212,7 +212,7 @@ scenarios:
     expected:
       result: deny
       rule_id: FTI_DENY_default
-    citation: "IRC §6103 — FTI is protected by default; no applicable exception"
+    citation: "IRC 6103 — FTI is protected by default; no applicable exception"
     tags: [fti, deny, default]
     result_context:
       flavor: >
@@ -225,7 +225,7 @@ scenarios:
         An auditor reviewing whether the institution correctly applied
         aid formulas can receive work-product and award calculations, but
         the underlying FTI fields must be redacted before files are
-        handed over. No §6103 exception covers external audit firms
+        handed over. No 6103 exception covers external audit firms
         performing institutional compliance work, and disclosure carries
         the same felony exposure as any other unauthorized release.
       case_studies:
@@ -233,7 +233,7 @@ scenarios:
           year: 2025
           summary: "TIGTA found that a design flaw in the IRS FA-DDX system sent incorrect FTI for about 7.2M FAFSA applications, illustrating how seriously the audit apparatus scrutinizes the FTI pipeline end-to-end."
           url: "https://fedscoop.com/irs-data-error-likely-affected-millions-of-education-department-forms/"
-        - title: "IRC §7213: Felony Penalties for Unauthorized FTI Disclosure"
+        - title: "IRC 7213: Felony Penalties for Unauthorized FTI Disclosure"
           year: null
           summary: "Willful unauthorized disclosure of return information is a felony with up to $5,000 fine and 5 years imprisonment, with no carve-out for institutions acting in good faith."
           url: "https://www.law.cornell.edu/uscode/text/26/7213"
@@ -243,7 +243,7 @@ scenarios:
   # NON-FTI / FAFSA-SPECIFIC BRANCH (Page 1, Boxes 3-9)
   #
   # When data does not include FTI but IS FAFSA data, a separate set
-  # of allowances under the Higher Education Act (HEA) §1090 and §1098h
+  # of allowances under the Higher Education Act (HEA) 1090 and 1098h
   # may authorize disclosure before falling through to FERPA rules.
   # ===================================================================
 
@@ -259,7 +259,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FAFSA_R1_to_student
-    citation: "FERPA 34 CFR §99.10 — student's right to inspect own education records"
+    citation: "FERPA 34 CFR 99.10 — student's right to inspect own education records"
     tags: [fafsa, student, permit, basic]
     result_context:
       flavor: >
@@ -276,7 +276,7 @@ scenarios:
       case_studies:
         - title: "EA GENERAL-24-129: Access, Disclosure, and Use of FAFSA Data"
           year: 2024
-          summary: "ED confirmed that eligible students retain an absolute right under FERPA 34 CFR §99.10 to inspect their own FAFSA data held by the institution, with a 45-day response deadline."
+          summary: "ED confirmed that eligible students retain an absolute right under FERPA 34 CFR 99.10 to inspect their own FAFSA data held by the institution, with a 45-day response deadline."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
         - title: "FSA Handbook 2024-25 Vol 2 Ch 7: Record Keeping, Privacy, and Electronic Processes"
           year: 2024
@@ -299,7 +299,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R2_school_official_LEI
-    citation: "HEA §1090(a); §1098h; FERPA 34 CFR §99.31(a)(1) — aid admin via school official with LEI"
+    citation: "HEA 1090(a); 1098h; FERPA 34 CFR 99.31(a)(1) — aid admin via school official with LEI"
     tags: [fafsa, aid_admin, school_official, permit]
     result_context:
       flavor: >
@@ -338,7 +338,7 @@ scenarios:
     expected:
       result: deny
       rule_id: NONFTI_DENY_default
-    citation: "HEA §1090(a); §1098h — aid admin requires a §99.31 exception (typically LEI) to authorize disclosure"
+    citation: "HEA 1090(a); 1098h — aid admin requires a 99.31 exception (typically LEI) to authorize disclosure"
     tags: [fafsa, aid_admin, deny]
     result_context:
       flavor: >
@@ -355,7 +355,7 @@ scenarios:
       case_studies:
         - title: "EA GENERAL-24-129: HEA Trumps FERPA — Aid-Admin Purpose Alone Is Insufficient"
           year: 2024
-          summary: "ED established that HEA §483(a)(3)(E) is more restrictive than FERPA: a use that fails the HEA permitted-purpose test cannot proceed even if a FERPA exception would otherwise authorize it."
+          summary: "ED established that HEA 483(a)(3)(E) is more restrictive than FERPA: a use that fails the HEA permitted-purpose test cannot proceed even if a FERPA exception would otherwise authorize it."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
         - title: "FSA Handbook 2024-25: Third-Party Servicers as School Officials"
           year: 2024
@@ -377,7 +377,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FAFSA_R4_scholarship_with_consent
-    citation: "HEA §1098h(b) — scholarship organization with explicit written consent"
+    citation: "HEA 1098h(b) — scholarship organization with explicit written consent"
     tags: [fafsa, scholarship, consent, permit]
     result_context:
       flavor: >
@@ -385,7 +385,7 @@ scenarios:
         choice in the FY 2018 omnibus to expand permissible sharing
         beyond the narrow aid-administration silo — but only when the
         student affirmatively unlocks it. A blanket consent buried in
-        enrollment paperwork will not do; HEA §494 demands a separate
+        enrollment paperwork will not do; HEA 494 demands a separate
         instrument that names the foundation, describes what data will
         travel, and states the purpose. The three-year retention
         requirement gives ED a practical audit hook: if a foundation
@@ -394,11 +394,11 @@ scenarios:
       case_studies:
         - title: "EA GENERAL-24-149: Required Consent Components"
           year: 2024
-          summary: "ED's December 2024 announcement established that consent under HEA §494 must be a separate signed, dated document identifying the specific FAFSA data, the recipient, and the purpose — oral or bundled consent is insufficient."
+          summary: "ED's December 2024 announcement established that consent under HEA 494 must be a separate signed, dated document identifying the specific FAFSA data, the recipient, and the purpose — oral or bundled consent is insufficient."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-12-20/guidance-consent-fafsa-data-sharing-and-automatic-idr-certification"
         - title: "EA GENERAL-24-129: Scholarship Organization Consent + Three-Year Retention"
           year: 2024
-          summary: "ED confirmed HEA §494 requires prior written consent before FAFSA data may go to a scholarship organization, with records retained for at least three years from the student's last date of attendance; only UNCF and the Hispanic College Fund are statutorily exempted."
+          summary: "ED confirmed HEA 494 requires prior written consent before FAFSA data may go to a scholarship organization, with records retained for at least three years from the student's last date of attendance; only UNCF and the Hispanic College Fund are statutorily exempted."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
 
   - id: institutional_researcher_studies_persistence
@@ -433,7 +433,7 @@ scenarios:
       case_studies:
         - title: "EA GENERAL-24-129: Research Promoting Attendance, Persistence, and Completion"
           year: 2024
-          summary: "ED confirmed HEA §483(a)(3) permits IHEs and state grant agencies to use FAFSA data for attendance/persistence/completion research without per-student consent, provided results contain no individually identifiable information."
+          summary: "ED confirmed HEA 483(a)(3) permits IHEs and state grant agencies to use FAFSA data for attendance/persistence/completion research without per-student consent, provided results contain no individually identifiable information."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
         - title: "SPPO DCL to IHEs Regarding NSLVE — Limits of the Studies Exception"
           year: 2026
@@ -454,7 +454,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FAFSA_R6_HEA_written_consent
-    citation: "HEA §1090(a)(3)(C) — general HEA consent for FAFSA data disclosure"
+    citation: "HEA 1090(a)(3)(C) — general HEA consent for FAFSA data disclosure"
     tags: [fafsa, consent, state_agency, permit]
     result_context:
       flavor: >
@@ -473,9 +473,9 @@ scenarios:
           year: 2024
           summary: "ED's 2024 announcements established that state grant agencies signing a modified SAIG Participation Agreement may use FAFSA data points for benefits-outreach without per-student consent, while onward disclosure to third-party benefits agencies still requires written consent."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-07-29/guidance-means-tested-benefits-outreach-institutions-and-state-grant-agencies"
-        - title: "EA GENERAL-24-129: State Agency Authority and Limits Under HEA §483"
+        - title: "EA GENERAL-24-129: State Agency Authority and Limits Under HEA 483"
           year: 2024
-          summary: "ED confirmed state grant agencies may share FAFSA data with other state entities only when the purpose falls within application, award, and administration of aid, and all further redisclosure requires written student consent under HEA §494."
+          summary: "ED confirmed state grant agencies may share FAFSA data with other state entities only when the purpose falls within application, award, and administration of aid, and all further redisclosure requires written student consent under HEA 494."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
 
   - id: deidentified_fafsa_aggregate_report
@@ -534,13 +534,13 @@ scenarios:
     expected:
       result: deny
       rule_id: FAFSA_R6b_no_hea_consent_review_deny
-    citation: "HEA §1090(a)(3)(C); FERPA 34 CFR §99.31(a)(9)(ii)"
+    citation: "HEA 1090(a)(3)(C); FERPA 34 CFR 99.31(a)(9)(ii)"
     tags: [fafsa, hea, deny]
     result_context:
       flavor: >
         The FAFSA application collects some of the most sensitive
         financial data a student ever discloses — household income, asset
-        levels, dependency status, family size. HEA §483(a)(3)(E) makes
+        levels, dependency status, family size. HEA 483(a)(3)(E) makes
         the default rule unmistakable: that data travels only through
         enumerated channels, and everything else is off limits. Journalists,
         private companies, government offices with no aid nexus, and even
@@ -550,7 +550,7 @@ scenarios:
         purpose against the student's privacy — it's to recognize no HEA
         pathway is available and decline.
       case_studies:
-        - title: "EA GENERAL-24-129: Outside Inquiries — HEA §483 Default Deny"
+        - title: "EA GENERAL-24-129: Outside Inquiries — HEA 483 Default Deny"
           year: 2024
           summary: "ED established that FAFSA data with PII may not be disclosed to outside parties when none of the four HEA-permitted channels applies — FERPA exceptions cannot rescue a disclosure that fails the HEA test."
           url: "https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2024-11-07/guidance-state-grant-agencies-and-institutions-higher-education-access-disclosure-and-use-fafsa-data-application-award-and-administration-student-aid-programs-updated-sept-30-2025"
@@ -581,7 +581,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R0_written_consent
-    citation: "FERPA 34 CFR §99.30 — disclosure with prior written consent of the student"
+    citation: "FERPA 34 CFR 99.30 — disclosure with prior written consent of the student"
     tags: [ferpa, consent, permit]
     result_context:
       flavor: >
@@ -590,7 +590,7 @@ scenarios:
         records to a state licensing body without authorization,
         triggering years of litigation that reached the Supreme Court.
         The Court's ruling — that students cannot sue institutions under
-        §1983 for FERPA violations — underscores why the consent
+        1983 for FERPA violations — underscores why the consent
         mechanism is the correct path: it is the student's affirmative,
         signed authorization that unlocks disclosure and protects the
         institution. The release form must name the specific employer,
@@ -598,9 +598,9 @@ scenarios:
       case_studies:
         - title: "Gonzaga University v. Doe, 536 U.S. 273 (2002)"
           year: 2002
-          summary: "The Supreme Court held FERPA creates no privately enforceable individual rights under §1983 after a university disclosed a student's personal information to state teacher-certification authorities without consent."
+          summary: "The Supreme Court held FERPA creates no privately enforceable individual rights under 1983 after a university disclosed a student's personal information to state teacher-certification authorities without consent."
           url: "https://www.law.cornell.edu/supremecourt/text/536/273"
-        - title: "ED SPPO: Required Components of Consent (34 CFR §99.30)"
+        - title: "ED SPPO: Required Components of Consent (34 CFR 99.30)"
           year: 2023
           summary: "SPPO FAQ confirms a valid FERPA consent must be signed and dated, specify the records to be disclosed, state the purpose, and identify the recipient — oral consent does not qualify."
           url: "https://studentprivacy.ed.gov/faq/what-must-consent-disclose-education-records-contain"
@@ -619,7 +619,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R1_directory_info
-    citation: "FERPA 34 CFR §99.31(a)(11); §99.37 — directory information disclosure"
+    citation: "FERPA 34 CFR 99.31(a)(11); 99.37 — directory information disclosure"
     tags: [ferpa, directory_info, permit]
     result_context:
       flavor: >
@@ -639,7 +639,7 @@ scenarios:
           year: 2023
           summary: "SPPO guidance confirms schools may disclose properly designated directory information to organizations such as alumni associations without written consent, provided students have not opted out."
           url: "https://studentprivacy.ed.gov/faq/may-school-disclose-directory-information-community-based-organization-without-written-consent"
-        - title: "ED SPPO: Directory Information Overview (34 CFR §99.37)"
+        - title: "ED SPPO: Directory Information Overview (34 CFR 99.37)"
           year: 2023
           summary: "Once a student requests non-disclosure during enrollment, the school must honor it even after the student leaves, unless the student rescinds."
           url: "https://studentprivacy.ed.gov/content/directory-information"
@@ -658,7 +658,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R2_school_official_LEI
-    citation: "FERPA 34 CFR §99.31(a)(1) — school official with Legitimate Educational Interest (LEI)"
+    citation: "FERPA 34 CFR 99.31(a)(1) — school official with Legitimate Educational Interest (LEI)"
     tags: [ferpa, school_official, permit]
     result_context:
       flavor: >
@@ -673,7 +673,7 @@ scenarios:
         LEI; the same advisor forwarding that record to a family member
         or employer without consent is not.
       case_studies:
-        - title: "ED SPPO: School Official Exception (34 CFR §99.31(a)(1))"
+        - title: "ED SPPO: School Official Exception (34 CFR 99.31(a)(1))"
           year: 2023
           summary: "SPPO confirms a school official has a legitimate educational interest when they need to review an education record to fulfill a professional responsibility, and institutions must define both terms in their annual FERPA notification."
           url: "https://studentprivacy.ed.gov/faq/who-school-official-under-ferpa"
@@ -694,7 +694,7 @@ scenarios:
     expected:
       result: permit_with_caution
       rule_id: FERPA_R3_judicial_or_finaid_related
-    citation: "FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i) — judicial order or subpoena"
+    citation: "FERPA 34 CFR 99.31(a)(9); 99.31(a)(4)(i) — judicial order or subpoena"
     tags: [ferpa, judicial, subpoena, permit_with_caution, caution]
     result_context:
       flavor: >
@@ -736,7 +736,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R4_other_school_enrollment
-    citation: "FERPA 34 CFR §99.31(a)(2) — disclosure to officials at another school for enrollment/transfer"
+    citation: "FERPA 34 CFR 99.31(a)(2) — disclosure to officials at another school for enrollment/transfer"
     tags: [ferpa, transfer, enrollment, permit]
     result_context:
       flavor: >
@@ -746,7 +746,7 @@ scenarios:
         intends to enroll" is the standard, not "is currently enrolled."
         Financial aid records sent along with transcripts (SAP history,
         prior aid received) fall within the transfer exception. The
-        §99.34 notice requirement gives students the opportunity to
+        99.34 notice requirement gives students the opportunity to
         review what was sent, but it does not require advance permission;
         if the sending institution's annual notification already states
         the transfer policy, even the post-disclosure notice is
@@ -758,7 +758,7 @@ scenarios:
           url: "https://studentprivacy.ed.gov/faq/does-ferpa-permit-schools-disclose-any-and-all-education-records-student-another-school-where"
         - title: "FERPA 2011 Final Rule (76 Fed. Reg. 75604)"
           year: 2011
-          summary: "The 2011 rulemaking clarified the conditions under §99.34, including that the sending school must provide the student a copy of the disclosed records upon request."
+          summary: "The 2011 rulemaking clarified the conditions under 99.34, including that the sending school must provide the student a copy of the disclosed records upon request."
           url: "https://www.federalregister.gov/documents/2011/12/02/2011-30683/family-educational-rights-and-privacy"
 
   - id: state_auditor_reviews_aid_compliance
@@ -775,7 +775,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R5_authorized_representatives
-    citation: "FERPA 34 CFR §99.31(a)(3); §99.35 — authorized representatives for audit/evaluation"
+    citation: "FERPA 34 CFR 99.31(a)(3); 99.35 — authorized representatives for audit/evaluation"
     tags: [ferpa, authorized_rep, audit, permit]
     result_context:
       flavor: >
@@ -795,7 +795,7 @@ scenarios:
           year: 2008
           summary: "The December 2008 rulemaking codified that any authorized representative who is not a direct employee of the state or local educational authority must operate under a written agreement specifying permitted uses, confidentiality, and destruction requirements."
           url: "https://www.federalregister.gov/documents/2008/12/09/E8-28864/family-educational-rights-and-privacy"
-        - title: "ED SPPO: Audit/Evaluation Disclosure (§§99.31(a)(3), 99.35)"
+        - title: "ED SPPO: Audit/Evaluation Disclosure (99.31(a)(3), 99.35)"
           year: 2023
           summary: "State educational authorities may designate authorized representatives to access education records for compliance reviews of federal- or state-supported programs, subject to written agreement and use-restriction requirements."
           url: "https://studentprivacy.ed.gov/faq/may-educational-agency-or-institution-disclose-personally-identifiable-information-students-0"
@@ -814,7 +814,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R6_research_org_predictive_tests_admin_aid_improve_instruction
-    citation: "FERPA 34 CFR §99.31(a)(6) — research to develop predictive tests, administer aid, improve instruction"
+    citation: "FERPA 34 CFR 99.31(a)(6) — research to develop predictive tests, administer aid, improve instruction"
     tags: [ferpa, research, permit]
     result_context:
       flavor: >
@@ -833,7 +833,7 @@ scenarios:
       case_studies:
         - title: "ED SPPO: Reasonable Methods and Written Agreements (2016 Guidance)"
           year: 2016
-          summary: "ED guidance explains the §99.31(a)(6) studies exception requires a written agreement specifying the research purpose, prohibiting personal identification beyond study representatives with legitimate interest, and requiring destruction of PII when no longer needed."
+          summary: "ED guidance explains the 99.31(a)(6) studies exception requires a written agreement specifying the research purpose, prohibiting personal identification beyond study representatives with legitimate interest, and requiring destruction of PII when no longer needed."
           url: "https://studentprivacy.ed.gov/sites/default/files/resource_document/file/Guidance_for_Reasonable_Methods%20final_0_0.pdf"
         - title: "NCES Forum Guide to the Privacy of Student Information"
           year: 2006
@@ -853,7 +853,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R7_accrediting_agency
-    citation: "FERPA 34 CFR §99.31(a)(7) — accrediting organizations"
+    citation: "FERPA 34 CFR 99.31(a)(7) — accrediting organizations"
     tags: [ferpa, accrediting, permit]
     result_context:
       flavor: >
@@ -867,10 +867,10 @@ scenarios:
         to internal institutional processes. In practice, accreditors
         handle data confidentially and use it only for accreditation
         purposes, but institutions should still document what was
-        disclosed and to whom under their §99.32 recordkeeping
+        disclosed and to whom under their 99.32 recordkeeping
         obligations.
       case_studies:
-        - title: "ED SPPO: Accrediting Organizations Exception (§99.31(a)(7))"
+        - title: "ED SPPO: Accrediting Organizations Exception (99.31(a)(7))"
           year: 2023
           summary: "SPPO confirms FERPA permits disclosure to accrediting organizations to carry out accrediting functions without consent, as a named statutory exception with no written-agreement requirement."
           url: "https://studentprivacy.ed.gov/frequently-asked-questions"
@@ -892,7 +892,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R8_parent_of_dependent_student
-    citation: "FERPA 34 CFR §99.31(a)(8) — parents of dependent students (IRS definition)"
+    citation: "FERPA 34 CFR 99.31(a)(8) — parents of dependent students (IRS definition)"
     tags: [ferpa, parent, dependent, permit]
     result_context:
       flavor: >
@@ -909,7 +909,7 @@ scenarios:
         does not mandate student notification when this exception is
         invoked.
       case_studies:
-        - title: "ED SPPO: Parent Access to Postsecondary Student Records (§99.31(a)(8))"
+        - title: "ED SPPO: Parent Access to Postsecondary Student Records (99.31(a)(8))"
           year: 2023
           summary: "SPPO confirms postsecondary institutions may disclose any education records to either parent of a student claimed as a dependent on the parent's most recent federal income tax return, with no requirement for student consent."
           url: "https://studentprivacy.ed.gov/faq/must-postsecondary-institutions-provide-parent-access-eligible-students-education-records"
@@ -931,7 +931,7 @@ scenarios:
     expected:
       result: permit
       rule_id: FERPA_R9_otherwise_permitted_99_31
-    citation: "FERPA 34 CFR §99.31(a)(10) — health/safety emergency; §99.36"
+    citation: "FERPA 34 CFR 99.31(a)(10) — health/safety emergency; 99.36"
     tags: [ferpa, emergency, otherwise_permitted, permit]
     result_context:
       flavor: >
@@ -956,7 +956,7 @@ scenarios:
           year: 2008
           summary: "The 2008 rulemaking replaced the prior strict-construction emergency standard with an 'articulable and significant threat' test and added a recordkeeping requirement: institutions must log the specific threat and parties notified."
           url: "https://www.federalregister.gov/documents/2008/12/09/E8-28864/family-educational-rights-and-privacy"
-        - title: "ED SPPO: Health or Safety Emergency Disclosures (§§99.31(a)(10), 99.36)"
+        - title: "ED SPPO: Health or Safety Emergency Disclosures (99.31(a)(10), 99.36)"
           year: 2023
           summary: "SPPO confirms emergency disclosures are limited to the duration of the emergency, do not authorize blanket release of all PII, and require documentation of the articulable threat and the parties notified."
           url: "https://studentprivacy.ed.gov/faq/when-it-permissible-utilize-ferpas-health-or-safety-emergency-exception-disclosures"
@@ -988,7 +988,7 @@ scenarios:
       flavor: >
         Employer calls about financial aid are a recurring scenario in
         aid offices, often framed as verification calls or background
-        checks. None of FERPA's §99.31 exceptions accommodate them: the
+        checks. None of FERPA's 99.31 exceptions accommodate them: the
         employer is not a school official, there is no subpoena, no
         judicial order, no health emergency, and no directory-information
         designation covers financial aid amounts or award types. Even

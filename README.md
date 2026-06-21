@@ -22,7 +22,7 @@ A Ruby CLI gem implementing the NASFAA FERPA/FAFSA student financial-aid data di
 Done so far:
 - ✅ Phase 1 / 1.5 — gem packaging, rule engine, audit trail, exhaustive verification (36,864 combos, 0 disagreements)
 - ✅ Phase 2 / 2.5 — interactive CLI (walkthrough, quiz, evaluate) with single-keystroke input, colorblind-safe palette, Unicode box-draw, `--pdf-text` mode, rich evaluate output
-- ✅ Box 5 Yes transition fix (aid admin → §99.31 chain)
+- ✅ Box 5 Yes transition fix (aid admin → 99.31 chain)
 - ✅ Box 8 No transition fix (terminate at deny per PDF)
 - ✅ Box 7 transition verified correct (no fix needed — see ROADMAP)
 - ✅ Phase 4 — static web pages for walkthrough and quiz under `web/`, with JS port of the rule engine and a 24-scenario test page
@@ -339,7 +339,7 @@ trace.path          # => ["FTI_R1_student", "FTI_R2_aid_admin_school_official"]
 # Query the scenario library
 scenario = Nasfaa::Scenarios.find('court_subpoena_for_student_records')
 scenario.name        # => "Court Issues Subpoena for Student Financial Aid Records"
-scenario.citation    # => "FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i) — ..."
+scenario.citation    # => "FERPA 34 CFR 99.31(a)(9); 99.31(a)(4)(i) — ..."
 scenario.expected_result  # => :permit_with_caution
 
 Nasfaa::Scenarios.by_tag('fti')      # => 5 FTI-related scenarios
@@ -394,7 +394,7 @@ The walkthrough follows the NASFAA PDF's two-page flowchart.
 ║ RESULT: permit                                              ║
 ╠═════════════════════════════════════════════════════════════╣
 ║ Rule: FAFSA_R1_to_student                                   ║
-║ Citation: FERPA 34 CFR §99.10                               ║
+║ Citation: FERPA 34 CFR 99.10                               ║
 ║                                                             ║
 ║ Student Views Own Education Records                         ║
 ║                                                             ║
@@ -476,7 +476,7 @@ Inputs:
 CORRECT!
 Answer: permit
 Rule:     FERPA_R8_parent_of_dependent
-Citation: FERPA 34 CFR §99.31(a)(8) — ...
+Citation: FERPA 34 CFR 99.31(a)(8) — ...
 Score:    1/1
 ```
 
@@ -566,9 +566,9 @@ The rules are organized into four sections matching the PDF's structure:
 
 | Section | Rules | Governs |
 |---|---|---|
-| FTI Branch (Page 2) | 5 | IRC §6103 — tax return information |
-| FAFSA-Specific (Page 1) | 7 | HEA §1090/§1098h — FAFSA data allowances |
-| FERPA Gate + 99.31 Exceptions | 10 | FERPA 34 CFR §99.30–§99.37 |
+| FTI Branch (Page 2) | 5 | IRC 6103 — tax return information |
+| FAFSA-Specific (Page 1) | 7 | HEA 1090/1098h — FAFSA data allowances |
+| FERPA Gate + 99.31 Exceptions | 10 | FERPA 34 CFR 99.30–99.37 |
 | Catch-All Deny | 1 | No applicable exception |
 
 Four result types: `permit`, `deny`, `permit_with_scope` (contributor access
@@ -589,7 +589,7 @@ The `DisclosureData` model wraps 20 boolean fields. All default to `false`.
 | `disclosure_to_scholarship_org` | 3 (FTI), 6 | To scholarship/tribal/assistance org |
 | `explicit_written_consent` | 3 (FTI), 6 | Student's explicit written consent |
 | `research_promote_attendance` | 7 | Institutional research on persistence |
-| `hea_written_consent` | 8 | HEA §1090(a)(3)(C) consent |
+| `hea_written_consent` | 8 | HEA 1090(a)(3)(C) consent |
 | `contains_pii` | 9 | Contains personally identifiable information |
 | `ferpa_written_consent` | 10 | FERPA written consent |
 | `directory_info_and_not_opted_out` | 11 | Directory info, student hasn't opted out |
@@ -600,7 +600,7 @@ The `DisclosureData` model wraps 20 boolean fields. All default to `false`.
 | `to_research_org_ferpa` | 16 | FERPA research exception |
 | `to_accrediting_agency` | 17 | Accrediting organization |
 | `parent_of_dependent_student` | 18 | Parent of IRS-dependent student |
-| `otherwise_permitted_under_99_31` | 19 | Catch-all FERPA §99.31 |
+| `otherwise_permitted_under_99_31` | 19 | Catch-all FERPA 99.31 |
 
 ## Exhaustive Verification
 
@@ -618,7 +618,7 @@ decision tree.
 ### Structural optimization
 
 The NASFAA decision tree has an important structural property: **Boxes 11–19
-(the FERPA §99.31 exceptions) are independent yes/no exits with no further
+(the FERPA 99.31 exceptions) are independent yes/no exits with no further
 branching.** Each exception is a simple gate: if true, permit; if false,
 continue to the next. No exception depends on any other exception, and none
 feeds back into earlier logic.
@@ -647,7 +647,7 @@ Note that `to_school_official_legitimate_interest` appears in both the FTI
 branch (where it determines permit vs deny for aid administrators) and the
 FERPA 99.31 exceptions (Box 12). This dual role forces it into the core set.
 
-**Independent exit fields (8)** — the remaining FERPA §99.31 exceptions
+**Independent exit fields (8)** — the remaining FERPA 99.31 exceptions
 (Boxes 11, 13–19). Each is a simple yes → permit gate:
 
 - `directory_info_and_not_opted_out`
@@ -663,7 +663,7 @@ FERPA 99.31 exceptions (Box 12). This dual role forces it into the core set.
 
 For the 8 independent fields, we test 9 configurations:
 
-1. **All false** — no §99.31 exception applies; the result depends entirely
+1. **All false** — no 99.31 exception applies; the result depends entirely
    on the core fields
 2. **Each field individually true** (8 configs) — verifies that each exception
    independently triggers a permit when reached
@@ -741,8 +741,8 @@ The scenario library serves three purposes:
 
 | Section | Scenarios | Result types |
 |---|---|---|
-| FTI Branch (IRC §6103) | 5 | 2 permit, 2 deny, 1 permit |
-| FAFSA-Specific (HEA §1090/§1098h) | 7 | 5 permit, 1 permit_with_scope, 1 permit |
+| FTI Branch (IRC 6103) | 5 | 2 permit, 2 deny, 1 permit |
+| FAFSA-Specific (HEA 1090/1098h) | 7 | 5 permit, 1 permit_with_scope, 1 permit |
 | FERPA Gate + 99.31 Exceptions | 10 | 8 permit, 1 permit_with_caution, 1 permit |
 | Denials (no legal basis) | 1 | 1 deny |
 
@@ -752,15 +752,15 @@ The scenario library serves three purposes:
 >
 > A court issues a lawfully issued subpoena requiring the university to
 > produce a student's financial aid records as part of a civil proceeding.
-> While the subpoena compels disclosure under FERPA §99.31(a)(9), the
+> While the subpoena compels disclosure under FERPA 99.31(a)(9), the
 > institution should consult legal counsel before responding to ensure
 > compliance with the specific notification and procedural requirements of
-> §99.31(a)(9)(ii), which may require reasonable effort to notify the student
+> 99.31(a)(9)(ii), which may require reasonable effort to notify the student
 > before disclosure.
 >
 > Inputs: `due_to_judicial_order_or_subpoena_or_financial_aid: true`
 > Result: **permit_with_caution** — Rule: `FERPA_R3_judicial_or_finaid_related`
-> Citation: FERPA 34 CFR §99.31(a)(9); §99.31(a)(4)(i)
+> Citation: FERPA 34 CFR 99.31(a)(9); 99.31(a)(4)(i)
 
 ## Testing
 
@@ -807,11 +807,11 @@ logic that alters which terminal a flip reaches will immediately fail the test.
 
 ## Legal References
 
-- **FTI**: Internal Revenue Code §6103 (tax return information)
-- **FAFSA**: Higher Education Act §1090(a), §1098h (FAFSA data sharing)
-- **FERPA**: 20 USC §1232g; 34 CFR Part 99 (student education records)
-- **FERPA consent**: 34 CFR §99.30 (prior written consent)
-- **FERPA exceptions**: 34 CFR §99.31(a)(1)–(a)(16)
+- **FTI**: Internal Revenue Code 6103 (tax return information)
+- **FAFSA**: Higher Education Act 1090(a), 1098h (FAFSA data sharing)
+- **FERPA**: 20 USC 1232g; 34 CFR Part 99 (student education records)
+- **FERPA consent**: 34 CFR 99.30 (prior written consent)
+- **FERPA exceptions**: 34 CFR 99.31(a)(1)–(a)(16)
 - **Canonical source**: [NASFAA Data Sharing Decision Tree](docs/NASFAA_Data_Sharing_Decision_Tree.pdf)
 
 ## Time Spent

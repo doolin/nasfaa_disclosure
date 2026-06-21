@@ -30,10 +30,10 @@ function buildFixture() {
       q1: { type: 'question', field: 'has_fti', on_yes: 'q2', on_no: 'r_no_fti' },
       q2: { type: 'question', fields: ['to_student', 'is_self'], on_yes: 'r_permit_student', on_no: 'q3' },
       q3: { type: 'question', field: null, on_yes: 'r_deny', on_no: 'r_caution' },
-      r_no_fti:           { type: 'result', rule_id: 'FTI_R0', result: 'permit', message: 'No FTI present.', citation: 'IRC §6103' },
-      r_permit_student:   { type: 'result', rule_id: 'FTI_R1', result: 'permit', message: 'Student may access.', citation: 'IRC §6103(l)(13)' },
-      r_deny:             { type: 'result', rule_id: 'FTI_R2', result: 'deny', message: 'Not permitted.', citation: 'IRC §6103' },
-      r_caution:          { type: 'result', rule_id: 'FTI_R3', result: 'permit_with_caution', message: 'Maybe with caution.', citation: 'IRC §6103' },
+      r_no_fti:           { type: 'result', rule_id: 'FTI_R0', result: 'permit', message: 'No FTI present.', citation: 'IRC 6103' },
+      r_permit_student:   { type: 'result', rule_id: 'FTI_R1', result: 'permit', message: 'Student may access.', citation: 'IRC 6103(l)(13)' },
+      r_deny:             { type: 'result', rule_id: 'FTI_R2', result: 'deny', message: 'Not permitted.', citation: 'IRC 6103' },
+      r_caution:          { type: 'result', rule_id: 'FTI_R3', result: 'permit_with_caution', message: 'Maybe with caution.', citation: 'IRC 6103' },
     },
   };
 }
@@ -176,7 +176,7 @@ test('result: returns rule fields and copies inputs/path', () => {
   assert.equal(r.ruleId, 'FTI_R1');
   assert.equal(r.result, 'permit');
   assert.equal(r.message, 'Student may access.');
-  assert.equal(r.citation, 'IRC §6103(l)(13)');
+  assert.equal(r.citation, 'IRC 6103(l)(13)');
   assert.deepEqual(r.path, ['q1', 'q2']);
   assert.deepEqual(r.inputs, { has_fti: true, to_student: true, is_self: true });
   // path and inputs should be copies (mutation-safe)

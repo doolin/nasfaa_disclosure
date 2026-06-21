@@ -235,7 +235,7 @@ test('escapeHtml: leaves plain text unchanged', () => {
 // ──────────────────────────────────────────────────────────────────────
 
 test('renderCitationBoxLine: linkifies HEA reference, padded inside box', () => {
-  const out = BoxDraw.renderCitationBoxLine('Citation: HEA §1090(a)');
+  const out = BoxDraw.renderCitationBoxLine('Citation: HEA 1090(a)');
   assert.ok(out.includes('<a'));
   assert.ok(out.includes('HEA'));
   assert.ok(out.startsWith('│ '));
@@ -244,8 +244,8 @@ test('renderCitationBoxLine: linkifies HEA reference, padded inside box', () => 
 
 test('renderCitationBoxLine: long citation wraps and threads body across lines', () => {
   // Build a long citation that forces wrapping. HEA body context must
-  // carry across the wrap so the §ref on the second line still links.
-  const longCite = 'Citation: HEA §1090(a); ' + 'placeholder '.repeat(8) + '§1098h';
+  // carry across the wrap so the ref on the second line still links.
+  const longCite = 'Citation: HEA 1090(a); ' + 'placeholder '.repeat(8) + '1098h';
   const out = BoxDraw.renderCitationBoxLine(longCite);
   const lines = out.split('\n');
   assert.ok(lines.length >= 2, 'expected at least one wrap');
@@ -258,7 +258,7 @@ test('renderCitationBoxLine: falls back to escaped plain box line when NasfaaCit
   const saved = globalThis.NasfaaCitation;
   try {
     delete globalThis.NasfaaCitation;
-    const out = BoxDraw.renderCitationBoxLine('Citation: HEA §1090(a)');
+    const out = BoxDraw.renderCitationBoxLine('Citation: HEA 1090(a)');
     // No <a> tags in the fallback path; it's just escaped boxLine text.
     assert.ok(!out.includes('<a'));
     assert.ok(out.includes('Citation: HEA'));
@@ -284,7 +284,7 @@ test('resultColorClass: \'permit\' → result-permit', () => {
 const baseNode = {
   result: 'permit',
   message: 'Student may access their own records, including FTI.',
-  citation: 'IRC §6103(l)(13)',
+  citation: 'IRC 6103(l)(13)',
   rule_id: 'FTI_R1_student',
 };
 
@@ -384,7 +384,7 @@ test('renderCitationBoxLine: looks up NasfaaCitation via window when window is d
     // Make window a bag that exposes the citation linker; renderCitationBoxLine
     // should now pull NasfaaCitation off window instead of globalThis.
     globalThis.window = { NasfaaCitation: globalThis.NasfaaCitation };
-    const out = BoxDraw.renderCitationBoxLine('Citation: HEA §1090(a)');
+    const out = BoxDraw.renderCitationBoxLine('Citation: HEA 1090(a)');
     assert.ok(out.includes('<a'));
   } finally {
     if (savedWindow === undefined) delete globalThis.window;

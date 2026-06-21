@@ -1,7 +1,7 @@
 # Fix Box 7 Yes/No Transition Swap
 
 > **NOTE**: This plan needs discussion before implementation. The swap has regulatory
-> implications — specifically whether §1090(a)(3)(C) consent is research-specific or
+> implications — specifically whether 1090(a)(3)(C) consent is research-specific or
 > general-purpose — that should be verified against the statute before changing the logic.
 > The PDF arrows suggest a swap, but the current "general HEA consent" interpretation
 > in the help text may reflect intentional editorial judgment by NASFAA. Compare against
@@ -13,7 +13,7 @@ Box 7 ("Is the disclosure for research by or on behalf of the institution to pro
 
 Current implementation:
 - Box 7 **Yes** (IS research) → Box 9 (PII check) — skips consent
-- Box 7 **No** (NOT research) → Box 8 (HEA consent under §1090(a)(3)(C)) — checks consent
+- Box 7 **No** (NOT research) → Box 8 (HEA consent under 1090(a)(3)(C)) — checks consent
 
 PDF shows:
 - Box 7 **Yes** (IS research) → Box 8 (HEA consent) — checks consent for research
@@ -21,7 +21,7 @@ PDF shows:
 
 This is a different type of error from the Box 5 fix (wrong destination). Here the destinations are correct but assigned to the wrong branches — a Yes/No inversion. This is the same class of error as the Box 9 PII inversion previously fixed, likely caused by crossing lines in the PDF where the Box 7 Yes arrow crosses over Box 8 to reach Box 9 (or vice versa).
 
-The regulatory logic supports the swap: Box 8 asks about §1090(a)(3)(C) consent, which is the consent provision for research promoting college attendance — the same activity Box 7 asks about. It makes no sense to check §1090(a)(3)(C) consent when the purpose is NOT research (Box 7 No), and skip it when it IS research (Box 7 Yes).
+The regulatory logic supports the swap: Box 8 asks about 1090(a)(3)(C) consent, which is the consent provision for research promoting college attendance — the same activity Box 7 asks about. It makes no sense to check 1090(a)(3)(C) consent when the purpose is NOT research (Box 7 No), and skip it when it IS research (Box 7 Yes).
 
 ## What changes
 
@@ -103,7 +103,7 @@ The downstream structure is unchanged — Box 8 Yes still permits, Box 8 No stil
 
 - **Lines 205–220**: Scenario `state_grant_agency_with_hea_consent` — currently sets `hea_written_consent: true` (without `research_promote_attendance`) and expects rule `FAFSA_R6_HEA_written_consent`. After the swap, FAFSA_R6 requires `research_promote_attendance: true`. This scenario would no longer match FAFSA_R6. Either:
   - Add `research_promote_attendance: true` to inputs — but a state grant agency isn't doing research, so the narrative breaks.
-  - Or rethink the scenario entirely. If §1090(a)(3)(C) consent is research-specific (not general), then a state grant agency wouldn't use this consent mechanism. The scenario may need to be rewritten to use a different authorization basis (e.g., FERPA 99.31 exception).
+  - Or rethink the scenario entirely. If 1090(a)(3)(C) consent is research-specific (not general), then a state grant agency wouldn't use this consent mechanism. The scenario may need to be rewritten to use a different authorization basis (e.g., FERPA 99.31 exception).
   - **This is the scenario most affected by the swap and the strongest reason to discuss before implementing.** The "general HEA consent" interpretation may be NASFAA's editorial choice rather than a transcription error.
 
 ### 6. Spec files to update
@@ -120,7 +120,7 @@ Same methodology as the Box 5 plan: the three representations (DAG, rules, imper
 
 ## Open questions for discussion
 
-1. **Is §1090(a)(3)(C) consent research-specific or general?** The current help text says "broader than FERPA consent." If NASFAA intentionally interprets §1090(a)(3)(C) as a general consent mechanism (not limited to research), then the current Box 7 routing may be an editorial choice, not an error. The PDF arrows suggest a swap, but the regulatory interpretation matters.
+1. **Is 1090(a)(3)(C) consent research-specific or general?** The current help text says "broader than FERPA consent." If NASFAA intentionally interprets 1090(a)(3)(C) as a general consent mechanism (not limited to research), then the current Box 7 routing may be an editorial choice, not an error. The PDF arrows suggest a swap, but the regulatory interpretation matters.
 
 2. **State grant agency scenario**: If the swap is correct, the `state_grant_agency_with_hea_consent` scenario loses its authorization basis. State grant agencies receiving FAFSA data would need to rely on a FERPA 99.31 exception (e.g., Box 15 — authorized representatives) rather than HEA consent. Is this the correct regulatory outcome?
 

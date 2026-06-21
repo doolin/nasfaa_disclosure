@@ -51,7 +51,7 @@
 
   // Citation linker now lives in web/shared/citation.js (loaded via
   // <script> tag before this file). See that file for the body table,
-  // the §section regex, and the cross-line `finalBody` threading.
+  // the section regex, and the cross-line `finalBody` threading.
   const { linkifyCitation } = window.NasfaaCitation;
 
   // Render a box line that needs HTML inside it (e.g. citation links).

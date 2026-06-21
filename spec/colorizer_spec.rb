@@ -35,7 +35,7 @@ RSpec.describe Nasfaa::Colorizer do
     end
 
     it 'returns dim text unchanged' do
-      expect(colorizer.dim('IRC §6103(l)(13)')).to eq('IRC §6103(l)(13)')
+      expect(colorizer.dim('IRC 6103(l)(13)')).to eq('IRC 6103(l)(13)')
     end
 
     it 'returns yellow text unchanged' do

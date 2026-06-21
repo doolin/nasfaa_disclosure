@@ -22,9 +22,9 @@ key.
 
 `docs/NASFAA_Data_Sharing_Decision_Tree.pdf` — a two-page flowchart.
 
-- **Page 1** is the non-FTI path: FAFSA/HEA data and the FERPA §99.31
+- **Page 1** is the non-FTI path: FAFSA/HEA data and the FERPA 99.31
   exceptions.
-- **Page 2** is the FTI path (federal tax information, IRC §6103).
+- **Page 2** is the FTI path (federal tax information, IRC 6103).
 - The chart is a **DAG of numbered decision boxes**. Each box is a
   yes/no question; edges are labelled Yes/No; multiple paths can converge
   on a shared box (it is a DAG, not a pure tree). Some edges **cross** in
@@ -148,7 +148,7 @@ rules; the answer set is larger and you must derive it from the diagram.
 - id: FAFSA_R6b_no_hea_consent_review_deny
   when_all: ["!includes_fti", is_fafsa_data, "!disclosure_to_contributor_parent_or_spouse", "!used_for_aid_admin", "!research_promote_attendance", "!hea_written_consent"]
   result: deny
-  caution_note: "Review §99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
+  caution_note: "Review 99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
 
 # (g) permit_with_scope + scope_note. ILLUSTRATIVE shape only — this exact
 #     rule is not in the answer; it shows how to attach a scope limitation.
@@ -175,7 +175,7 @@ rules; the answer set is larger and you must derive it from the diagram.
 A correct submission must:
 
 - [ ] Handle **both** branches: every FTI box on Page 2 and every non-FTI
-      box (FAFSA/HEA *and* the FERPA §99.31 exceptions) on Page 1.
+      box (FAFSA/HEA *and* the FERPA 99.31 exceptions) on Page 1.
 - [ ] Declare in `inputs:` **every** predicate referenced by any rule, and
       reference no undeclared input.
 - [ ] Use only the four `result_types`; attach `caution_note`/`scope_note`

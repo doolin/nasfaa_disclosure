@@ -86,7 +86,7 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.rule_id).to eq('FTI_R1_student')
       expect(trace.result).to eq(:permit)
       expect(output).to include('PERMIT')
-      expect(output).to include('IRC §6103(l)(13)')
+      expect(output).to include('IRC 6103(l)(13)')
     end
 
     it 'permits FTI for aid admin with school official LEI (FTI_R2)' do
@@ -132,7 +132,7 @@ RSpec.describe Nasfaa::Walkthrough do
       expect(trace.result).to eq(:permit)
     end
 
-    it 'denies FAFSA aid admin without LEI or another §99.31 exception' do
+    it 'denies FAFSA aid admin without LEI or another 99.31 exception' do
       # !FTI → !student → fafsa → !contributor → aid_admin → !LEI → all FERPA exceptions = no
       answers = %w[no no yes no yes] + Array.new(8, 'no')
       trace, = run_walkthrough(*answers)
@@ -377,7 +377,7 @@ RSpec.describe Nasfaa::Walkthrough do
     it 'displays result block with rule_id, citation, and path' do
       _, output, = run_walkthrough('yes', 'yes')
       expect(output).to include('FTI_R1_student')
-      expect(output).to include('IRC §6103(l)(13)')
+      expect(output).to include('IRC 6103(l)(13)')
       expect(output).to include('fti_check -> fti_to_student')
     end
   end

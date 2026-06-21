@@ -8,7 +8,7 @@
 // permit-vs-deny verdict, not the rule_id. The DAG and RuleEngine can
 // legitimately reach the same verdict via different rules — for example,
 // Box 4 Yes routes into the FERPA chain and the DAG can land at any
-// downstream §99.31 exception, while the engine's first-match-wins
+// downstream 99.31 exception, while the engine's first-match-wins
 // frequently picks FAFSA_R7_no_pii before the FERPA exceptions fire.
 //
 // Exits 0 if every terminal path's permit/deny agrees. Exits 1 with

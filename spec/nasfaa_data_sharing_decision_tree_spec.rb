@@ -134,7 +134,7 @@ RSpec.describe Nasfaa::DecisionTree do
         it { expect(tree.disclose?).to be true }
       end
 
-      context 'and disclosure is FAFSA data for aid admin without LEI or any §99.31 exception' do
+      context 'and disclosure is FAFSA data for aid admin without LEI or any 99.31 exception' do
         let(:disclosure_request) do
           Nasfaa::DisclosureData.new(includes_fti: false, is_fafsa_data: true, used_for_aid_admin: true)
         end

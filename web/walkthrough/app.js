@@ -54,7 +54,7 @@
     ferpa_research_org:   { question: 'FERPA research org',           yes: 'FERPA research org',           no: 'Not research org' },
     ferpa_accreditor:     { question: 'Accrediting agency',           yes: 'Accrediting agency',           no: 'Not accreditor' },
     ferpa_parent:         { question: 'Parent of dependent',          yes: 'Parent of dependent',          no: 'Not parent of dependent' },
-    ferpa_otherwise:      { question: 'Other §99.31 exception',       yes: 'Other §99.31 exception',       no: 'No §99.31 exception' },
+    ferpa_otherwise:      { question: 'Other 99.31 exception',       yes: 'Other 99.31 exception',       no: 'No 99.31 exception' },
   };
 
   function pathLabel(id, answered) {

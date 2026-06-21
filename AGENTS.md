@@ -16,7 +16,7 @@ Source-of-truth order (this matters when something disagrees):
 1. **The printed PDF is canonical.** When YAML and PDF conflict, the PDF wins.
 2. **YAML** (`nasfaa_rules.yml`, `nasfaa_questions.yml`,
    `nasfaa_scenarios.yml`) is a secondary representation of the PDF.
-3. **FTI logic** (IRC §6103 / Page 2) was manually verified and is assumed
+3. **FTI logic** (IRC 6103 / Page 2) was manually verified and is assumed
    correct — don't "fix" it without checking the PDF first.
 
 A wrong rule in the YAML is a **correctness bug**, not a data-entry typo —

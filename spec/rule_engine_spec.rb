@@ -63,7 +63,7 @@ RSpec.describe Nasfaa::RuleEngine do
         expect(result[:result]).to eq(:permit)
       end
 
-      it 'denies FAFSA aid admin without LEI or another §99.31 exception' do
+      it 'denies FAFSA aid admin without LEI or another 99.31 exception' do
         data = Nasfaa::DisclosureData.new(is_fafsa_data: true, used_for_aid_admin: true)
         result = engine.evaluate(data)
         expect(result[:rule_id]).to eq('NONFTI_DENY_default')

@@ -104,7 +104,7 @@ rules:
   - id: FAFSA_R6b_no_hea_consent_review_deny
     when_all: ["!includes_fti", is_fafsa_data, "!disclosure_to_contributor_parent_or_spouse", "!used_for_aid_admin", "!research_promote_attendance", "!hea_written_consent"]
     result: deny
-    caution_note: "Review §99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
+    caution_note: "Review 99.31(a)(9)(ii) and consult legal counsel if subpoena, court order, or other law enforcement request."
 
   # Box 9 No (no PII) → Permit. Only reachable via Box 7 Yes (research)
   # since Box 8 No is now a terminal deny.

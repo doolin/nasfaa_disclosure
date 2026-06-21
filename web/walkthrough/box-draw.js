@@ -103,7 +103,7 @@
   }
 
   // Wrap a single boxLine around a citation string with <a> tags injected
-  // for each HEA/IRC/FERPA §-reference. Word-wraps using plain-text length
+  // for each HEA/IRC/FERPA -reference. Word-wraps using plain-text length
   // so padding stays right after HTML markup is added. Threads body context
   // across wrapped lines via NasfaaCitation.linkifyCitation's finalBody.
   function renderCitationBoxLine(text) {

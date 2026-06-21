@@ -2,7 +2,7 @@
  *
  * Plain script (no modules) so it works from file://. Attaches to
  * window.NasfaaCitation. The caller passes already-HTML-escaped text
- * in and gets HTML out with §-references wrapped in <a> tags.
+ * in and gets HTML out with citation references wrapped in <a> tags.
  *
  * Citation strings in nasfaa_scenarios.yml (and walkthrough question
  * messages) chain semicolon-separated references belonging to one of
@@ -14,7 +14,7 @@
  *
  * A body name "sticks" to subsequent chunks until a new body is named.
  * The optional `initialBody` argument seeds the body context so a
- * §-reference on a wrapped line picks up the body named on the
+ * reference on a wrapped line picks up the body named on the
  * previous line.
  */
 (function (root) {
@@ -26,16 +26,21 @@
     { name: 'FERPA', match: /\bFERPA\b/, url: 'https://www.ecfr.gov/current/title-34/section-' },
   ];
 
-  // Matches an optional body prefix followed by §section(subsections).
-  // The anchor text reads as the whole reference ("FERPA 34 CFR §99.10")
-  // when both parts are present, or just the bare "§N(...)" otherwise.
-  const REF_RE = /(?:(HEA|IRC|FERPA\s+34\s+CFR)\s+)?§(\d+[a-z]*(?:\.\d+)?)((?:\([a-zA-Z0-9]+\))*)/g;
+  // A reference is identified by its structure — a legal body (named here
+  // or inherited from an earlier chunk) plus a section number — not by any
+  // marker glyph. Matches an optional body prefix, then a section number
+  // (>= 2 digits, optional letter/decimal), then any subsections. The base
+  // section (group 2) drives the URL; the subsections (group 3) ride along
+  // in the anchor text only. A bare number with no body in context is left
+  // untouched (see the `if (!body) return match` guard below), so ordinary
+  // numbers don't get linked.
+  const REF_RE = /(?:(HEA|IRC|FERPA\s+34\s+CFR)\s+)?(\d{2,}[a-z]*(?:\.\d+)?)((?:\([a-zA-Z0-9]+\))*)/g;
 
   function linkifyCitation(escapedText, initialBody) {
     let currentBody = initialBody || null;
     const html = String(escapedText).split(';').map(function (chunk) {
       // Body-only chunks (e.g. "FERPA does not apply…") still need to
-      // update context for any §refs in later chunks.
+      // update context for any references in later chunks.
       for (var i = 0; i < CITATION_BODIES.length; i++) {
         var body = CITATION_BODIES[i];
         if (body.match.test(chunk)) { currentBody = body; break; }

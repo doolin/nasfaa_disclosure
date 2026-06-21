@@ -74,7 +74,7 @@ test('quizQuestionFromScenario: full scenario projects all fields', () => {
     name: 'Self-service request',
     inputs: { includes_fti: true, disclosure_to_student: true },
     expected: { result: 'permit', rule_id: 'FTI_R1' },
-    citation: 'IRC §6103(l)(13)',
+    citation: 'IRC 6103(l)(13)',
     result_context: rc,
   });
   assert.deepEqual(q, {
@@ -83,7 +83,7 @@ test('quizQuestionFromScenario: full scenario projects all fields', () => {
     inputs: { includes_fti: true, disclosure_to_student: true },
     expectedResult: 'permit',
     ruleId: 'FTI_R1',
-    citation: 'IRC §6103(l)(13)',
+    citation: 'IRC 6103(l)(13)',
     resultContext: rc,
   });
 });
