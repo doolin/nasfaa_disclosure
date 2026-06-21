@@ -129,7 +129,7 @@ nodes:
     type: question
     box: "2 (Page 1)"
     text: "Is the disclosure to the student (the data subject)?"
-    pdf_text: "Is the disclosure to the student?"
+    pdf_text: "Is the disclosure to the student? 1098h(c)(1)(A)(ii)"
     field: disclosure_to_student
     on_yes: result_FAFSA_R1_to_student
     on_no: nonfti_fafsa_check
@@ -138,7 +138,7 @@ nodes:
     type: question
     box: "3 (Page 1)"
     text: "Is the data FAFSA data (as defined by the Department of Education)?"
-    pdf_text: "Is the information being requested considered FAFSA data per ED's definitions? (See pg. 2 for list of what is considered FAFSA data)"
+    pdf_text: "Is the information being requested considered FAFSA data per ED's definition? (See pg. 2 for list of what is considered FAFSA data)"
     help: "FAFSA data includes information collected on or derived from the Free Application for Federal Student Aid."
     field: is_fafsa_data
     on_yes: fafsa_contributor
@@ -150,7 +150,7 @@ nodes:
     type: question
     box: "4 (Page 1)"
     text: "Is the disclosure to a parent or spouse who is a FAFSA contributor?"
-    pdf_text: "Is the disclosure to the parent or spouse who contributed to the FAFSA?*"
+    pdf_text: "Is the disclosure to the student's parent or spouse contributor to the FAFSA?**"
     help: "Under the FAFSA Simplification Act, a 'contributor' is someone who provided financial information on the student's FAFSA."
     field: disclosure_to_contributor_parent_or_spouse
     on_yes: ferpa_consent
@@ -160,7 +160,7 @@ nodes:
     type: question
     box: "5 (Page 1)"
     text: "Will the data be used for financial aid administration?"
-    pdf_text: "Will the information be used for the application, award, and/or administration of financial aid, per ED's definition?"
+    pdf_text: "Will the information be used for the application, award, and/or administration of financial aid, per ED's definition*? 1090(a)(3)(C)(i)"
     help: "Aid admin alone does not authorize disclosure — the recipient must also be a school official with legitimate educational interest (Box 12) or another 99.31 exception must apply."
     field: used_for_aid_admin
     on_yes: ferpa_school_official
@@ -223,7 +223,7 @@ nodes:
     type: question
     box: "11"
     text: "Is the data directory information and the student has not opted out?"
-    pdf_text: "Is the information being requested as directory information and has the student not opted out? 99.31(a)(11)"
+    pdf_text: "Is the information being requested considered directory information (if the student hasn't opted out)? 99.31(a)(11)"
     help: "Directory information (name, address, dates of attendance, degree, etc.) may be disclosed if designated in the institution's FERPA notice and the student has not restricted it."
     field: directory_info_and_not_opted_out
     on_yes: result_FERPA_R1_directory_info
