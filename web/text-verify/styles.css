@@ -97,12 +97,21 @@ body { padding: 16px 12px 48px; }
   text-align: left;
   padding: 0.4rem 0.5rem;
   border-bottom: 1px solid var(--color-border);
+  /* Header labels are single words ("Verified", "Box"); without this they
+   * can't wrap and spill past a narrow column, extending .table-scroll and
+   * showing a stray horizontal scrollbar below ~1140px viewport. */
+  overflow-wrap: anywhere;
 }
 .verify-table tbody td {
   padding: 0.45rem 0.5rem;
   vertical-align: top;
   border-bottom: 1px solid var(--color-border);
   white-space: pre-wrap;
+  /* Break over-long unbreakable tokens (long ids, citation refs, URLs)
+   * so no cell spills past its fixed column — a spill extends the
+   * .table-scroll's scroll width and shows a stray horizontal scrollbar
+   * that grows as the window narrows. */
+  overflow-wrap: anywhere;
 }
 .verify-table tbody tr:hover { background: var(--color-accent-tint); }
 /* Verified rows stay fully visible — marked, not hidden.  A green left
@@ -112,21 +121,28 @@ body { padding: 16px 12px 48px; }
   box-shadow: inset 3px 0 0 0 var(--color-permit);
 }
 
-/* Column widths — explicit percentage allocation so free-text
- * columns share the available space evenly.  Notes gets the same
- * footprint as the PDF column so there's real room to write. */
+/* Column widths — ALL percentages, summing to exactly 100% per table.
+ * table-layout:fixed grows the table to the SUM of its column widths
+ * when that sum exceeds 100%, so the old mix of ch + % overflowed the
+ * container by a few px at most viewport widths and produced a stray
+ * horizontal scrollbar.  Pure %, summing to 100%, keeps every table
+ * exactly its container width — no overflow, no scrollbar.
+ *   Questions: box 5 + id 13 + text 28 + pdf 24 + notes 22 + check 8 = 100
+ *   Results:   rule 16 + result 9 + msg 28 + cite 17 + notes 22 + check 8 = 100
+ * check/box are sized so their header words ("Verified", "Box") fit on one
+ * line at normal widths; overflow-wrap on the cells covers narrower ones. */
 .verify-table { table-layout: fixed; }
 
-.col-box    { width: 5ch; color: var(--color-accent); font-weight: 700; text-align: center; }
-.col-id     { width: 24ch; }
-.col-text   { width: 26%; }
+.col-box    { width: 5%;  color: var(--color-accent); font-weight: 700; text-align: center; }
+.col-id     { width: 13%; }
+.col-text   { width: 28%; }
 .col-pdf    { width: 24%; }
-.col-rule   { width: 22ch; }
-.col-result { width: 10ch; text-transform: uppercase; font-weight: 700; }
-.col-msg    { width: 26%; }
-.col-cite   { width: 20ch; color: var(--color-fg-muted); }
-.col-notes  { width: 28%; }
-.col-check  { width: 6ch; text-align: center; }
+.col-rule   { width: 16%; }
+.col-result { width: 9%;  text-transform: uppercase; font-weight: 700; }
+.col-msg    { width: 28%; }
+.col-cite   { width: 17%; color: var(--color-fg-muted); }
+.col-notes  { width: 22%; }
+.col-check  { width: 8%;  text-align: center; }
 
 .col-notes textarea {
   width: 100%;
