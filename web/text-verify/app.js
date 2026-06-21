@@ -48,6 +48,18 @@
       .replace(/>/g, '&gt;');
   }
 
+  // Linkify a citation string (HEA/IRC/FERPA section refs) into clickable
+  // links via the shared citation module — lets a verifier click through
+  // to the eCFR / law.cornell.edu source to confirm each citation. Falls
+  // back to escaped plain text if the module isn't loaded.
+  function linkifyCite(text) {
+    const escaped = escapeHtml(text);
+    if (window.NasfaaCitation && window.NasfaaCitation.linkifyCitation) {
+      return window.NasfaaCitation.linkifyCitation(escaped).html;
+    }
+    return escaped;
+  }
+
   function notesCell(id, entry) {
     return `<td class="col-notes">
       <textarea data-notes-for="${escapeHtml(id)}" rows="2"
@@ -89,7 +101,7 @@
       <td class="col-rule"><code>${escapeHtml(node.rule_id || '')}</code></td>
       <td class="col-result result-${escapeHtml(node.result || '')}">${escapeHtml(node.result || '')}</td>
       <td class="col-msg">${escapeHtml(node.message || '')}</td>
-      <td class="col-cite">${escapeHtml(node.citation || '')}</td>
+      <td class="col-cite">${linkifyCite(node.citation || '')}</td>
       ${notesCell(id, entry)}
       ${checkCell(id, entry)}
     </tr>`;
